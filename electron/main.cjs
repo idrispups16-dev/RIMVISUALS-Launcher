@@ -25,7 +25,7 @@ app.whenReady().then(async()=>{
  ipcMain.handle('workspace',state);
  ipcMain.handle('mods',()=>require('./mod-manager.cjs').list(workspaces.gameRoot()));
  ipcMain.handle('toggleMod',(_,name)=>{coordinator.guard();return require('./mod-manager.cjs').toggle(workspaces.gameRoot(),name);});
- ipcMain.handle('importMod',async()=>{coordinator.guard();if(get().loader==='vanilla')throw Error('Моды требуют Fabric-профиль');const root=workspaces.gameRoot();const r=await dialog.showOpenDialog({properties:['openFile'],filters:[{name:'Fabric Mod',extensions:['jar']}]});coordinator.guard();if(workspaces.gameRoot()!==root)throw Error('Профиль изменился; выберите JAR повторно');if(!r.canceled)return require('./mod-manager.cjs').install(root,r.filePaths[0]);});
+ ipcMain.handle('importMod',async()=>{coordinator.guard();if(get().loader==='vanilla')throw Error('Моды требуют Fabric-профиль');const root=workspaces.gameRoot();const r=await dialog.showOpenDialog({properties:['openFile'],filters:[{name:'Fabric Mod',extensions:['jar']}]});coordinator.guard();if(workspaces.gameRoot()!==root)throw Error('Профиль изменился; выберите JAR повторно');if(!r.canceled)return require('./mod-manager.cjs').install(root,r.filePaths[0],{allowFabricApi:get().rimVisuals===false});});
  ipcMain.handle('versionCatalog',()=>require('./catalog.cjs').catalog());
  ipcMain.handle('selectProfile',(_,id)=>select(id));
  ipcMain.handle('createProfile',async(_,name,spec)=>{coordinator.guard();workspaces.create(name,spec);await accounts.select(workspaces.current().accountId);return get();});
