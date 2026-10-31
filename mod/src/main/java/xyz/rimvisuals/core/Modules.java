@@ -56,6 +56,7 @@ public final class Modules {
                 if (v != null) s.load(v);
             }
         }
+        PERFORMANCE.seedPreset(); VIEWMODEL.seedPreset();
     }
 
     private static void write(Path file, Properties p) {

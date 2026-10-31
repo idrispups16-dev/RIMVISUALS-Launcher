@@ -1,3 +1,7 @@
+# RIMVISUALS rebuild test branch
+
+See [rebuild status](docs/REBUILD_STATUS.md) and [complete feature audit](docs/FEATURE_MATRIX.md). This is not a finished client.
+
 # RIMVISUALS Launcher 0.1.6 + Fabric mod 0.2.0
 
 Target: Windows 11, Minecraft Java 1.21.11, Fabric Loader 0.19.3, Fabric API 0.141.6+1.21.11, Java 21.

@@ -50,6 +50,7 @@ public class ClickGui extends Screen {
     private final Anim open = new Anim(0), tabPos = new Anim(0), scrollA = new Anim(0);
     private final TextInput search = new TextInput("Search...", 24);
     private final TextInput profileName = new TextInput("Profile name", 20);
+    private String tooltip="";
     private TextInput focus;
     private Hit dragging;
     private boolean scrollDrag;
@@ -130,7 +131,7 @@ public class ClickGui extends Screen {
         vw = Math.round(width / s);
         vh = Math.round(height / s);
         double mx = mouseX / s, my = mouseY / s;
-        hits.clear();
+        hits.clear();tooltip="";
         fade = Math.max(0.02f, open.to(1f, 9f));
         int acc = Theme.accent();
 
@@ -151,6 +152,7 @@ public class ClickGui extends Screen {
         Gfx.roundBorder(c, wx, wy, ww, wh, 8, f(Theme.panel()), f(Gfx.alpha(acc, 0.55f)));
         Gfx.round(c, wx + 3, wy + hdr, sideW - 3, wh - hdr - 3, 6, f(Theme.bg()));
 
+        for(int i=0;i<32;i++){int x1=wx+2+(ww-4)*i/32,x2=wx+2+(ww-4)*(i+1)/32;c.fill(x1,wy+hdr-2,x2,wy+hdr,Gfx.mix(Theme.accent(),Theme.accent2(),i/31f));}
         // header
         Gfx.star(c, wx + 16, wy + hdr / 2, 7, f(acc));
         txt(c, "RIMVISUALS", wx + 28, wy + (hdr - 8) / 2, Theme.text());
@@ -199,6 +201,7 @@ public class ClickGui extends Screen {
         maxScroll = Math.max(0, total - (cbot - ctop));
 
         c.disableScissor();
+        if(!tooltip.isEmpty()){var lines=textRenderer.wrapLines(Text.literal(tooltip),Math.max(120,ww-30));int ty=wy+wh+3;if(ty+lines.size()*10>vh)ty=wy+wh-lines.size()*10-5;c.fill(wx+5,ty-3,wx+ww-5,ty+lines.size()*10+2,0xee080810);for(var line:lines){c.drawText(textRenderer,line,wx+10,ty,Theme.text(),false);ty+=10;}}
         ms.popMatrix();
     }
 
@@ -223,7 +226,7 @@ public class ClickGui extends Screen {
         int y = begin(h);
         if (y != NONE) {
             int sw = mob ? 30 : 24, swh = mob ? 16 : 12;
-            boolean hov = in(mx, my, cx, y, cw, h - 3);
+            boolean hov = in(mx, my, cx, y, cw, h - 3);if(hov)tooltip=m.name+": "+m.description;
             Gfx.round(c, cx, y, cw, h - 3, 5, f(hov ? Theme.cardHover() : Theme.card()));
             if (m.toggleable && m.enabled) c.fill(cx, y + 6, cx + 2, y + h - 9, f(Theme.accent()));
             txt(c, textRenderer.trimToWidth(m.name,cw-65), cx + 9, y + (mob ? 7 : 5), Theme.text());
@@ -284,6 +287,7 @@ public class ClickGui extends Screen {
                 hit(x, y, w, h - 2, () -> { if (!colorOpen.remove(col)) colorOpen.add(col); }, null);
             }
             if (colorOpen.contains(col)) {
+                hsvChannel(c,col,0,a);hsvChannel(c,col,1,a);hsvChannel(c,col,2,a);
                 channel(c, "R", col, 16, a);
                 channel(c, "G", col, 8, a);
                 channel(c, "B", col, 0, a);
@@ -311,9 +315,12 @@ public class ClickGui extends Screen {
         int v = (col.rgb >> shift) & 255;
         slider(c, label, String.valueOf(v), v / 255.0, cx + 16, cw - 16, a, p -> {
             int nv = (int) Math.round(p * 255);
-            col.rgb = (col.rgb & ~(255 << shift)) | (nv << shift);
+            col.rgb = (col.rgb & ~(255 << shift)) | (nv << shift);customTheme(col);
         });
     }
+
+    private void customTheme(Setting.Color col){if(col==Modules.UI.custom||col==Modules.UI.secondary)Modules.UI.theme.index=3;}
+    private void hsvChannel(DrawContext c,Setting.Color col,int channel,float a){float[] hsv=java.awt.Color.RGBtoHSB((col.rgb>>16)&255,(col.rgb>>8)&255,col.rgb&255,null);String label=new String[]{"Hue","Saturation","Value"}[channel];slider(c,label,String.valueOf(Math.round(hsv[channel]*(channel==0?360:100))),hsv[channel],cx+16,cw-16,a,p->{float[] current=java.awt.Color.RGBtoHSB((col.rgb>>16)&255,(col.rgb>>8)&255,col.rgb&255,null);current[channel]=(float)p;col.rgb=java.awt.Color.HSBtoRGB(current[0],current[1],current[2])&0xffffff;customTheme(col);});}
 
     private void hexRow(DrawContext c, Setting.Color col, float a) {
         int h = rowH(), y = begin(h);
@@ -326,7 +333,7 @@ public class ClickGui extends Screen {
             t.filter = ch -> Character.digit(ch, 16) >= 0;
             t.onChange = () -> {
                 if (t.text.length() == 6) {
-                    try { col.rgb = Integer.parseInt(t.text, 16) & 0xFFFFFF; } catch (NumberFormatException ignored) {}
+                    try { col.rgb = Integer.parseInt(t.text, 16) & 0xFFFFFF;customTheme(col); } catch (NumberFormatException ignored) {}
                 }
             };
             t.text = col.hex();
