@@ -9,7 +9,7 @@ const {_electron}=require('playwright-core');const fs=require('node:fs/promises'
   await page.getByRole('button',{name:'Добавить Microsoft-аккаунт',exact:true}).click();await page.waitForFunction(()=>document.querySelector('.toast')?.textContent.includes('Client ID'));
   await page.getByLabel('Имя локальной записи',{exact:true}).fill('UI Local');await page.getByRole('button',{name:'Добавить локальную запись',exact:true}).click();
   await page.waitForFunction(async()=>(await window.rim.clientStatus()).selectedId?.startsWith('local-'));
-  assert(await page.getByRole('button',{name:'PLAY RIMVISUALS'}).isDisabled());await page.waitForFunction(()=>!document.querySelector('.toast')?.textContent.includes('Client ID'));
+  await page.getByRole('button',{name:'PLAY DEMO · LOCAL',exact:true}).waitFor();assert(await page.getByRole('button',{name:'PLAY DEMO · LOCAL',exact:true}).isEnabled());await page.waitForFunction(()=>!document.querySelector('.toast')?.textContent.includes('Client ID'));
   await page.getByRole('button',{name:'Профили',exact:true}).click();await page.getByLabel('Новый профиль',{exact:true}).fill('UI isolated');await page.getByRole('button',{name:'Создать отдельный профиль',exact:true}).click();
   await page.waitForFunction(async()=>(await window.rim.get()).profile==='UI isolated');const first=await page.evaluate(()=>window.rim.clientStatus());assert(first.root.startsWith(path.join(base,'instances')+path.sep));
   await page.getByText('Импорт и экспорт настроек профиля',{exact:true}).click();await page.getByRole('button',{name:'Экспорт в поле',exact:true}).click();await page.waitForFunction(()=>document.querySelector('textarea')?.value.includes('UI isolated'));
