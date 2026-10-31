@@ -1,10 +1,8 @@
 name: Inspect Minecraft sources (dev)
 on:
-  workflow_dispatch:
-    inputs:
-      patterns:
-        description: 'Space separated class file names (e.g. GameRenderer.java EndCrystalEntityRenderer.java)'
-        required: true
+  push:
+    branches: [feature/visuals-claude]
+    paths: ['tools/inspect-patterns.txt']
 permissions:
   contents: read
 jobs:
@@ -21,9 +19,8 @@ jobs:
           gradle-version: '9.2.1'
       - run: gradle -p mod genSources --stacktrace
       - name: Collect requested classes
-        env:
-          PATTERNS: ${{ inputs.patterns }}
         run: |
+          PATTERNS=$(cat tools/inspect-patterns.txt)
           mkdir -p out
           jar=$(find ~/.gradle -name '*minecraft*sources*.jar' -o -name 'minecraft-merged*sources*.jar' | head -1)
           echo "sources jar: $jar"
