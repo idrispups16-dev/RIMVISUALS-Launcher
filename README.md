@@ -24,3 +24,5 @@ Launcher: Node 22, npm install, node --test tests/launcher.cjs, npm run check, n
 Mod: Java 21, Gradle 9.2.1, gradle -p mod build. Loom 1.14.10, Yarn 1.21.11+build.6.
 
 Rebuild CI also captures the Viewmodel editor for layout review.
+
+The scaled clipping regression is covered by the Viewmodel screenshot review.

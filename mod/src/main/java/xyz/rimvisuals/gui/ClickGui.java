@@ -186,7 +186,7 @@ public class ClickGui extends Screen {
         targetScroll = Math.max(0, Math.min(maxScroll, targetScroll));
         int scroll = Math.round(scrollA.to(targetScroll, 16f));
         cy = ctop - scroll;
-        c.enableScissor(Math.round(cx*s),Math.round(ctop*s),Math.round((cx+cw)*s),Math.round(cbot*s));
+        c.enableScissor(cx,ctop,cx+cw,cbot);
 
         String q = search.text.trim().toLowerCase(Locale.ROOT);
         if (!q.isEmpty()) {
