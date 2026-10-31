@@ -24,6 +24,23 @@ app.whenReady().then(async()=>{
   if(safeStorage.decryptString(await fs.readFile(second.file))!==JSON.stringify(data))throw Error('Account persistence failed');
   await second.logout();
   try{await fs.access(second.file);throw Error('Logout left account file');}catch(e){if(e.code!=='ENOENT')throw e;}
+  await first.store(data);
+  const {Accounts}=require('../electron/accounts.cjs');
+  const manager=new Accounts(root,safeStorage,()=>{});
+  await manager.init();
+  if((await manager.credentials()).refresh!==sentinel)throw Error('Legacy account migration failed');
+  await manager.lock(()=>manager.remember({clientId:data.clientId,refresh:sentinel+'-A'},{id:'a'.repeat(32),name:'SyntheticA'}));
+  await manager.lock(()=>manager.remember({clientId:data.clientId,refresh:sentinel+'-B'},{id:'b'.repeat(32),name:'SyntheticB'}));
+  const encrypted=await fs.readFile(manager.vault);
+  if(encrypted.includes(Buffer.from(sentinel)))throw Error('Multi-account vault contains plaintext');
+  if((await fs.readFile(manager.file,'utf8')).includes(sentinel))throw Error('Account metadata leaked token');
+  const restarted=new Accounts(root,safeStorage,()=>{});
+  await restarted.select('a'.repeat(32));
+  if((await restarted.credentials()).refresh!==sentinel+'-A')throw Error('First account lost after restart');
+  await restarted.auth.logout();
+  await restarted.select('b'.repeat(32));
+  if((await restarted.credentials()).refresh!==sentinel+'-B')throw Error('Logout removed another account');
+  console.log('RIM_ACCOUNTS_STORAGE_OK: two synthetic Microsoft accounts, native encrypted persistence, restart, selection and isolated logout verified');
   await fs.rm(root,{recursive:true,force:true});
   console.log('RIM_STORAGE_OK: Windows encrypted account persistence, fresh-instance decrypt and logout verified; synthetic credentials only');
   app.exit(0);
