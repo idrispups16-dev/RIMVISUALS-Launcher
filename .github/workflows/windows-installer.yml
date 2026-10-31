@@ -2,7 +2,7 @@ name: RIMVISUALS Windows Installer
 on:
   workflow_dispatch:
   push:
-    branches: [main, 'rebuild/**']
+    branches: [main, 'rebuild/**', 'feature/launcher-gpt']
     paths-ignore: ['mod/**', '.github/workflows/fabric-mod.yml']
 permissions:
   contents: read
