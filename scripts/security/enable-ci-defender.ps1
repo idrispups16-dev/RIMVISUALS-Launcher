@@ -8,7 +8,8 @@ $report=[ordered]@{before=@{paths=@($before.ExclusionPath);extensions=@($before.
 try {
  Start-Service WinDefend
  if(@($before.ExclusionPath).Count){Remove-MpPreference -ExclusionPath $before.ExclusionPath}
- if(@($before.ExclusionExtension).Count){Remove-MpPreference -ExclusionExtension $before.ExclusionExtension}
+ $extensions=@($before.ExclusionExtension | Where-Object {$_})
+ if($extensions.Count){Remove-MpPreference -ExclusionExtension $extensions}
  Set-MpPreference -DisableArchiveScanning $false -DisableScriptScanning $false -DisableBehaviorMonitoring $false -DisableIOAVProtection $false -DisableRealtimeMonitoring $false -PUAProtection Enabled -ScanAvgCPULoadFactor 50
  $after=Get-MpPreference
  $report.after=@{paths=@($after.ExclusionPath);extensions=@($after.ExclusionExtension);disableArchiveScanning=$after.DisableArchiveScanning;disableRealtimeMonitoring=$after.DisableRealtimeMonitoring;disableScriptScanning=$after.DisableScriptScanning}
