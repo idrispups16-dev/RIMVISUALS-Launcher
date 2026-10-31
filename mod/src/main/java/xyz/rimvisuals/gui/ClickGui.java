@@ -28,7 +28,7 @@ import java.util.function.DoubleConsumer;
 
 /** RIMVISUALS menu: tabs, search, module cards with settings, color editor, profiles. */
 public class ClickGui extends Screen {
-    private static final String[] TABS = {"HUD", "Visuals", "Interface", "Optimization", "Viewmodel", "Swing", "Shader Hands", "Profiles"};
+    private static final String[] TABS = {"HUD", "Visuals", "Interface", "Optimization", "Viewmodel", "Swing", "Item Lighting", "Profiles"};
     private static final Module.Category[] CATS = {Module.Category.HUD, Module.Category.VISUALS, Module.Category.INTERFACE, Module.Category.OPTIMIZATION, Module.Category.VIEWMODEL, Module.Category.SWING, Module.Category.SHADER_HANDS};
     private static final int NONE = Integer.MIN_VALUE;
 
@@ -243,6 +243,7 @@ public class ClickGui extends Screen {
             }
         }
         if (isOpen) {
+            int resetY=begin(rowH());if(resetY!=NONE)button(c,cx+8,resetY,cw-16,rowH()-3,"Reset module to defaults",mx,my,()->Modules.reset(m),false);
             for (Setting st : m.settings) if (!st.hidden) settingRow(c, st, mx, my, a);
             cy += 4;
         }

@@ -2,7 +2,7 @@ name: RIMVISUALS Windows Installer
 on:
   workflow_dispatch:
   push:
-    branches: [main]
+    branches: [main, 'rebuild/**']
     paths-ignore: ['mod/**', '.github/workflows/fabric-mod.yml']
 permissions:
   contents: read
@@ -12,13 +12,41 @@ jobs:
     timeout-minutes: 35
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.2.1'
+      - name: Build bundled visual engine
+        run: gradle -p mod build
+      - name: Prepare verified bundled JARs
+        shell: python
+        run: |
+          from pathlib import Path
+          import hashlib,json,urllib.request,shutil
+          bundle=Path('bundled');bundle.mkdir(exist_ok=True)
+          jars=list(Path('mod/build/libs').glob('rimvisuals-*.jar'))
+          assert len(jars)==1
+          shutil.copy2(jars[0],bundle/jars[0].name)
+          name='fabric-api-0.141.6+1.21.11.jar'
+          url='https://maven.fabricmc.net/net/fabricmc/fabric-api/fabric-api/0.141.6+1.21.11/'+name
+          data=urllib.request.urlopen(url).read()
+          expected=urllib.request.urlopen(url+'.sha256').read().decode().strip().split()[0]
+          assert hashlib.sha256(data).hexdigest()==expected
+          (bundle/name).write_bytes(data)
+          files=[{'name':p.name,'sha256':hashlib.sha256(p.read_bytes()).hexdigest()} for p in bundle.glob('*.jar')]
+          (bundle/'manifest.json').write_text(json.dumps({'files':files}))
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
       - name: Install dependencies
         run: npm install --no-audit --no-fund
       - name: Test launcher discovery
-        run: node --test tests/launcher.cjs
+        run: node --test tests/*.cjs
+      - name: Verify isolated Minecraft installation
+        run: node tests/install-smoke.js
       - name: Validate application
         run: npm run check
       - name: Build Windows installer
