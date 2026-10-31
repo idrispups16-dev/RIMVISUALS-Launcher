@@ -4,7 +4,7 @@ on:
     branches: [feature/visuals-claude]
     paths: ['tools/inspect-patterns.txt']
 permissions:
-  contents: read
+  contents: write
 jobs:
   inspect:
     runs-on: ubuntu-latest
@@ -32,8 +32,12 @@ jobs:
             done
           fi
           ls -la out >> out/_debug.txt
-      - uses: actions/upload-artifact@v4
+      - name: Publish extracted sources to a side branch
         if: always()
-        with:
-          name: mc-sources
-          path: out/*
+        run: |
+          rm -rf /tmp/pub && mkdir /tmp/pub && cp out/* /tmp/pub/ || true
+          cd /tmp/pub
+          git init -q && git checkout -q -b claude-inspect-output
+          git config user.name "github-actions" && git config user.email "actions@users.noreply.github.com"
+          git add -A && git commit -q -m "inspect output for ${{ github.sha }}"
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" claude-inspect-output
