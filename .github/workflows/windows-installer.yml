@@ -2,7 +2,7 @@ name: RIMVISUALS Windows Installer
 on:
   workflow_dispatch:
   push:
-    branches: [main, 'rebuild/**', 'feature/launcher-gpt', 'feature/accounts-and-profiles', 'feature/local-demo-launch', 'feature/version-and-mod-manager', 'integration/launcher-visuals']
+    branches: [main, 'rebuild/**', 'feature/launcher-gpt', 'feature/accounts-and-profiles', 'feature/local-demo-launch', 'feature/version-and-mod-manager', 'security/installer-audit', 'integration/launcher-visuals']
     paths-ignore: ['mod/**', '.github/workflows/fabric-mod.yml']
 permissions:
   contents: read
@@ -10,12 +10,15 @@ jobs:
   fabric:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961
         with:
           distribution: temurin
           java-version: '21'
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@ed408507eac070d1f99cc633dbcf757c94c7933a
         with:
           gradle-version: '9.2.1'
       - name: Build and test the authoritative Fabric JAR
@@ -34,13 +37,13 @@ jobs:
           jars=list(Path('mod/build/libs').glob('rimvisuals-*.jar'))
           assert len(jars)==1
           jars[0].with_suffix('.jar.sha256').write_text(hashlib.sha256(jars[0].read_bytes()).hexdigest())
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
         with:
           name: RIMVISUALS-Tested-Fabric
           path: mod/build/libs/*
           if-no-files-found: error
           retention-days: 30
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
         if: always()
         with:
           name: RIMVISUALS-Integration-Test-Logs
@@ -52,10 +55,16 @@ jobs:
   windows:
     needs: fabric
     runs-on: windows-latest
-    timeout-minutes: 35
+    timeout-minutes: 45
+    permissions:
+      contents: read
+      actions: read
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53
         with:
           name: RIMVISUALS-Tested-Fabric
           path: mod/build/libs
@@ -84,11 +93,46 @@ jobs:
                   assert 'xyz/rimvisuals/modules/'+cls+'.class' in z.namelist()
             files.append({'name':p.name,'sha256':hashlib.sha256(p.read_bytes()).hexdigest(),'id':meta['id'],'version':meta['version']})
           (bundle/'manifest.json').write_text(json.dumps({'schemaVersion':2,'minecraftVersion':'1.21.11','fabricLoaderVersion':'0.19.3','javaMajor':21,'launcherConfigSchema':1,'files':files}))
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
         with:
-          node-version: '22'
+          node-version: '24.22.1'
       - name: Install dependencies
-        run: npm install --no-audit --no-fund
+        run: |
+          npm ci --ignore-scripts --no-audit --no-fund
+          node node_modules/electron/install.js
+      - name: Audit locked dependency tree (do not suppress moderate findings)
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force security-output | Out-Null
+          npm audit --json | Out-File security-output/npm-audit.json -Encoding utf8
+          npm audit --omit=dev --json | Out-File security-output/npm-audit-production.json -Encoding utf8
+          node scripts/security/audit-policy.cjs
+          if ($LASTEXITCODE -ne 0) { throw 'Dependency policy failed' }
+          npm sbom --sbom-format cyclonedx | Out-File security-output/sbom.cyclonedx.json -Encoding utf8
+          if ($LASTEXITCODE -ne 0) { throw 'SBOM creation failed' }
+          exit 0
+      - name: Record npm registry signature verification separately from vulnerability audit
+        continue-on-error: true
+        shell: pwsh
+        run: npm audit signatures --json | Out-File security-output/npm-registry-signatures.json -Encoding utf8
+      - name: Download exact blocked installer for audit (never execute it)
+        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53
+        with:
+          name: RIMVISUALS-Windows-Installer
+          run-id: 41248974550
+          github-token: ${{ github.token }}
+          path: original-installer
+      - name: Scan original installer and record Authenticode/Defender evidence
+        continue-on-error: true
+        shell: pwsh
+        run: ./scripts/security/scan-windows.ps1 -Target original-installer -Report security-output/original-defender.json
+      - name: Inspect original application sources without running them
+        shell: pwsh
+        run: |
+          $scan = Get-Content security-output/original-defender.json -Raw | ConvertFrom-Json
+          if ($scan.status -eq 'no-detection') { node scripts/security/package-evidence.mjs --original }
+          else { Write-Output 'Original inspection withheld: no completed clean Defender scan' }
+
       - name: Test launcher discovery
         run: node --test tests/*.cjs
       - name: Verify automatic Java download and reuse
@@ -131,9 +175,16 @@ jobs:
           if ($files.Count -ne 1) { throw "Expected one installer, found $($files.Count)" }
           if ($files[0].Length -lt 1000000) { throw 'Installer unexpectedly small' }
           Get-FileHash $files[0].FullName -Algorithm SHA256 | Format-List
+      - name: Compare packaged sources to the exact build commit
+        run: node scripts/security/package-evidence.mjs
+      - name: Scan new installer and unpacked executable tree
+        shell: pwsh
+        run: ./scripts/security/scan-windows.ps1 -Target release -Report security-output/new-defender.json
       - name: Verify silent installer in isolated Windows directory
         shell: pwsh
         run: |
+          $new = Get-Content security-output/new-defender.json -Raw | ConvertFrom-Json
+          if ($new.status -ne 'no-detection') { throw 'No completed clean scan of new build' }
           $installer = Get-ChildItem release -Filter 'RIMVISUALS-Setup-*.exe' -File | Select-Object -First 1
           $installDir = Join-Path $env:RUNNER_TEMP 'rimvisuals-installed-smoke'
           $process = Start-Process -FilePath $installer.FullName -ArgumentList @('/S', "/D=$installDir") -Wait -PassThru
@@ -149,22 +200,56 @@ jobs:
             $jar = Join-Path $installDir "resources/bundled/$($entry.name)"
             if ((Get-FileHash -LiteralPath $jar -Algorithm SHA256).Hash.ToLowerInvariant() -ne $entry.sha256) { throw 'Installed JAR integrity mismatch' }
           }
+          $app = Start-Process -FilePath (Join-Path $installDir 'RIMVISUALS Launcher.exe') -PassThru
+          try {
+            $ready = $false
+            for ($i=0; $i -lt 80; $i++) {
+              Start-Sleep -Milliseconds 250
+              $app.Refresh()
+              if ($app.HasExited) { throw 'Installed application exited before showing its window' }
+              if ($app.MainWindowTitle -eq 'RIMVISUALS Launcher') { $ready = $true; break }
+            }
+            if (!$ready) { throw 'Installed application window did not become ready' }
+            Start-Sleep -Seconds 3
+            $app.Refresh()
+            if ($app.HasExited) { throw 'Installed application crashed after showing its window' }
+            Write-Output 'RIM_PACKAGED_START_OK: installed application opens its real window with security fuses enabled; no game world claimed'
+          } finally { if (!$app.HasExited) { Stop-Process -Id $app.Id -Force } }
           Write-Output 'RIM_INSTALLER_OK: silent NSIS install, executable, app.asar and embedded JAR hashes verified in isolated CI directory'
-      - uses: actions/upload-artifact@v4
+      - name: Require completed security evidence before publishing installer
+        shell: pwsh
+        run: |
+          foreach ($kind in @('original','new')) {
+            $scan = Get-Content "security-output/$kind-defender.json" -Raw | ConvertFrom-Json
+            if ($scan.status -ne 'no-detection') { throw "Security review incomplete: $kind $($scan.status)" }
+          }
+          if (!(Test-Path security-output/original-package-evidence.json)) { throw 'Original source comparison incomplete' }
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
         with:
           name: RIMVISUALS-Windows-Installer
           path: release/RIMVISUALS-Setup-*.exe
           if-no-files-found: error
           retention-days: 30
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
         with:
           name: RIMVISUALS-Component-Manifest
           path: bundled/manifest.json
           if-no-files-found: error
           retention-days: 30
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
         if: always()
         with:
           name: RIMVISUALS-Launcher-UI
           path: test-output/*
           if-no-files-found: ignore
+
+      - name: Publish security evidence even when a check fails
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: RIMVISUALS-Security-Evidence
+          path: |
+            security-output/*
+            docs/security/*
+          if-no-files-found: error
+          retention-days: 30
