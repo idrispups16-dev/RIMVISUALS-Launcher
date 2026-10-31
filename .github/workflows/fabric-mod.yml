@@ -36,3 +36,4 @@ jobs:
             smoke.log
             mod/build/test-results/test/*.xml
             mod/run/logs/latest.log
+            mod/run/screenshots/*.png
