@@ -28,8 +28,8 @@ import java.util.function.DoubleConsumer;
 
 /** RIMVISUALS menu: tabs, search, module cards with settings, color editor, profiles. */
 public class ClickGui extends Screen {
-    private static final String[] TABS = {"HUD", "Visuals", "Interface", "Profiles"};
-    private static final Module.Category[] CATS = {Module.Category.HUD, Module.Category.VISUALS, Module.Category.INTERFACE};
+    private static final String[] TABS = {"HUD", "Visuals", "Interface", "Optimization", "Profiles"};
+    private static final Module.Category[] CATS = {Module.Category.HUD, Module.Category.VISUALS, Module.Category.INTERFACE, Module.Category.OPTIMIZATION};
     private static final int NONE = Integer.MIN_VALUE;
 
     private static final class Hit {
@@ -188,7 +188,7 @@ public class ClickGui extends Screen {
             boolean any = false;
             for (Module m : Modules.ALL) if (matches(m, q)) { moduleCard(c, m, mx, my); any = true; }
             if (!any) infoRow(c, "No results");
-        } else if (tab < 3) {
+        } else if (tab < CATS.length) {
             for (Module m : Modules.ALL) if (m.category == CATS[tab]) moduleCard(c, m, mx, my);
         } else {
             profilesTab(c, mx, my);

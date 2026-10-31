@@ -18,7 +18,7 @@ public final class PulseGlow extends Module {
 
     public void render(DrawContext c, int w, int h) {
         float t = (System.currentTimeMillis() % 100000L) / 1000f;
-        float p = 0.5f + 0.5f * (float) Math.sin(t * speed.value * Math.PI);
+        float p = xyz.rimvisuals.core.Modules.PERFORMANCE.reducedMotion.value ? 0.5f : 0.5f + 0.5f * (float) Math.sin(t * speed.value * Math.PI);
         float a = (float) intensity.value * (0.6f + 0.4f * p);
         int base = useAccent.value ? (Theme.accent() & 0xFFFFFF) : color.rgb;
         int layers = RimPlatform.mobile() ? 6 : 10;

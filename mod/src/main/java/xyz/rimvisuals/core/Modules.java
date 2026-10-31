@@ -17,12 +17,13 @@ import java.util.stream.Stream;
 public final class Modules {
     private static final Logger LOG = LoggerFactory.getLogger("rimvisuals");
 
+    public static final PerformanceOptions PERFORMANCE = new PerformanceOptions();
     public static final InterfaceModule UI = new InterfaceModule();
     public static final InfoHud INFO = new InfoHud();
     public static final Watermark WATERMARK = new Watermark();
     public static final PulseGlow PULSE = new PulseGlow();
     public static final ParticleOverlay PARTICLES = new ParticleOverlay();
-    public static final List<Module> ALL = List.of(INFO, WATERMARK, PULSE, PARTICLES, UI);
+    public static final List<Module> ALL = List.of(INFO, WATERMARK, PULSE, PARTICLES, UI, PERFORMANCE);
     public static final List<HudModule> HUD = List.of(INFO, WATERMARK);
 
     private Modules() {}

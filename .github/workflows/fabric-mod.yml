@@ -21,5 +21,5 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: RIMVISUALS-Fabric-1.21.11
-          path: mod/build/libs/rimvisuals-0.2.0.jar
+          path: mod/build/libs/rimvisuals-*.jar
           if-no-files-found: error

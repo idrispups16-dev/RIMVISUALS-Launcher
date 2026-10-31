@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Module {
-    public enum Category { HUD, VISUALS, INTERFACE }
+    public enum Category { HUD, VISUALS, INTERFACE, OPTIMIZATION }
 
     public final String id, name, description;
     public final Category category;

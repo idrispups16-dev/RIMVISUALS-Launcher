@@ -29,6 +29,7 @@ public class RimVisualsClient implements ClientModInitializer {
         menuKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
                 "key.rimvisuals.menu", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_RIGHT_SHIFT, KeyBinding.Category.MISC));
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
+            Modules.PERFORMANCE.applyPreset();
             LauncherSettings.tick();
             while (menuKey.wasPressed()) {
                 if (client.currentScreen == null) client.setScreen(new ClickGui());

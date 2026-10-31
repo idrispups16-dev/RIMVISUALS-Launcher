@@ -21,7 +21,9 @@ public final class InfoHud extends HudModule {
 
     public InfoHud() { super("info_hud", "Info HUD", "FPS, ping and coordinates", 6, 6); }
 
+    private long nextRefresh;
     private void build(MinecraftClient mc) {
+        long now=System.nanoTime();if(now<nextRefresh)return;nextRefresh=now+100_000_000;
         lines.clear();
         if (fps.value) lines.add("FPS: " + mc.getCurrentFps());
         if (ping.value) {

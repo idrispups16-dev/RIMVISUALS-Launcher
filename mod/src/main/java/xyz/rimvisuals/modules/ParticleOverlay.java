@@ -6,6 +6,8 @@ import xyz.rimvisuals.core.Module;
 import xyz.rimvisuals.core.ParticleField;
 import xyz.rimvisuals.core.Setting;
 import xyz.rimvisuals.core.Theme;
+import xyz.rimvisuals.core.Modules;
+import net.minecraft.client.MinecraftClient;
 
 public final class ParticleOverlay extends Module {
     public final Setting.Num count = add(new Setting.Num("Count", 30, 5, 80, 1));
@@ -17,7 +19,7 @@ public final class ParticleOverlay extends Module {
 
     public ParticleOverlay() { super("particles", "Particle Effects", "Decorative floating particles", Category.VISUALS); }
 
-    private int n() { int v = (int) count.value; return RimPlatform.mobile() ? Math.min(v, 24) : v; }
+    private int n() { int v = (int) count.value; return Modules.PERFORMANCE.particles(RimPlatform.mobile()?Math.min(v,24):v,MinecraftClient.getInstance().getCurrentFps()); }
 
     public void drawOverlay(DrawContext c, int w, int h) {
         hudField.render(c, w, h, n(), (int) size.value, Theme.accent() & 0xFFFFFF, 0.8f);
