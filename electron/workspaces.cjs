@@ -25,6 +25,6 @@ class Workspaces {
  remove(id){if(id==='default')throw Error('Основной профиль сохраняется для совместимости');if(!this.state.profiles.some(p=>p.id===id))throw Error('Профиль не найден');this.state.profiles=this.state.profiles.filter(p=>p.id!==id);if(this.state.selectedId===id)this.state.selectedId='default';this.persist();return this.get();}
  export(){const p=this.current();return JSON.stringify({schemaVersion:2,name:p.name,...selection(p),width:p.width??1280,height:p.height??720,fullscreen:p.fullscreen??false,ram:p.ram,visuals:p.visuals},null,2);}
  import(text){if(typeof text!=='string'||text.length>65536)throw Error('Профиль слишком большой');let v;try{v=JSON.parse(text);}catch{throw Error('Некорректный JSON профиля');}if(!v||![1,2].includes(v.schemaVersion)||(v.schemaVersion===1&&(v.minecraftVersion!=='1.21.11'||v.fabricLoaderVersion!=='0.19.3')))throw Error('Профиль несовместим с текущим встроенным модом');selection(v);const opts=options({...v,javaPath:''});this.create(v.name,selection(v));Object.assign(this.current(),opts,{accountId:null});this.persist();this.bridge();return this.get();}
- reset(){Object.assign(this.current(),{ram:4,javaPath:'',visuals:{...VISUALS}});this.persist();this.bridge();return this.get();}
+ reset(){Object.assign(this.current(),{ram:4,javaPath:'',width:1280,height:720,fullscreen:false,visuals:{...VISUALS}});this.persist();this.bridge();return this.get();}
 }
 module.exports={Workspaces,VISUALS,options,validId};
