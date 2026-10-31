@@ -1,6 +1,6 @@
 {
   "name": "rimvisuals-launcher",
-  "version": "0.2.0-rebuild.2",
+  "version": "0.2.0-rebuild.3",
   "private": true,
   "type": "module",
   "main": "electron/main.cjs",
