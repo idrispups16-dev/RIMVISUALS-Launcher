@@ -31,7 +31,7 @@ A registered app is not a guarantee of access to Xbox/Minecraft services. If Mic
 
 Install RIMVISUALS, enter the public Client ID, save, and choose Sign in with Microsoft. Complete sign-in only on Microsoft's browser page. On return, the launcher must show the Minecraft profile name. PLAY then verifies entitlements and profile again, installs verified game files/components in APPDATA/RIMVISUALS and spawns Java 21 directly. Existing .minecraft files are not used or modified.
 
-Java 21 x64 must currently be installed and selected or available in PATH; automatic Java runtime provisioning remains pending. The correct Java version and x64 architecture are checked before spawning Minecraft.
+If no Java path is set, the launcher installs a verified Java 21 x64 runtime into its own folder on first PLAY. The Java version and x64 architecture are always checked before spawning Minecraft.
 
 ## Verified separately in CI
 
