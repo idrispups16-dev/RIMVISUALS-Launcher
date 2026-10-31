@@ -30,6 +30,7 @@ public class RimVisualsClient implements ClientModInitializer {
                 "key.rimvisuals.menu", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_RIGHT_SHIFT, KeyBinding.Category.MISC));
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             Modules.PERFORMANCE.applyPreset();
+            Modules.VIEWMODEL.presets();
             LauncherSettings.tick();
             while (menuKey.wasPressed()) {
                 if (client.currentScreen == null) client.setScreen(new ClickGui());

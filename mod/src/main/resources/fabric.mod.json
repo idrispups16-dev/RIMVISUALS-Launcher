@@ -6,6 +6,18 @@
   "description": "Cosmetic visual customization for Minecraft: HUD, effects and a settings menu. No gameplay advantages.",
   "license": "All Rights Reserved",
   "environment": "client",
-  "entrypoints": { "client": ["xyz.rimvisuals.RimVisualsClient"] },
-  "depends": { "fabricloader": ">=0.19.3", "minecraft": "~1.21.11", "java": ">=21", "fabric-api": "*" }
+  "entrypoints": {
+    "client": [
+      "xyz.rimvisuals.RimVisualsClient"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.19.3",
+    "minecraft": "~1.21.11",
+    "java": ">=21",
+    "fabric-api": "*"
+  },
+  "mixins": [
+    "rimvisuals.mixins.json"
+  ]
 }
