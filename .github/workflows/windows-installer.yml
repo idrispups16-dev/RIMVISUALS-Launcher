@@ -16,6 +16,8 @@ jobs:
           node-version: '22'
       - name: Install dependencies
         run: npm install --no-audit --no-fund
+      - name: Test launcher discovery
+        run: node --test tests/launcher.cjs
       - name: Validate application
         run: npm run check
       - name: Build Windows installer
