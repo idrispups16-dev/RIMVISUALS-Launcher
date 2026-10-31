@@ -9,7 +9,7 @@ import net.minecraft.registry.tag.ItemTags;
 public final class Viewmodel extends Module {
  public final class Pose {
   public final Setting.Num x,y,z,scale,rx,ry,rz;
-  Pose(String prefix){x=add(new Setting.Num(prefix+" X",0,-2,2,.01));y=add(new Setting.Num(prefix+" Y",0,-2,2,.01));z=add(new Setting.Num(prefix+" Z",0,-2,2,.01));scale=add(new Setting.Num(prefix+" Scale",1,.1,2,.01));rx=add(new Setting.Num(prefix+" Rotation X",0,-180,180,1));ry=add(new Setting.Num(prefix+" Rotation Y",0,-180,180,1));rz=add(new Setting.Num(prefix+" Rotation Z",0,-180,180,1));}
+  Pose(String prefix){x=add(new Setting.Num(prefix+" X",0,-2,2,.01));y=add(new Setting.Num(prefix+" Y",0,-2,2,.01));z=add(new Setting.Num(prefix+(java.util.Set.of("Sword","Totem","Crystal","Food").contains(prefix)?" Category Z":" Z"),0,-2,2,.01));scale=add(new Setting.Num(prefix+" Scale",1,.1,2,.01));rx=add(new Setting.Num(prefix+" Rotation X",0,-180,180,1));ry=add(new Setting.Num(prefix+" Rotation Y",0,-180,180,1));rz=add(new Setting.Num(prefix+" Rotation Z",0,-180,180,1));}
  }
  public final Pose main=new Pose("Main hand"),off=new Pose("Off hand");
  public final Setting.Num swordZ=add(new Setting.Num("Sword Z",0,-1,1,.01)),totemZ=add(new Setting.Num("Totem Z",0,-1,1,.01)),crystalZ=add(new Setting.Num("Crystal Z",0,-1,1,.01)),foodZ=add(new Setting.Num("Food Z",0,-1,1,.01));

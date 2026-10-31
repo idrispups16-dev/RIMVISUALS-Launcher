@@ -4,7 +4,7 @@ Branch: `integration/launcher-visuals`; source snapshots:
 - PR #2: `b5cf39c86c35dcd766b44d4bbe48d23ae6e8401c` (`feature/launcher-gpt`).
 - PR #3: `327d604fb2e81c7b426ba3e1705faa3073eb5e9f` (`feature/visuals-claude`).
 
-Three merge conflicts: Java runtime, Java tests, launcher UI. Kept PR #2's bounded downloads/extraction, rollback, PKCE UI and tests; retained PR #3's visual implementation. No changes to Claude's module or render-hook implementation. Source branches and main are not updated.
+Three merge conflicts: Java runtime, Java tests, launcher UI. Kept PR #2's bounded downloads/extraction, rollback, PKCE UI and tests; retained PR #3's visual implementation. No changes to Claude's module or render-hook implementation. A pre-existing Viewmodel config collision discovered by the smoke test is fixed: legacy sword_z/totem_z/crystal_z/food_z remain depth-offset keys; separate category Z settings now use *_category_z. Other category transform keys are unchanged. The old colliding file could store only one value for each pair; the unavailable second value cannot be recovered automatically. Source branches and main are not updated.
 
 ## Version contract
 

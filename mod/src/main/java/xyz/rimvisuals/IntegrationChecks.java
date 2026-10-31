@@ -10,6 +10,7 @@ public final class IntegrationChecks {
   try{
    var keys=new HashSet<String>();
    for(var m:Modules.ALL){if(!keys.add(m.id))throw new IllegalStateException("Duplicate module: "+m.id);var settings=new HashSet<String>();for(var s:m.settings)if(!settings.add(s.key()))throw new IllegalStateException("Duplicate setting: "+m.id+"."+s.key());}
+   var migration=new Properties();migration.setProperty("viewmodel.sword_z","0.2");migration.setProperty("viewmodel.sword_category_z","0.3");Modules.apply(migration);if(Math.abs(Modules.VIEWMODEL.swordZ.value-.2)>.00001||Math.abs(Modules.VIEWMODEL.sword.z.value-.3)>.00001)throw new IllegalStateException("Viewmodel depth migration failed");
    Modules.CRYSTAL_FADE.enabled=true;Modules.CRYSTAL_FADE.opacity.set(.5);Modules.PEARL_TRAILS.enabled=true;
    var legacy=new Properties();legacy.setProperty("pulse_glow.enabled","false");legacy.setProperty("particles.in-game_overlay","true");legacy.setProperty("interface.hud_scale","1.2");Modules.apply(legacy);
    if(!Modules.CRYSTAL_FADE.enabled||Modules.CRYSTAL_FADE.opacity.value!=.5||!Modules.PEARL_TRAILS.enabled||Modules.PULSE.enabled||!Modules.PARTICLES.overlay.value||Math.abs(Modules.UI.hudScale.value-1.2)>.00001)throw new IllegalStateException("Legacy launcher configuration lost module settings");
