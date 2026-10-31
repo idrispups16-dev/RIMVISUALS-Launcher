@@ -102,7 +102,7 @@ jobs:
       - name: Validate application
         run: npm run check
       - name: Verify account and profile UI through real Electron IPC
-        run: node tests/electron-ui-smoke.cjs
+        run: node tests/ui/electron-smoke.cjs
       - name: Build Windows installer
         run: npm run dist:win
       - name: Verify packaged components

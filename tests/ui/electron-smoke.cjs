@@ -3,8 +3,8 @@ const {_electron}=require('playwright-core');const fs=require('node:fs/promises'
  const root=await fs.mkdtemp(path.join(os.tmpdir(),'rim-ui-smoke-'));let app;
  try{
   const base=path.join(root,'RIMVISUALS');await fs.mkdir(path.join(base,'saves'),{recursive:true});await fs.writeFile(path.join(base,'saves','existing-world'),'preserve');
-  app=await _electron.launch({args:[path.resolve('tests/ui-app-bootstrap.cjs')],env:{...process.env,RIM_UI_SMOKE_ROOT:root},timeout:60000});
-  const page=await app.firstWindow();const errors=[];page.on('pageerror',e=>errors.push(e.message));await page.setViewportSize({width:1240,height:810});
+  app=await _electron.launch({args:[path.resolve('tests/ui/app-bootstrap.cjs')],env:{...process.env,RIM_UI_SMOKE_ROOT:root},timeout:60000});
+  app.process().stderr.on('data',data=>{const text=data.toString();if(/Error|ERR_FILE|crash/i.test(text))console.error(text);});const page=await app.firstWindow();const errors=[];page.on('pageerror',e=>errors.push(e.message));await page.setViewportSize({width:1240,height:810});
   await page.getByRole('heading',{name:'Аккаунты',exact:true}).waitFor();await page.waitForFunction(async()=>!!(await window.rim.get()).minecraftPath);
   await page.getByRole('button',{name:'Добавить Microsoft-аккаунт',exact:true}).click();await page.waitForFunction(()=>document.querySelector('.toast')?.textContent.includes('Client ID'));
   await page.getByLabel('Имя локальной записи',{exact:true}).fill('UI Local');await page.getByRole('button',{name:'Добавить локальную запись',exact:true}).click();
