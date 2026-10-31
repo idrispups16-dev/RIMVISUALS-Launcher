@@ -1,7 +1,7 @@
 const fs=require('node:fs/promises'),path=require('node:path'),crypto=require('node:crypto');
 const {validClientId}=require('./pkce.cjs');
 async function diagnostics(root,resources,settings={},runtimeRoot=root){
- const report={schemaVersion:1,createdAt:new Date().toISOString(),launcherVersion:require('../package.json').version,minecraftVersion:'1.21.11',fabricLoaderVersion:'0.19.3',platform:process.platform,architecture:process.arch,ramGB:Number.isFinite(settings.ram)?settings.ram:null,javaMode:settings.javaPath?'custom':'managed',clientIdConfigured:validClientId(settings.microsoftClientId),components:[]};
+ const report={schemaVersion:1,createdAt:new Date().toISOString(),launcherVersion:require('../package.json').version,minecraftVersion:settings.minecraftVersion||'1.21.11',loader:settings.loader||'fabric',fabricLoaderVersion:settings.loader==='vanilla'?null:'0.19.3',rimVisuals:settings.rimVisuals!==false,platform:process.platform,architecture:process.arch,ramGB:Number.isFinite(settings.ram)?settings.ram:null,javaMode:settings.javaPath?'custom':'managed',clientIdConfigured:validClientId(settings.microsoftClientId),components:[]};
  // Intentionally never read account.enc, profiles, launch logs or arbitrary user paths.
  try{await fs.access(path.join(runtimeRoot,'runtime','java-21','bin','java.exe'));report.managedJavaPresent=true;}catch{report.managedJavaPresent=false;}
  try{
