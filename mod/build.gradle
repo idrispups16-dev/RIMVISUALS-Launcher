@@ -28,3 +28,9 @@ dependencies { testImplementation 'org.junit.jupiter:junit-jupiter:5.11.4'; test
 test { useJUnitPlatform() }
 
 if (project.hasProperty('rimSmoke')) { loom { runs { client { vmArg '-Drimvisuals.smoke=true' } } } }
+
+// Stable archive metadata lets launcher-only rebuilds retain the same JAR digest.
+tasks.withType(org.gradle.api.tasks.bundling.AbstractArchiveTask).configureEach {
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+}

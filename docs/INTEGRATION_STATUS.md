@@ -10,8 +10,8 @@ Three merge conflicts: Java runtime, Java tests, launcher UI. Kept PR #2's bound
 
 | Component | Integration value |
 |---|---|
-| Launcher | 0.2.0-integration.1 |
-| RIMVISUALS JAR | 0.3.0-integration.1 |
+| Launcher | 0.2.0-integration.2 |
+| RIMVISUALS JAR | 0.3.0-integration.2 |
 | Minecraft / Java | 1.21.11 / 21 x64 |
 | Fabric Loader / API | 0.19.3 / 0.141.6+1.21.11 |
 | Yarn / Gradle / Loom | 1.21.11+build.6 / 9.2.1 / 1.14.10 |
@@ -24,8 +24,10 @@ Existing launcher fields still map only Pulse Glow, decorative Particles, Waterm
 
 ## Validation
 
-- 45 Node tests and production TypeScript/Vite build locally.
+- 48 Node tests and production TypeScript/Vite build locally.
 - Windows CI builds and embeds the JAR from this exact commit, checks expected new module classes and metadata, verifies actual installation/reinstallation and config preservation, downloads and runs Java 21, exercises native encrypted storage, installs Minecraft/Fabric into temporary storage, packages EXE and performs an isolated silent NSIS installation with installed-file hash checks.
 - Fabric CI runs Gradle/JUnit and client startup/GUI/mixin audit plus the configuration assertions.
 
 Compilation, title/GUI smoke and silent NSIS installation do not prove Microsoft sign-in, visual appearance in a world, performance or successful licensed game launch on the owner's Windows PC. Keep the integration PR in draft. No changes to the production website or existing .minecraft.
+
+After the first successful integration CI, launcher diagnostics were added: the home-screen button writes logs/diagnostics.json with component versions and missing/verified/modified status. It does not read account.enc or export Client ID, tokens, profile names or custom Java paths. It does not claim game launch success or FPS measurements.
