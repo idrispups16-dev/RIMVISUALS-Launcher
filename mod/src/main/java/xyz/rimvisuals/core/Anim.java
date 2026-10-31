@@ -9,6 +9,7 @@ public final class Anim {
 
     public float to(float target, float speed) {
         long now = System.nanoTime();
+        if(Modules.PERFORMANCE.reducedMotion.value){last=now;return value=target;}
         float dt = Math.min(0.05f, (now - last) / 1e9f);
         last = now;
         float k = 1f - (float) Math.exp(-speed * Modules.UI.animSpeed() * dt);
