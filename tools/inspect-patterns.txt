@@ -1,1 +1,1 @@
-EndCrystalEntityRenderer.java EndCrystalEntityRenderState.java OverlayTexture.java LivingEntityRenderer.java LivingEntityRenderState.java GameRenderer.java EntityRenderer.java ParticleManager.java
+InGameOverlayRenderer.java OrderedRenderCommandQueue.java EntityRenderState.java EntityRenderDispatcher.java
