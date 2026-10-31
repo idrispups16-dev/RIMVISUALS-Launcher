@@ -5,3 +5,7 @@ release/
 mod/.gradle/
 mod/build/
 mod/run/
+security-output/
+original-installer/
+original-extracted/
+original-application/

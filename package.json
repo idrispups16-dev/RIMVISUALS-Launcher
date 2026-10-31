@@ -1,6 +1,6 @@
 {
   "name": "rimvisuals-launcher",
-  "version": "0.2.0-versions.1",
+  "version": "0.2.0-security.1",
   "private": true,
   "type": "module",
   "main": "electron/main.cjs",
@@ -12,21 +12,22 @@
     "check": "npm run build"
   },
   "dependencies": {
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "lucide-react": "^0.468.0",
-    "framer-motion": "^12.0.0",
-    "adm-zip": "0.5.16"
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "lucide-react": "0.468.0",
+    "framer-motion": "12.43.0",
+    "adm-zip": "0.6.1"
   },
   "devDependencies": {
-    "typescript": "^5.7.3",
-    "vite": "^6.0.0",
-    "@vitejs/plugin-react": "^4.3.4",
-    "@types/react": "^19.0.0",
-    "@types/react-dom": "^19.0.0",
-    "electron": "^33.0.0",
-    "electron-builder": "^25.1.8",
-    "playwright-core": "1.57.0"
+    "typescript": "5.9.3",
+    "vite": "8.3.5",
+    "@vitejs/plugin-react": "6.1.2",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "electron": "45.2.1",
+    "electron-builder": "26.18.0",
+    "playwright-core": "1.64.1",
+    "@electron/asar": "4.3.1"
   },
   "build": {
     "appId": "xyz.rimvisuals.launcher",
@@ -47,7 +48,9 @@
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "RIMVISUALS Launcher"
+      "shortcutName": "RIMVISUALS Launcher",
+      "perMachine": false,
+      "allowElevation": false
     },
     "artifactName": "RIMVISUALS-Setup-${version}.${ext}",
     "extraResources": [
@@ -55,6 +58,17 @@
         "from": "bundled",
         "to": "bundled"
       }
-    ]
+    ],
+    "copyright": "Copyright \u00a9 2026 RIMVISUALS contributors",
+    "electronFuses": {
+      "runAsNode": false,
+      "enableNodeOptionsEnvironmentVariable": false,
+      "enableNodeCliInspectArguments": false,
+      "enableEmbeddedAsarIntegrityValidation": true,
+      "onlyLoadAppFromAsar": true
+    }
+  },
+  "engines": {
+    "node": ">=22.12.0"
   }
 }

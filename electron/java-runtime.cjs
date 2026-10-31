@@ -21,7 +21,7 @@ function inside(root, relative) {
   const base = path.resolve(root);
   const p = path.resolve(base, relative);
   if (p !== base && !p.startsWith(base + path.sep)) throw Error('Unsafe runtime path');
-  return p;
+  return require('./owned-path.cjs').ownedPath(root,p);
 }
 
 function isJava21x64(output) {
@@ -122,7 +122,8 @@ async function ensureJava(root, report = () => {}, deps = {}) {
   if (existing && await probe(existing, run)) return existing;
 
   report('Java 21 не найдена — загружаю проверенную среду выполнения');
-  const meta = await (await fetchChecked(API_URL, API_HOSTS, fetchImpl, 45000)).json();
+  const metadata=await fetchChecked(API_URL, API_HOSTS, fetchImpl, 45000);
+  const meta=metadata.body?JSON.parse((await require('./bounded-response.cjs').readLimited(metadata,8*1024*1024)).toString('utf8')):await metadata.json();
   const release = pickRelease(meta);
 
   const response = await fetchChecked(release.link, DOWNLOAD_HOSTS, fetchImpl, 180000);
