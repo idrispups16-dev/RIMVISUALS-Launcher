@@ -2,7 +2,7 @@ param([Parameter(Mandatory=$true)][string]$Target,[Parameter(Mandatory=$true)][s
 $ErrorActionPreference='Stop'
 New-Item -ItemType Directory -Force -Path (Split-Path $Report) | Out-Null
 $result=[ordered]@{schemaVersion=1;startedAt=(Get-Date).ToUniversalTime().ToString('o');status='unavailable';target=$Target;signatures=@();detections=@()}
-$scanRoot=Join-Path $env:ProgramData ('RIMVISUALS-security-scan-'+[guid]::NewGuid())
+$scanRoot=$null
 try {
   $files=@(Get-ChildItem -LiteralPath $Target -File -Recurse)
   if(!$files.Count){throw 'No files available for scanning'}
@@ -16,11 +16,20 @@ try {
   $result.engine=@{version=$status.AMEngineVersion;product=$status.AMProductVersion;signatureVersion=$status.AntivirusSignatureVersion;signatureUpdated=[string]$status.AntivirusSignatureLastUpdated;antivirusEnabled=$status.AntivirusEnabled}
   if(!$status.AMServiceEnabled -or !$status.AntivirusEnabled){throw 'Defender antivirus is not enabled'}
   if(((Get-Date)-$status.AntivirusSignatureLastUpdated).TotalDays -gt 3){throw 'Defender signatures are more than three days old'}
+  $preferences=Get-MpPreference
+  $result.runnerExclusions=@{paths=@($preferences.ExclusionPath);extensions=@($preferences.ExclusionExtension)}
+  if(@($preferences.ExclusionExtension | Where-Object {$_ -in 'exe','.exe','*'}).Count){throw 'Executable extension excluded by runner policy'}
+  foreach($base in @('D:\','C:\Users\Public\Documents',$env:ProgramData)){
+    if(!(Test-Path -LiteralPath $base)){continue}
+    $candidate=Join-Path $base ('RIMVISUALS-security-scan-'+[guid]::NewGuid())
+    $excludedPath=$false
+    foreach($excluded in @($preferences.ExclusionPath)){if($excluded -and ($candidate -like $excluded -or $candidate.StartsWith($excluded.TrimEnd('\')+'\',[StringComparison]::OrdinalIgnoreCase))){$excludedPath=$true;break}}
+    if(!$excludedPath){$scanRoot=$candidate;break}
+  }
+  if(!$scanRoot){throw 'No non-excluded scan directory is available; no clean verdict can be claimed'}
+  $result.actualScanDirectory=$scanRoot
   New-Item -ItemType Directory -Path $scanRoot | Out-Null
   Copy-Item -LiteralPath $Target -Destination (Join-Path $scanRoot 'payload') -Recurse
-  $preferences=Get-MpPreference
-  foreach($excluded in @($preferences.ExclusionPath)){if($excluded -and ($scanRoot -like $excluded -or $scanRoot.StartsWith($excluded.TrimEnd('\')+'\',[StringComparison]::OrdinalIgnoreCase))){throw 'Scan directory is excluded by runner policy'}}
-  if(@($preferences.ExclusionExtension | Where-Object {$_ -in 'exe','.exe','*'}).Count){throw 'Executable extension excluded by runner policy'}
   $before=@(Get-MpThreatDetection | ForEach-Object DetectionID)
   $mp=Get-ChildItem "$env:ProgramData\Microsoft\Windows Defender\Platform\*\MpCmdRun.exe" | Sort-Object FullName -Descending | Select-Object -First 1
   if(!$mp){$mp=Get-Item "$env:ProgramFiles\Windows Defender\MpCmdRun.exe"}
@@ -34,5 +43,5 @@ try {
   $result.status='no-detection';$result.completedAt=(Get-Date).ToUniversalTime().ToString('o')
 } catch {$result.error=$_.Exception.Message;throw} finally {
   $result | ConvertTo-Json -Depth 12 | Set-Content -LiteralPath $Report -Encoding utf8
-  if(Test-Path -LiteralPath $scanRoot){Remove-Item -LiteralPath $scanRoot -Recurse -Force}
+  if($scanRoot -and (Test-Path -LiteralPath $scanRoot)){Remove-Item -LiteralPath $scanRoot -Recurse -Force}
 }

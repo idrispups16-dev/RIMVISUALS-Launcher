@@ -133,6 +133,10 @@ jobs:
           if ($scan.status -eq 'no-detection') { node scripts/security/package-evidence.mjs --original }
           else { Write-Output 'Original inspection withheld: no completed clean Defender scan' }
 
+      - name: Scan original extracted application and expanded ASAR sources
+        continue-on-error: true
+        shell: pwsh
+        run: ./scripts/security/scan-windows.ps1 -Target original-application -Report security-output/original-unpacked-defender.json
       - name: Test launcher discovery
         run: node --test tests/*.cjs
       - name: Verify automatic Java download and reuse
@@ -219,7 +223,7 @@ jobs:
       - name: Require completed security evidence before publishing installer
         shell: pwsh
         run: |
-          foreach ($kind in @('original','new')) {
+          foreach ($kind in @('original','original-unpacked','new')) {
             $scan = Get-Content "security-output/$kind-defender.json" -Raw | ConvertFrom-Json
             if ($scan.status -ne 'no-detection') { throw "Security review incomplete: $kind $($scan.status)" }
           }
