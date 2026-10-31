@@ -40,3 +40,5 @@ An owner-registered/authorized Microsoft application and any necessary Minecraft
 Node tests cover multi-account isolation/logout/restart, migration failure, local-provider launch denial, profile settings/isolation, import validation, config/world preservation and coordinator locking. Windows CI additionally tests native multi-account encryption and the real selected-profile preparation path using a local record without OAuth; PLAY must fail before spawn. The authoritative Fabric build/smoke and NSIS install checks remain.
 
 These checks do not establish licensed login on the owner's PC, reaching a playable world, in-world correctness of visuals or FPS. The new branch/PR stays unmerged pending Windows testing.
+
+Windows CI also runs the actual Electron application through Playwright with a test-only bootstrap that sets appData to an isolated temporary directory. It exercises real IPC, missing Client ID handling, local record creation, PLAY gating, isolated profile creation, export/import and profile removal preserving files. Production main has no test-root override. A screenshot is uploaded as RIMVISUALS-Launcher-UI.
