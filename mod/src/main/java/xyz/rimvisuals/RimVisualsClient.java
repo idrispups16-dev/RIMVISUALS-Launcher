@@ -33,6 +33,7 @@ public class RimVisualsClient implements ClientModInitializer {
             SmokeTest.tick(client);
             xyz.rimvisuals.core.CombatEvents.tick(client);
             xyz.rimvisuals.core.RimOverlays.tick();
+            xyz.rimvisuals.core.Trails.tick(client);
             Modules.PERFORMANCE.applyPreset();
             Modules.VIEWMODEL.presets();
             LauncherSettings.tick();

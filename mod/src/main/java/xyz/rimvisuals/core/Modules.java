@@ -26,6 +26,9 @@ public final class Modules {
     public static final HitParticles HIT_PARTICLES=new HitParticles();
     public static final CriticalParticles CRIT_PARTICLES=new CriticalParticles();
     public static final DamageParticles DAMAGE_PARTICLES=new DamageParticles();
+    public static final PearlTrails PEARL_TRAILS=new PearlTrails();
+    public static final ProjectileTrails PROJECTILE_TRAILS=new ProjectileTrails();
+    public static final SwordTrails SWORD_TRAILS=new SwordTrails();
     public static final ArmorHud ARMOR_HUD=new ArmorHud();
     public static final TargetHud TARGET_HUD=new TargetHud();
     public static final TotemScale TOTEM_SCALE=new TotemScale();
@@ -35,7 +38,7 @@ public final class Modules {
     public static final Watermark WATERMARK = new Watermark();
     public static final PulseGlow PULSE = new PulseGlow();
     public static final ParticleOverlay PARTICLES = new ParticleOverlay();
-    public static final List<Module> ALL = List.of(INFO, WATERMARK, PULSE, PARTICLES, UI, PERFORMANCE, VIEWMODEL, SWING, HAND_LIGHTING, CRYSTAL_SCALE, CRYSTAL_FADE, TOTEM_SCALE, HIT_COLOR, HIT_PARTICLES, CRIT_PARTICLES, DAMAGE_PARTICLES, ARMOR_HUD, TARGET_HUD);
+    public static final List<Module> ALL = List.of(INFO, WATERMARK, PULSE, PARTICLES, UI, PERFORMANCE, VIEWMODEL, SWING, HAND_LIGHTING, CRYSTAL_SCALE, CRYSTAL_FADE, TOTEM_SCALE, HIT_COLOR, HIT_PARTICLES, CRIT_PARTICLES, DAMAGE_PARTICLES, PEARL_TRAILS, PROJECTILE_TRAILS, SWORD_TRAILS, ARMOR_HUD, TARGET_HUD);
     public static final List<HudModule> HUD = List.of(INFO, WATERMARK, ARMOR_HUD, TARGET_HUD);
 
     private static final Properties DEFAULTS=snapshot();
