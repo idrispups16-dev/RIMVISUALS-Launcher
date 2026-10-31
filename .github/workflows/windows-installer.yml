@@ -2,7 +2,7 @@ name: RIMVISUALS Windows Installer
 on:
   workflow_dispatch:
   push:
-    branches: [main, 'rebuild/**', 'feature/launcher-gpt', 'integration/launcher-visuals']
+    branches: [main, 'rebuild/**', 'feature/launcher-gpt', 'feature/accounts-and-profiles', 'integration/launcher-visuals']
     paths-ignore: ['mod/**', '.github/workflows/fabric-mod.yml']
 permissions:
   contents: read
@@ -101,6 +101,8 @@ jobs:
         run: node tests/install-smoke.js
       - name: Validate application
         run: npm run check
+      - name: Verify account and profile UI through real Electron IPC
+        run: node tests/ui/electron-smoke.cjs
       - name: Build Windows installer
         run: npm run dist:win
       - name: Verify packaged components
@@ -160,3 +162,9 @@ jobs:
           path: bundled/manifest.json
           if-no-files-found: error
           retention-days: 30
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: RIMVISUALS-Launcher-UI
+          path: test-output/*.png
+          if-no-files-found: ignore
