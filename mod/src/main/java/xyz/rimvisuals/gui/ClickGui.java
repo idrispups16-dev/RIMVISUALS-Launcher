@@ -202,7 +202,7 @@ public class ClickGui extends Screen {
         maxScroll = Math.max(0, total - (cbot - ctop));
 
         c.disableScissor();
-        if(!tooltip.isEmptipY()){var lines=textRenderer.wrapLines(Text.literal(tooltip),Math.max(120,ww-30));int tipY=wy+wh+3;if(tipY+lines.size()*10>vh)tipY=wy+wh-lines.size()*10-5;c.fill(wx+5,tipY-3,wx+ww-5,tipY+lines.size()*10+2,0xee080810);for(var line:lines){c.drawText(textRenderer,line,wx+10,tipY,Theme.text(),false);tipY+=10;}}
+        if(!tooltip.isEmpty()){var lines=textRenderer.wrapLines(Text.literal(tooltip),Math.max(120,ww-30));int tipY=wy+wh+3;if(tipY+lines.size()*10>vh)tipY=wy+wh-lines.size()*10-5;c.fill(wx+5,tipY-3,wx+ww-5,tipY+lines.size()*10+2,0xee080810);for(var line:lines){c.drawText(textRenderer,line,wx+10,tipY,Theme.text(),false);tipY+=10;}}
         ms.popMatrix();
     }
 
