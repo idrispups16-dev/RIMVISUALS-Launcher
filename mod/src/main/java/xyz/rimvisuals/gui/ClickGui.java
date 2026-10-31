@@ -123,6 +123,7 @@ public class ClickGui extends Screen {
     // ---------- main render ----------
     @Override
     public void render(DrawContext c, int mouseX, int mouseY, float delta) {
+        if(Boolean.getBoolean("rimvisuals.smoke"))xyz.rimvisuals.SmokeTest.frames++;
         mob = RimPlatform.mobile();
         s = (float) Modules.UI.guiScale.value;
         s = Math.max(0.3f, Math.min(s, Math.min(width / 320f, height / 190f)));

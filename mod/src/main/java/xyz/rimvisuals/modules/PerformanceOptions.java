@@ -11,6 +11,7 @@ public final class PerformanceOptions extends Module {
  public final Setting.Mode preset=add(new Setting.Mode("Preset",0,"Low-End","Balanced","Ultra","Custom"));
  private int applied=-1;
  public PerformanceOptions(){super("performance","Performance","CPU submission timings, bounded effects; no GPU/FPS claims",Category.OPTIMIZATION);toggleable=false;}
+ public void seedPreset(){applied=preset.index;}
  public void applyPreset(){if(applied==preset.index)return;applied=preset.index;if(applied==3)return;safe.value=applied==0;particleLimit.set(applied==0?8:applied==1?24:64);}
  public int particles(int requested,int fps){if(safe.value)return 0;int n=Math.min(requested,(int)particleLimit.value);if(adaptive.value&&fps>0&&fps<targetFps.value)n=(int)(n*Math.max(.15,fps/targetFps.value));return Math.max(0,n);}
 }

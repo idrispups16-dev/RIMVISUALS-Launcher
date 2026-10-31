@@ -72,7 +72,7 @@ public final class Modules {
     }
 
     public static void save() { write(dir().resolve("config.properties"), snapshot()); }
-    public static void load() { apply(read(dir().resolve("config.properties"))); }
+    public static void load() { apply(read(dir().resolve("config.properties"))); PERFORMANCE.seedPreset(); VIEWMODEL.seedPreset(); }
 
     public static String cleanName(String n) {
         String s = n == null ? "" : n.replaceAll("[^A-Za-z0-9_-]", "");
