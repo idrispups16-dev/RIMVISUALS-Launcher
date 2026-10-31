@@ -8,7 +8,7 @@
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "desktop": "npm run build && electron .",
-    "dist:win": "npm run build && electron-builder --win nsis",
+    "dist:win": "npm run build && electron-builder --win nsis --publish never",
     "check": "npm run build"
   },
   "dependencies": {
@@ -50,3 +50,4 @@
     "artifactName": "RIMVISUALS-Setup-${version}.${ext}"
   }
 }
+
