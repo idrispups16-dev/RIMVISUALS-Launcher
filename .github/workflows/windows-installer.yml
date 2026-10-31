@@ -51,6 +51,25 @@ jobs:
         run: npm run check
       - name: Build Windows installer
         run: npm run dist:win
+      - name: Verify packaged components
+        shell: python
+        run: |
+          from pathlib import Path
+          import json,hashlib,zipfile
+          resource=Path('release/win-unpacked/resources')
+          assert (resource/'app.asar').is_file()
+          bundle=resource/'bundled'
+          files=json.loads((bundle/'manifest.json').read_text())['files']
+          assert len(files)==2
+          ids=set()
+          for entry in files:
+            p=bundle/entry['name']
+            assert hashlib.sha256(p.read_bytes()).hexdigest()==entry['sha256']
+            with zipfile.ZipFile(p) as z:
+              mod=json.loads(z.read('fabric.mod.json'));ids.add(mod['id'])
+              assert '1.21.11' in mod['depends']['minecraft']
+          assert ids=={'rimvisuals','fabric-api'}
+          print('RIM_PACKAGE_OK: engine and Fabric API are embedded and verified')
       - name: Verify EXE output
         shell: pwsh
         run: |
