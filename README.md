@@ -1,26 +1,20 @@
-# RIMVISUALS Launcher 0.1.5 — Windows source
+# RIMVISUALS Launcher 0.1.6 + Fabric mod 0.2.0
 
-This is **source code**, not an already-built EXE. Minecraft Java 1.21.11 + Fabric is the target.
+Target: Windows 11, Minecraft Java 1.21.11, Fabric Loader 0.19.3, Fabric API 0.141.6+1.21.11, Java 21.
 
-## What works in the source
-- Electron desktop UI with Play / Visuals / HUD / Profiles / Settings.
-- Local preferences saved in Electron userData (`settings.json`).
-- Detects `%APPDATA%\.minecraft`, installed Fabric version folder names, and presence of a JAR whose name begins with `rimvisuals`.
-- PLAY opens the **official Minecraft Launcher**, not Minecraft itself. It does not select the Fabric profile or bypass Microsoft authentication.
-- Settings for visual effects are **not yet connected to a Fabric mod**. The existing Java source targets Minecraft 1.21.4 and needs porting to 1.21.11, compilation, and in-game testing.
-- RAM/Java fields are stored only; they do not modify Minecraft launch parameters.
+The launcher opens the official Minecraft Launcher by executable or its discovered Store AUMID. It does not use minecraft://. Microsoft authentication and choosing/starting Fabric remain in the official launcher. Successful process creation/activation request does not prove the game started.
 
-## Get a Windows installer without Node.js on your PC
-1. Create a new GitHub repository dedicated to the launcher, or upload these files to an existing launcher repository (do not replace the website repository).
-2. Upload **contents of `RIMVISUALS-Launcher/`** including the hidden `.github/workflows/windows-installer.yml` directory, preserving the folder structure.
-3. Open Actions > RIMVISUALS Windows Installer > Run workflow.
-4. Wait for a green check. Download `RIMVISUALS-Windows-Installer` under Artifacts and extract it.
-5. Run `RIMVISUALS-Setup-0.1.5.exe`. This is unsigned and Windows SmartScreen may warn; only run software you trust.
+Settings and named launcher profiles are kept in Electron userData. Save also writes only `config/rimvisuals/launcher.json` in the selected Minecraft folder. The mod reads this on startup and every 40 client ticks when modified; switches control HUD, watermark, glow and particle overlay, plus accent and HUD scale. The in-game menu (Right Shift or RIMVISUALS button) retains its own detailed settings, HUD dragging and profiles. Existing mods, worlds and other configuration files are not removed.
 
-**No successful GitHub Actions run or Windows EXE has been verified yet.**
+## Install and test
+1. Download the latest successful Windows workflow artifact, extract and install EXE.
+2. Download the Fabric workflow artifact and extract rimvisuals-0.2.0.jar.
+3. With Minecraft closed, place that JAR and Fabric API 0.141.6+1.21.11 in your chosen instance's mods folder. If an older RIMVISUALS JAR exists, move only that older JAR outside mods to avoid duplicate mod IDs. Keep all other mods and worlds.
+4. Select that same instance directory in RIMVISUALS, save settings, open official launcher, sign in and manually choose Fabric 1.21.11 / Loader 0.19.3.
+5. Test in a disposable world: HUD, watermark, glow, particles, accent and scale; then change settings from the launcher and verify in-game updates. Right Shift opens the editor. Test profile saving/loading and persistence after restart.
 
-## Developer build
-Requires Node.js 22+ and npm: `npm install`, `npm run desktop`; on Windows `npm run dist:win`.
+Build success is verified separately from Windows installation, Store activation and in-game rendering. The latter require the user's Windows machine and a licensed authenticated Minecraft session. No in-game test is claimed by CI.
 
-## Security
-Do not upload Minecraft account/session files. The app does not read Microsoft tokens. Do not distribute a Windows installer until tested on Windows.
+## Build
+Launcher: Node 22, npm install, node --test tests/launcher.cjs, npm run check, npm run dist:win (Windows).
+Mod: Java 21, Gradle 9.2.1, gradle -p mod build. Loom 1.14.10, Yarn 1.21.11+build.6.
