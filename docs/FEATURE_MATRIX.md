@@ -5,11 +5,11 @@ Baseline: 0.3.0-alpha.2, commit 2142161915d9e755dff396b5f12e450193492449. This r
 | Category | Requirement | Audit status | Evidence / acceptance gap |
 |---|---|---|---|
 | Fade & Explosions | Anchor Fade | Отсутствует | No implementation/render hook found in baseline. |
-| Fade & Explosions | Crystal Fade | Отсутствует | No implementation/render hook found in baseline. |
+| Fade & Explosions | Crystal Fade | Требует проверки в Minecraft | Module crystal_fade: translucent entity layer + tint alpha (opacity 0.3–1, fade-in on spawn) via submitModel redirect. CI: compile, JUnit, startup. Not verified in-world (translucent sorting with other entities unchecked). |
 | Fade & Explosions | Anchor Scale | Отсутствует | No implementation/render hook found in baseline. |
-| Fade & Explosions | Crystal Scale | Отсутствует | No implementation/render hook found in baseline. |
-| Fade & Explosions | Totem Fade | Отсутствует | No implementation/render hook found in baseline. |
-| Fade & Explosions | Totem Scale | Отсутствует | No implementation/render hook found in baseline. |
+| Fade & Explosions | Crystal Scale | Требует проверки в Minecraft | Module crystal_scale: EndCrystalEntityRenderer render-matrix scale (0.4–1.6) plus optional grow-in from spawn age. CI: compile, JUnit curve tests, Minecraft startup with mixin applied. Not verified in-world; hitbox unchanged. |
+| Fade & Explosions | Totem Fade | Отсутствует | Floating item is drawn through ItemRenderState without an alpha parameter; true transparency needs a separate render path. Not implemented; Totem Scale's shrink option is not a fade. |
+| Fade & Explosions | Totem Scale | Требует проверки в Minecraft | Module totem_scale: scales the floating totem item (0.3–2) and optionally shrinks it away at the end of the 40-tick animation. CI: compile, startup. Not verified in-world. |
 | Fade & Explosions | Explosion Particles | Отсутствует | No implementation/render hook found in baseline. |
 | Fade & Explosions | Explosion Color | Отсутствует | No implementation/render hook found in baseline. |
 | Fade & Explosions | Explosion Glow | Отсутствует | No implementation/render hook found in baseline. |

@@ -3,7 +3,11 @@
   "package": "xyz.rimvisuals.mixin",
   "compatibilityLevel": "JAVA_21",
   "client": [
-    "HeldItemRendererMixin"
+    "HeldItemRendererMixin",
+    "EndCrystalEntityRendererMixin",
+    "EndCrystalEntityRenderStateMixin",
+    "InGameOverlayRendererMixin",
+    "OverlayTextureMixin"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -9,7 +9,7 @@ public final class SmokeTest {
  public static void tick(MinecraftClient client){if(!Boolean.getBoolean("rimvisuals.smoke"))return;
   if(!audited){audited=true;MixinEnvironment.getCurrentEnvironment().audit();}
   ++ticks;
-  if(ticks==41){var saved=xyz.rimvisuals.core.Modules.snapshot();try{
+  if(ticks==41){IntegrationChecks.run();var saved=xyz.rimvisuals.core.Modules.snapshot();try{
    var modules=xyz.rimvisuals.core.Modules.SWING;modules.enabled=true;xyz.rimvisuals.core.Modules.PERFORMANCE.reducedMotion.value=false;
    for(int style=1;style<=9;style++){modules.style.index=style;for(boolean main:new boolean[]{true,false}){var matrix=new net.minecraft.client.util.math.MatrixStack();modules.apply(matrix,main?1:-1,.4f,main);if(matrix.peek().getPositionMatrix().equals(new org.joml.Matrix4f(),.000001f))throw new IllegalStateException("Swing matrix unchanged: "+style);}}
    var view=xyz.rimvisuals.core.Modules.VIEWMODEL;view.enabled=true;view.smooth.value=false;view.main.x.value=.2;view.off.x.value=-.2;for(boolean main:new boolean[]{true,false}){var matrix=new net.minecraft.client.util.math.MatrixStack();view.apply(matrix,main,net.minecraft.item.ItemStack.EMPTY);if(matrix.peek().getPositionMatrix().equals(new org.joml.Matrix4f(),.000001f))throw new IllegalStateException("Viewmodel unchanged");}

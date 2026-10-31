@@ -2,7 +2,7 @@ name: RIMVISUALS Windows Installer
 on:
   workflow_dispatch:
   push:
-    branches: [main, 'rebuild/**', 'feature/launcher-gpt']
+    branches: [main, 'rebuild/**', 'feature/launcher-gpt', 'integration/launcher-visuals']
     paths-ignore: ['mod/**', '.github/workflows/fabric-mod.yml']
 permissions:
   contents: read
@@ -25,7 +25,7 @@ jobs:
         shell: python
         run: |
           from pathlib import Path
-          import hashlib,json,urllib.request,shutil
+          import hashlib,json,urllib.request,shutil,zipfile
           bundle=Path('bundled');bundle.mkdir(exist_ok=True)
           jars=list(Path('mod/build/libs').glob('rimvisuals-*.jar'))
           assert len(jars)==1
@@ -36,8 +36,15 @@ jobs:
           expected=urllib.request.urlopen(url+'.sha256').read().decode().strip().split()[0]
           assert hashlib.sha256(data).hexdigest()==expected
           (bundle/name).write_bytes(data)
-          files=[{'name':p.name,'sha256':hashlib.sha256(p.read_bytes()).hexdigest()} for p in bundle.glob('*.jar')]
-          (bundle/'manifest.json').write_text(json.dumps({'files':files}))
+          files=[]
+          for p in bundle.glob('*.jar'):
+            with zipfile.ZipFile(p) as z:
+              meta=json.loads(z.read('fabric.mod.json'))
+              if meta['id']=='rimvisuals':
+                for cls in ['CrystalFade','HitParticles','PearlTrails','ProjectileTrails','SwordTrails','ArmorHud','TargetHud']:
+                  assert 'xyz/rimvisuals/modules/'+cls+'.class' in z.namelist()
+            files.append({'name':p.name,'sha256':hashlib.sha256(p.read_bytes()).hexdigest(),'id':meta['id'],'version':meta['version']})
+          (bundle/'manifest.json').write_text(json.dumps({'schemaVersion':2,'minecraftVersion':'1.21.11','fabricLoaderVersion':'0.19.3','javaMajor':21,'launcherConfigSchema':1,'files':files}))
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -49,6 +56,8 @@ jobs:
         run: node tests/java-runtime-smoke.js
       - name: Verify native Windows token encryption
         run: npx --no-install electron tests/electron-storage-smoke.js
+      - name: Verify actual bundled component installation
+        run: node tests/components-smoke.js
       - name: Verify isolated Minecraft installation
         run: node tests/install-smoke.js
       - name: Validate application

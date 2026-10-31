@@ -26,10 +26,14 @@ public class RimVisualsClient implements ClientModInitializer {
     public void onInitializeClient() {
         Modules.load();
         LauncherSettings.load();
+        xyz.rimvisuals.core.CombatEvents.init();
         menuKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
                 "key.rimvisuals.menu", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_RIGHT_SHIFT, KeyBinding.Category.MISC));
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             SmokeTest.tick(client);
+            xyz.rimvisuals.core.CombatEvents.tick(client);
+            xyz.rimvisuals.core.RimOverlays.tick();
+            xyz.rimvisuals.core.Trails.tick(client);
             Modules.PERFORMANCE.applyPreset();
             Modules.VIEWMODEL.presets();
             LauncherSettings.tick();
