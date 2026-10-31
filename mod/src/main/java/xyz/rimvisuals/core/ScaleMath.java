@@ -21,4 +21,15 @@ public final class ScaleMath {
         float t = smoothstep((progress - s) / (1f - s));
         return 1f + (end - 1f) * t;
     }
+
+    /** Alpha 0..1 for an entity that fades in over {@code fadeTicks} and otherwise sits at {@code opacity}. */
+    public static float fadeAlpha(float ageTicks, float fadeTicks, float opacity) {
+        return clamp01(opacity) * growIn(ageTicks, fadeTicks);
+    }
+
+    /** Packs an alpha (0..1) into a white ARGB tint. */
+    public static int whiteTint(float alpha) {
+        int a = Math.round(clamp01(alpha) * 255f);
+        return (a << 24) | 0xFFFFFF;
+    }
 }

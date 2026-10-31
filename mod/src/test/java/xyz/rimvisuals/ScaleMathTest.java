@@ -25,4 +25,12 @@ class ScaleMathTest {
         assertEquals(0f, ScaleMath.shrinkOut(1f, 5f, 0f), 1e-6);
         assertEquals(1f, ScaleMath.shrinkOut(0f, -3f, 0f), 1e-6);
     }
+    @Test void fadeAlphaRampsToOpacityAndTintPacksAlpha() {
+        assertEquals(0f, ScaleMath.fadeAlpha(0, 10, .8f), 1e-6);
+        assertEquals(.8f, ScaleMath.fadeAlpha(10, 10, .8f), 1e-6);
+        assertEquals(.5f, ScaleMath.fadeAlpha(0, 0, .5f), 1e-6);
+        assertEquals(0xFFFFFFFF, ScaleMath.whiteTint(1f));
+        assertEquals(0x00FFFFFF, ScaleMath.whiteTint(0f));
+        assertEquals(0x80FFFFFF, ScaleMath.whiteTint(.5f));
+    }
 }
