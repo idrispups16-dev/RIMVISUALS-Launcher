@@ -6,7 +6,8 @@
     "HeldItemRendererMixin",
     "EndCrystalEntityRendererMixin",
     "EndCrystalEntityRenderStateMixin",
-    "InGameOverlayRendererMixin"
+    "InGameOverlayRendererMixin",
+    "OverlayTextureMixin"
   ],
   "injectors": {
     "defaultRequire": 1
