@@ -126,7 +126,7 @@ public class ClickGui extends Screen {
         if(Boolean.getBoolean("rimvisuals.smoke"))xyz.rimvisuals.SmokeTest.frames++;
         mob = RimPlatform.mobile();
         s = (float) Modules.UI.guiScale.value;
-        s = Math.max(0.3f, Math.min(s, Math.min(width / 320f, height / 190f)));
+        s = Math.max(0.3f, Math.min(s, Math.min(width / 500f, height / 310f)));
         vw = Math.round(width / s);
         vh = Math.round(height / s);
         double mx = mouseX / s, my = mouseY / s;
@@ -134,16 +134,16 @@ public class ClickGui extends Screen {
         fade = Math.max(0.02f, open.to(1f, 9f));
         int acc = Theme.accent();
 
-        c.fill(0, 0, width, height, Gfx.withAlpha(0x000000, 0.7f * fade));
+        c.fill(0, 0, width, height, Gfx.withAlpha(0x000000, (float)Modules.UI.backdrop.value * fade));
         if (Modules.PARTICLES.enabled && Modules.PARTICLES.menu.value) Modules.PARTICLES.drawMenu(c, width, height, fade);
 
         var ms = c.getMatrices();
         ms.pushMatrix();
         ms.scale(s, s);
 
-        int hdr = mob ? 32 : 26, sideW = mob ? 86 : 72, pad = 6;
-        ww = Math.min(vw - (mob ? 8 : 24), 440);
-        wh = Math.min(vh - (mob ? 8 : 24), 270);
+        int hdr = mob ? 32 : 26, sideW = mob ? 132 : 120, pad = 6;
+        ww = Math.min(vw - (mob ? 8 : 24), (int)Modules.UI.panelWidth.value);
+        wh = Math.min(vh - (mob ? 8 : 24), (int)Modules.UI.panelHeight.value);
         wx = (vw - ww) / 2;
         wy = (vh - wh) / 2 + Math.round((1f - fade) * 12);
 
@@ -183,6 +183,7 @@ public class ClickGui extends Screen {
         targetScroll = Math.max(0, Math.min(maxScroll, targetScroll));
         int scroll = Math.round(scrollA.to(targetScroll, 16f));
         cy = ctop - scroll;
+        c.enableScissor(Math.round(cx*s),Math.round(ctop*s),Math.round((cx+cw)*s),Math.round(cbot*s));
 
         String q = search.text.trim().toLowerCase(Locale.ROOT);
         if (!q.isEmpty()) {
@@ -197,6 +198,7 @@ public class ClickGui extends Screen {
         int total = cy - (ctop - scroll);
         maxScroll = Math.max(0, total - (cbot - ctop));
 
+        c.disableScissor();
         ms.popMatrix();
     }
 
@@ -224,7 +226,7 @@ public class ClickGui extends Screen {
             boolean hov = in(mx, my, cx, y, cw, h - 3);
             Gfx.round(c, cx, y, cw, h - 3, 5, f(hov ? Theme.cardHover() : Theme.card()));
             if (m.toggleable && m.enabled) c.fill(cx, y + 6, cx + 2, y + h - 9, f(Theme.accent()));
-            txt(c, m.name, cx + 9, y + (mob ? 7 : 5), Theme.text());
+            txt(c, textRenderer.trimToWidth(m.name,cw-65), cx + 9, y + (mob ? 7 : 5), Theme.text());
             int maxW = cw - 30 - (m.toggleable ? sw + 12 : 0);
             txt(c, textRenderer.trimToWidth(m.description, maxW), cx + 9, y + (mob ? 21 : 16), Theme.muted());
             int rightEdge = cx + cw - 8;
@@ -294,7 +296,7 @@ public class ClickGui extends Screen {
         int h = sliderH(), y = begin(h);
         if (y == NONE) return;
         Gfx.round(c, x, y, w, h - 2, 4, f(Gfx.alpha(Theme.bg(), a)));
-        txt(c, label, x + 8, y + 4, Theme.text());
+        txt(c, textRenderer.trimToWidth(label,w-24-textRenderer.getWidth(value)), x + 8, y + 4, Theme.text());
         txt(c, value, x + w - 8 - textRenderer.getWidth(value), y + 4, Theme.muted());
         int tx = x + 8, tw = w - 16, th = mob ? 5 : 3, ty = y + h - (mob ? 13 : 10), kn = mob ? 11 : 7;
         Gfx.round(c, tx, ty, tw, th, th / 2, f(0xFF2A2740));

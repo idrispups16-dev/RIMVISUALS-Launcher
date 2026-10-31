@@ -13,9 +13,9 @@ public final class Theme {
     private static int i() { return Modules.UI.theme.index; }
 
     public static int accent() { return i() < 3 ? ACC[i()] : 0xFF000000 | Modules.UI.custom.rgb; }
-    public static int accent2() { return i() < 3 ? ACC2[i()] : Gfx.mix(accent(), 0xFF3B82F6, 0.5f); }
+    public static int accent2() { return i() < 3 ? ACC2[i()] : 0xFF000000|Modules.UI.secondary.rgb; }
     public static int bg() { return BG[i()]; }
-    public static int panel() { return PANEL[i()]; }
+    public static int panel() { return Gfx.withAlpha(Modules.UI.background.rgb,(float)Modules.UI.opacity.value); }
     public static int card() { return CARD[i()]; }
     public static int cardHover() { return Gfx.mix(card(), accent(), 0.14f); }
     public static int text() { return 0xFFEDEAF7; }
