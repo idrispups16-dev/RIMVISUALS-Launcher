@@ -27,5 +27,10 @@ try{
  await fs.writeFile('test-output/demo-process.json',JSON.stringify({dryRun:true,fabricObserved,modObserved,graphicsBlocked,worldConfirmed:false},null,2));
  console.log('RIM_DEMO_PROCESS_OK: Java dry-run and actual Fabric/RIMVISUALS process observed; graphicsBlocked='+graphicsBlocked+'; worldConfirmed=false');
  const restarted=new Workspaces(root);assert.equal(restarted.gameRoot(),gameRoot);assert.equal(restarted.current().accountId,local.id);
+ for(let i=0;i<40&&c.busy;i++)await new Promise(r=>setTimeout(r,250));assert.equal(c.busy,false,'Demo process must close before changing runtime');
+ // Verify actual official metadata, downloads, classpath and Java entrypoints for each added runtime.
+ for(const spec of [{minecraftVersion:'1.21.4',loader:'vanilla',rimVisuals:false},{minecraftVersion:'1.21.10',loader:'fabric',rimVisuals:false}]){
+  w.create('Matrix '+spec.minecraftVersion,spec);const result=await c.prepare();assert.equal(result.ok,true,result.error);const dir=w.gameRoot(),installed=await core.installation(dir,()=>{},w.get());assert.equal(installed.base.id,spec.minecraftVersion);assert.equal(installed.fabric.mainClass,spec.loader==='vanilla'?installed.base.mainClass:'net.fabricmc.loader.impl.launch.knot.KnotClient');const plan=core.buildDemoPlan(dir,installed,w.get());await promisify(execFile)(java,['--dry-run',...plan.jvm,plan.mainClass,...plan.game],{cwd:dir,windowsHide:true,timeout:30000});assert.equal(await fs.stat(path.join(dir,'launcher','managed-mods.json')).then(()=>true,()=>false),false);console.log('RIM_VERSION_MATRIX_OK',spec.minecraftVersion,spec.loader,'real files and Java dry-run; world NOT tested');
+ }
  console.log('RIM_INSTALL_OK',state.classpath.length,'classpath entries; 2 verified bundled JARs; isolated profile; shared Java; offline cache; native Demo launch. No authenticated game launch claimed.');
 }finally{if(demoPid){try{process.kill(demoPid);}catch{}await new Promise(r=>setTimeout(r,1000));}await fs.rm(root,{recursive:true,force:true,maxRetries:5,retryDelay:200});}
