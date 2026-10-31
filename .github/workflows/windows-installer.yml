@@ -2,7 +2,7 @@ name: RIMVISUALS Windows Installer
 on:
   workflow_dispatch:
   push:
-    branches: [main, 'rebuild/**', 'feature/launcher-gpt', 'feature/accounts-and-profiles', 'integration/launcher-visuals']
+    branches: [main, 'rebuild/**', 'feature/launcher-gpt', 'feature/accounts-and-profiles', 'feature/local-demo-launch', 'integration/launcher-visuals']
     paths-ignore: ['mod/**', '.github/workflows/fabric-mod.yml']
 permissions:
   contents: read
@@ -166,5 +166,5 @@ jobs:
         if: always()
         with:
           name: RIMVISUALS-Launcher-UI
-          path: test-output/*.png
+          path: test-output/*
           if-no-files-found: ignore
