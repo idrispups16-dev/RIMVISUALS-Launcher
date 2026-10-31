@@ -1,0 +1,1 @@
+const {contextBridge,ipcRenderer}=require('electron');contextBridge.exposeInMainWorld('rim',{get:()=>ipcRenderer.invoke('get'),save:v=>ipcRenderer.invoke('save',v),detect:()=>ipcRenderer.invoke('detect'),choose:()=>ipcRenderer.invoke('choose'),launch:()=>ipcRenderer.invoke('launch')});

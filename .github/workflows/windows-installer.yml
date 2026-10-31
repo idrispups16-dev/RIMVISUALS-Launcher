@@ -1,0 +1,35 @@
+name: RIMVISUALS Windows Installer
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: Validate application
+        run: npm run check
+      - name: Build Windows installer
+        run: npm run dist:win
+      - name: Verify EXE output
+        shell: pwsh
+        run: |
+          $files = @(Get-ChildItem release -Filter 'RIMVISUALS-Setup-*.exe' -File)
+          if ($files.Count -ne 1) { throw "Expected one installer, found $($files.Count)" }
+          if ($files[0].Length -lt 1000000) { throw 'Installer unexpectedly small' }
+          Get-FileHash $files[0].FullName -Algorithm SHA256 | Format-List
+      - uses: actions/upload-artifact@v4
+        with:
+          name: RIMVISUALS-Windows-Installer
+          path: release/RIMVISUALS-Setup-*.exe
+          if-no-files-found: error
+          retention-days: 30
