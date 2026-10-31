@@ -45,6 +45,8 @@ jobs:
         run: npm install --no-audit --no-fund
       - name: Test launcher discovery
         run: node --test tests/*.cjs
+      - name: Verify native Windows token encryption
+        run: npx --no-install electron tests/electron-storage-smoke.js
       - name: Verify isolated Minecraft installation
         run: node tests/install-smoke.js
       - name: Validate application

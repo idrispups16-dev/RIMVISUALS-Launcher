@@ -35,6 +35,7 @@ Java 21 x64 must currently be installed and selected or available in PATH; autom
 
 ## Verified separately in CI
 
+- Native Electron/Windows safeStorage encrypt/decrypt test with a fixed non-secret sentinel.
 - PKCE RFC test vector, verifier/challenge pairing, exact redirect URI, one-time exchange, invalid/duplicate state rejection, cancellation, timeout, browser errors.
 - Verified component installation, repeatability, backup on owned-component update, preservation of unrelated mods and modified destinations.
 - Real Minecraft/Fabric download and hash validation in an isolated temporary directory; argument resolution and bundled JAR installation.
