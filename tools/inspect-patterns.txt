@@ -1,1 +1,1 @@
-InGameOverlayRenderer.java OrderedRenderCommandQueue.java EntityRenderState.java EntityRenderDispatcher.java
+RenderCommandQueue.java EndCrystalEntityModel.java ItemRenderState.java

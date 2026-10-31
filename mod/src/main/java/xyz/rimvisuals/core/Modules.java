@@ -20,13 +20,15 @@ public final class Modules {
     public static final Viewmodel VIEWMODEL=new Viewmodel();
     public static final SwingAnimations SWING=new SwingAnimations();
     public static final HandLighting HAND_LIGHTING=new HandLighting();
+    public static final CrystalScale CRYSTAL_SCALE=new CrystalScale();
+    public static final TotemScale TOTEM_SCALE=new TotemScale();
     public static final PerformanceOptions PERFORMANCE = new PerformanceOptions();
     public static final InterfaceModule UI = new InterfaceModule();
     public static final InfoHud INFO = new InfoHud();
     public static final Watermark WATERMARK = new Watermark();
     public static final PulseGlow PULSE = new PulseGlow();
     public static final ParticleOverlay PARTICLES = new ParticleOverlay();
-    public static final List<Module> ALL = List.of(INFO, WATERMARK, PULSE, PARTICLES, UI, PERFORMANCE, VIEWMODEL, SWING, HAND_LIGHTING);
+    public static final List<Module> ALL = List.of(INFO, WATERMARK, PULSE, PARTICLES, UI, PERFORMANCE, VIEWMODEL, SWING, HAND_LIGHTING, CRYSTAL_SCALE, TOTEM_SCALE);
     public static final List<HudModule> HUD = List.of(INFO, WATERMARK);
 
     private static final Properties DEFAULTS=snapshot();
