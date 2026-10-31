@@ -31,3 +31,7 @@ Existing launcher fields still map only Pulse Glow, decorative Particles, Waterm
 Compilation, title/GUI smoke and silent NSIS installation do not prove Microsoft sign-in, visual appearance in a world, performance or successful licensed game launch on the owner's Windows PC. Keep the integration PR in draft. No changes to the production website or existing .minecraft.
 
 After the first successful integration CI, launcher diagnostics were added: the home-screen button writes logs/diagnostics.json with component versions and missing/verified/modified status. It does not read account.enc or export Client ID, tokens, profile names or custom Java paths. It does not claim game launch success or FPS measurements.
+
+## Single authoritative JAR pipeline
+
+Independent Linux/Windows builds produced different archive hashes despite normalized timestamps. The installer workflow therefore has a Fabric build/test/startup-smoke job and a dependent Windows packaging job. Windows downloads the tested JAR artifact, verifies its recorded SHA-256, and embeds it without recompiling. RIMVISUALS-Tested-Fabric is the downloadable JAR used by the installer; RIMVISUALS-Component-Manifest records its packaged hash. This avoids assuming cross-platform reproducibility.

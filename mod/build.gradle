@@ -29,7 +29,7 @@ test { useJUnitPlatform() }
 
 if (project.hasProperty('rimSmoke')) { loom { runs { client { vmArg '-Drimvisuals.smoke=true' } } } }
 
-// Stable archive metadata lets launcher-only rebuilds retain the same JAR digest.
+// Normalize archive metadata; distribution uses one authoritative tested JAR.
 tasks.withType(org.gradle.api.tasks.bundling.AbstractArchiveTask).configureEach {
     preserveFileTimestamps = false
     reproducibleFileOrder = true
