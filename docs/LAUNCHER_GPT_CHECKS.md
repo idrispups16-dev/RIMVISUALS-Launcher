@@ -13,7 +13,7 @@ This branch inherits the existing standalone client and reviewed Claude Java pro
 
 ## Verification boundaries
 
-Node tests and production UI build run locally. Windows CI additionally builds the bundled Fabric JAR, installs actual Minecraft/Fabric files in a temporary directory, verifies embedded JAR hashes and metadata, and builds the NSIS installer.
+Node tests and production UI build run locally. Windows CI additionally builds the bundled Fabric JAR, installs actual Minecraft/Fabric files in a temporary directory, verifies embedded JAR hashes and metadata, builds the NSIS installer, then silently installs it into a temporary Windows CI folder and compares installed executable, app.asar and bundled JAR hashes.
 A successful CI run does **not** prove licensed Microsoft sign-in, installation of the EXE on an end-user PC, or Minecraft reaching a playable world. These remain Windows user checks. No FPS measurements or visual correctness claims are made.
 
 ## One Windows check after the app registration is available

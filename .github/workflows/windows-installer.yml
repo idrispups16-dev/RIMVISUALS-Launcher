@@ -81,6 +81,25 @@ jobs:
           if ($files.Count -ne 1) { throw "Expected one installer, found $($files.Count)" }
           if ($files[0].Length -lt 1000000) { throw 'Installer unexpectedly small' }
           Get-FileHash $files[0].FullName -Algorithm SHA256 | Format-List
+      - name: Verify silent installer in isolated Windows directory
+        shell: pwsh
+        run: |
+          $installer = Get-ChildItem release -Filter 'RIMVISUALS-Setup-*.exe' -File | Select-Object -First 1
+          $installDir = Join-Path $env:RUNNER_TEMP 'rimvisuals-installed-smoke'
+          $process = Start-Process -FilePath $installer.FullName -ArgumentList @('/S', "/D=$installDir") -Wait -PassThru
+          if ($process.ExitCode -ne 0) { throw "Installer exited with $($process.ExitCode)" }
+          foreach ($relative in @('RIMVISUALS Launcher.exe', 'resources/app.asar', 'resources/bundled/manifest.json')) {
+            $installed = Join-Path $installDir $relative
+            $source = Join-Path 'release/win-unpacked' $relative
+            if (!(Test-Path -LiteralPath $installed)) { throw "Installed file missing: $relative" }
+            if ((Get-FileHash -LiteralPath $installed).Hash -ne (Get-FileHash -LiteralPath $source).Hash) { throw "Installed file mismatch: $relative" }
+          }
+          $manifest = Get-Content -LiteralPath (Join-Path $installDir 'resources/bundled/manifest.json') -Raw | ConvertFrom-Json
+          foreach ($entry in $manifest.files) {
+            $jar = Join-Path $installDir "resources/bundled/$($entry.name)"
+            if ((Get-FileHash -LiteralPath $jar -Algorithm SHA256).Hash.ToLowerInvariant() -ne $entry.sha256) { throw 'Installed JAR integrity mismatch' }
+          }
+          Write-Output 'RIM_INSTALLER_OK: silent NSIS install, executable, app.asar and embedded JAR hashes verified in isolated CI directory'
       - uses: actions/upload-artifact@v4
         with:
           name: RIMVISUALS-Windows-Installer
