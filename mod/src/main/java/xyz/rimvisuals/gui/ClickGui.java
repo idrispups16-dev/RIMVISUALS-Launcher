@@ -2,6 +2,9 @@ package xyz.rimvisuals.gui;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.Click;
+import net.minecraft.client.input.KeyInput;
+import net.minecraft.client.input.CharInput;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.Text;
 import org.lwjgl.glfw.GLFW;
@@ -366,8 +369,9 @@ public class ClickGui extends Screen {
 
     // ---------- input ----------
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (button != 0) return super.mouseClicked(mouseX, mouseY, button);
+    public boolean mouseClicked(Click click, boolean doubled) {
+        double mouseX=click.x(), mouseY=click.y(); int button=click.button();
+        if (button != 0) return super.mouseClicked(click, doubled);
         double x = mouseX / s, y = mouseY / s;
         focus = null;
         for (int i = hits.size() - 1; i >= 0; i--) {
@@ -382,21 +386,23 @@ public class ClickGui extends Screen {
     }
 
     @Override
-    public boolean mouseDragged(double mouseX, double mouseY, int button, double dx, double dy) {
+    public boolean mouseDragged(Click click, double dx, double dy) {
+        double mouseX=click.x(), mouseY=click.y(); int button=click.button();
         if (dragging != null) { dragging.drag.accept(mouseX / s); return true; }
         if (scrollDrag) {
             targetScroll = Math.max(0, Math.min(maxScroll, targetScroll - (float) (dy / s)));
             scrollA.value = targetScroll;
             return true;
         }
-        return super.mouseDragged(mouseX, mouseY, button, dx, dy);
+        return super.mouseDragged(click, dx, dy);
     }
 
     @Override
-    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+    public boolean mouseReleased(Click click) {
+        double mouseX=click.x(), mouseY=click.y(); int button=click.button();
         dragging = null;
         scrollDrag = false;
-        return super.mouseReleased(mouseX, mouseY, button);
+        return super.mouseReleased(click);
     }
 
     @Override
@@ -406,17 +412,19 @@ public class ClickGui extends Screen {
     }
 
     @Override
-    public boolean charTyped(char chr, int modifiers) {
+    public boolean charTyped(CharInput input) {
+        char chr=(char)input.codepoint();
         if (focus != null && focus.type(chr)) return true;
-        return super.charTyped(chr, modifiers);
+        return super.charTyped(input);
     }
 
     @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+    public boolean keyPressed(KeyInput input) {
+        int keyCode=input.key();
         if (focus != null) {
             if (keyCode == GLFW.GLFW_KEY_BACKSPACE) { focus.backspace(); return true; }
             if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_ESCAPE) { focus = null; return true; }
         }
-        return super.keyPressed(keyCode, scanCode, modifiers);
+        return super.keyPressed(input);
     }
 }

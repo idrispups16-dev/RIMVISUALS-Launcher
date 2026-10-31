@@ -2,6 +2,9 @@ package xyz.rimvisuals.gui;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.Click;
+import net.minecraft.client.input.KeyInput;
+import net.minecraft.client.input.CharInput;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.Text;
 import xyz.rimvisuals.RimHud;
@@ -67,8 +70,9 @@ public class HudEditorScreen extends Screen {
     private boolean inBtn(double mx, double my, int x) { return mx >= x && mx < x + btnW && my >= btnY && my < btnY + bh; }
 
     @Override
-    public boolean mouseClicked(double mx, double my, int button) {
-        if (button != 0) return super.mouseClicked(mx, my, button);
+    public boolean mouseClicked(Click click, boolean doubled) {
+        double mx=click.x(), my=click.y(); int button=click.button();
+        if (button != 0) return super.mouseClicked(click, doubled);
         if (inBtn(mx, my, doneX)) { close(); return true; }
         if (inBtn(mx, my, resetX)) {
             for (HudModule m : Modules.HUD) { m.posX.set(m.defX); m.posY.set(m.defY); }
@@ -87,12 +91,13 @@ public class HudEditorScreen extends Screen {
                 return true;
             }
         }
-        return super.mouseClicked(mx, my, button);
+        return super.mouseClicked(click, doubled);
     }
 
     @Override
-    public boolean mouseDragged(double mx, double my, int button, double dx, double dy) {
-        if (grab == null) return super.mouseDragged(mx, my, button, dx, dy);
+    public boolean mouseDragged(Click click, double dx, double dy) {
+        double mx=click.x(), my=click.y(); int button=click.button();
+        if (grab == null) return super.mouseDragged(click, dx, dy);
         MinecraftClient mc = MinecraftClient.getInstance();
         float hs = (float) Modules.UI.hudScale.value;
         int vw = Math.round(width / hs), vh = Math.round(height / hs);
@@ -103,9 +108,10 @@ public class HudEditorScreen extends Screen {
     }
 
     @Override
-    public boolean mouseReleased(double mx, double my, int button) {
+    public boolean mouseReleased(Click click) {
+        double mx=click.x(), my=click.y(); int button=click.button();
         grab = null;
-        return super.mouseReleased(mx, my, button);
+        return super.mouseReleased(click);
     }
 
     @Override public void close() { MinecraftClient.getInstance().setScreen(parent); }
