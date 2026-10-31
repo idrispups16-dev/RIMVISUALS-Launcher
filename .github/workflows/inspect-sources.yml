@@ -21,15 +21,19 @@ jobs:
       - name: Collect requested classes
         run: |
           PATTERNS=$(cat tools/inspect-patterns.txt)
-          mkdir -p out
-          jar=$(find ~/.gradle -name '*minecraft*sources*.jar' -o -name 'minecraft-merged*sources*.jar' | head -1)
-          echo "sources jar: $jar"
-          mkdir -p src && cd src && unzip -q "$jar" && cd ..
-          for p in $PATTERNS; do
-            for f in $(find src -name "$p"); do cp "$f" "out/$(echo "$f" | sed 's#^src/##; s#/#.#g')"; done
-          done
-          ls -la out
+          mkdir -p out src
+          { echo "patterns: $PATTERNS"; find / -name '*sources*.jar' -not -path '*/proc/*' 2>/dev/null | grep -i -E 'minecraft|loom' | head -20; } > out/_debug.txt
+          jar=$(grep -E 'sources.*\.jar$' out/_debug.txt | grep -i minecraft | head -1)
+          echo "jar=$jar" >> out/_debug.txt
+          if [ -n "$jar" ]; then
+            (cd src && unzip -q -o "$jar") || true
+            for p in $PATTERNS; do
+              find src -name "$p" | while read f; do cp "$f" "out/$(echo "$f" | sed 's#^src/##; s#/#.#g')"; done
+            done
+          fi
+          ls -la out >> out/_debug.txt
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: mc-sources
           path: out/*
