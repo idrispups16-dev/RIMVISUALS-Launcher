@@ -128,23 +128,28 @@ Baseline: 0.3.0-alpha.2, commit 2142161915d9e755dff396b5f12e450193492449. This r
 | Interface | Search | Частично реализовано | Existing source/UI; no recorded per-feature in-world acceptance or performance measurement. |
 | Interface | Favourites | Отсутствует | No implementation/render hook found in baseline. |
 | Interface | Module Reset | Отсутствует | No implementation/render hook found in baseline. |
-| Launcher | Windows EXE | Реализовано и проверено — установка/открытие | User confirmed 0.1.5 starts; baseline opens another launcher, not standalone game launch. |
-| Launcher | Independent Directory | Отсутствует | No implementation/render hook found in baseline. |
-| Launcher | Minecraft Installation | Отсутствует | No implementation/render hook found in baseline. |
-| Launcher | Fabric Installation | Отсутствует | No implementation/render hook found in baseline. |
-| Launcher | Library Installation | Отсутствует | No implementation/render hook found in baseline. |
-| Launcher | Microsoft OAuth | Отсутствует | No implementation/render hook found in baseline. |
-| Launcher | License Check | Отсутствует | No implementation/render hook found in baseline. |
-| Launcher | Encrypted Token Storage | Отсутствует | No implementation/render hook found in baseline. |
-| Launcher | Direct Java Launch | Отсутствует | No implementation/render hook found in baseline. |
-| Launcher | RAM / Java Choice | Частично реализовано | Existing source/UI; no recorded per-feature in-world acceptance or performance measurement. |
-| Launcher | Bundled Visuals Updates | Отсутствует | No implementation/render hook found in baseline. |
-| Launcher | Integrity Check | Отсутствует | No implementation/render hook found in baseline. |
-| Launcher | Launch Logs | Отсутствует | No implementation/render hook found in baseline. |
-| Launcher | Bidirectional Sync | Отсутствует | No implementation/render hook found in baseline. |
-| Launcher | Profile Import | Отсутствует | No implementation/render hook found in baseline. |
-| Launcher | Profile Export | Отсутствует | No implementation/render hook found in baseline. |
-| Launcher | Backups | Отсутствует | No implementation/render hook found in baseline. |
-| Launcher | Restore | Отсутствует | No implementation/render hook found in baseline. |
+| Launcher | Windows EXE | Реализовано, проверено в CI | NSIS EXE собирается и тихо устанавливается в изолированную папку CI, упакованное приложение открывает реальное окно; хеши JAR и app.asar проверены. Не подписан. Пользователь подтвердил установку и запуск на своём ПК. |
+| Launcher | Independent Directory | Реализовано, проверено в CI | Игровой корень APPDATA/RIMVISUALS, профили в instances/. UI-смоук через реальный Electron IPC: корень профиля внутри instances, чужие saves сохраняются. Существующая .minecraft не используется. |
+| Launcher | Minecraft Installation | Реализовано, проверено в CI | tests/install-smoke.js в CI (Actions 41308876501): реальная установка 1.21.11, 1.21.10, 1.21.4 в временную папку с проверкой хешей. Игра для 1.21.10/1.21.4 не запускалась. |
+| Launcher | Fabric Installation | Реализовано, проверено в CI | Fabric Loader 0.19.3 ставится из метаданных Fabric с проверкой профиля; установка проверена в CI (Actions 41308876501) для 1.21.11. |
+| Launcher | Library Installation | Реализовано, проверено в CI | Библиотеки/ассеты/natives с проверкой SHA-1 и лимитами потока; проверено в CI (Actions 41308876501). |
+| Launcher | Microsoft OAuth | Частично реализовано | PKCE S256 через системный браузер, loopback, проверка state; проверено тестами с имитацией сервера. Реальный вход не проверен: нужен публичный Client ID владельца (в UI ошибка «Client ID» вместо входа). Чужие Client ID не используются. |
+| Launcher | License Check | Требует проверки в Minecraft | Код проверки владения Minecraft есть, но без Client ID он не выполнялся с настоящим аккаунтом. Мультиплеер готовым не считается. |
+| Launcher | Encrypted Token Storage | Реализовано, проверено в CI | Refresh-токен хранится через Electron safeStorage; нативный тест шифрования на Windows в CI (Actions 41308876501). |
+| Launcher | Direct Java Launch | Частично реализовано | Прямой запуск Java подтверждён пользователем на его ПК (Demo World, 1.21.11 + Fabric + мод). В CI проверяется план запуска и аргументы, мир в CI не открывался. Лицензионный запуск не проверен. |
+| Launcher | RAM / Java Choice | Частично реализовано | RAM 2–32 ГБ, выбор Java, разрешение и fullscreen хранятся в профиле и передаются в аргументы; тесты workspaces/launch-plan. Обработчик chooseJava (системный диалог) автотестом не покрыт. |
+| Launcher | Bundled Visuals Updates | Реализовано, проверено в CI | Встроенный JAR устанавливается по манифесту с SHA-256; изменённые пользователем файлы не затираются, старые собственные копии сохраняются в backup. tests/components-smoke.js в CI (Actions 41308876501). |
+| Launcher | Integrity Check | Частично реализовано | Диагностика (logs/diagnostics.json) отмечает компоненты как verified/modified/missing без токенов и путей. Автоматического «восстановить всё одной кнопкой» нет: повторная установка пересоздаёт отсутствующие файлы при PLAY/Prepare. |
+| Launcher | Launch Logs | Реализовано, проверено в CI | Каждый запуск пишет logs/launch-*.log, токен маскируется ([REDACTED]). |
+| Launcher | Bidirectional Sync | Отсутствует | Только лаунчер → мод: launcher.json содержит 4 переключателя (Pulse Glow, Particles, Watermark, Info HUD), акцент и масштаб HUD. Новые модули PR №3/№9 и обратная передача из мода в лаунчер не поддерживаются. |
+| Launcher | Profile Import | Реализовано, проверено в CI | Импорт JSON-профиля как нового профиля с валидацией; без путей, токенов и аккаунтов. Проверено UI-смоуком через реальный IPC. |
+| Launcher | Profile Export | Реализовано, проверено в CI | Экспорт профиля в JSON без accountId, Client ID и пути Java; проверено UI-смоуком. |
+| Launcher | Backups | Частично реализовано | Резервируются только собственные компоненты (JAR) при обновлении. Резервных копий пользовательских настроек мода (config.properties/профили CFG) нет. |
+| Launcher | Restore | Отсутствует | Восстановления настроек из резервной копии нет. Восстановление файлов — только переустановка недостающих компонентов. |
+| Launcher | Version Selection | Частично реализовано | Minecraft 1.21.11 / 1.21.10 / 1.21.4 × Vanilla / Fabric в профиле; встроенные визуалы только для Fabric 1.21.11 (проверка совместимости). Создание vanilla 1.21.4 проверено UI-смоуком; установка файлов — install-smoke. |
+| Launcher | Mod Manager | Частично реализовано | electron/mod-manager.cjs: список, включение/выключение (.disabled), импорт JAR; чужие моды не трогаются. Есть тест модуля; IPC-обработчики toggleMod/importMod отдельным UI-тестом не покрыты. |
+| Launcher | Multiple Accounts | Реализовано, проверено в CI | Локальные записи и Microsoft-аккаунт, выбор/удаление; UI-смоук. Microsoft-вход не блокирует управление лаунчером и Demo. |
+| Launcher | Local Demo Launch | Частично реализовано | Штатный Minecraft Demo без Microsoft-сессии, мультиплеер отключён. Пользователь запускал Demo World на своём ПК. Не лицензионный режим. |
+| Launcher | Java Auto-install | Реализовано, проверено в CI | electron/java-runtime.cjs: Temurin JRE 21 x64, SHA-256, проверка redirect-хостов; tests/java-runtime-smoke.js скачивает и запускает Java в CI. |
 | Helpers | FT Helper | Требует уточнения | User will provide exact functions; no empty menu entry. |
 | Helpers | HV Helper | Требует уточнения | User will provide exact functions; no empty menu entry. |
