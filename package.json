@@ -1,6 +1,6 @@
 {
   "name": "rimvisuals-launcher",
-  "version": "0.2.0-security.1",
+  "version": "0.2.0-visuals.1",
   "private": true,
   "type": "module",
   "main": "electron/main.cjs",
