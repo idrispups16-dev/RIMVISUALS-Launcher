@@ -1,41 +1,43 @@
 # RIMVISUALS requirement registry
 
+**Обновлено:** ветка `integration/rimvisuals-complete` (основа — `security/installer-audit` 1cb2759). Пересмотрены только строки Fade, Combat (частицы, HUD) и Trails, написанные в PR №3; для них указан реальный модуль. **Все остальные строки — это аудит базового коммита 2142161 и устарели**: в частности блок Launcher (PR №2, №4–№8 добавили установку, аккаунты, профили, менеджер модов, Demo-запуск) требует отдельного пересмотра на этапе 2. Ничто не отмечено как проверенное в игровом мире, потому что такой проверки пока не было.
+
 Baseline: 0.3.0-alpha.2, commit 2142161915d9e755dff396b5f12e450193492449. This registry describes the audit before rebuild fixes. Nothing is marked game-verified merely because a menu or build exists.
 
 | Category | Requirement | Audit status | Evidence / acceptance gap |
 |---|---|---|---|
 | Fade & Explosions | Anchor Fade | Отсутствует | No implementation/render hook found in baseline. |
-| Fade & Explosions | Crystal Fade | Требует проверки в Minecraft | Module crystal_fade: translucent entity layer + tint alpha (opacity 0.3–1, fade-in on spawn) via submitModel redirect. CI: compile, JUnit, startup. Not verified in-world (translucent sorting with other entities unchecked). |
+| Fade & Explosions | Crystal Fade | Требует проверки в Minecraft | Модуль crystal_fade: translucent-слой и tint alpha, непрозрачность 0.3–1, проявление при появлении. Fabric CI: сборка, JUnit и старт клиента с применёнными mixin прошли (коммит 327d604). Эффект в игровом мире НЕ проверен. Порядок отрисовки прозрачности рядом со стеклом не проверен. |
 | Fade & Explosions | Anchor Scale | Отсутствует | No implementation/render hook found in baseline. |
-| Fade & Explosions | Crystal Scale | Требует проверки в Minecraft | Module crystal_scale: EndCrystalEntityRenderer render-matrix scale (0.4–1.6) plus optional grow-in from spawn age. CI: compile, JUnit curve tests, Minecraft startup with mixin applied. Not verified in-world; hitbox unchanged. |
-| Fade & Explosions | Totem Fade | Отсутствует | Floating item is drawn through ItemRenderState without an alpha parameter; true transparency needs a separate render path. Not implemented; Totem Scale's shrink option is not a fade. |
-| Fade & Explosions | Totem Scale | Требует проверки в Minecraft | Module totem_scale: scales the floating totem item (0.3–2) and optionally shrinks it away at the end of the 40-tick animation. CI: compile, startup. Not verified in-world. |
+| Fade & Explosions | Crystal Scale | Требует проверки в Minecraft | Модуль crystal_scale: масштаб матрицы рендера кристалла 0.4–1.6 и рост при появлении; хитбокс не меняется. Fabric CI: сборка, JUnit и старт клиента с применёнными mixin прошли (коммит 327d604). Эффект в игровом мире НЕ проверен. |
+| Fade & Explosions | Totem Fade | Отсутствует | Floating item рисуется через ItemRenderState без параметра альфы; нужен отдельный путь отрисовки. Сжатие в Totem Scale — не fade. |
+| Fade & Explosions | Totem Scale | Требует проверки в Minecraft | Модуль totem_scale: масштаб floating item 0.3–2 и сжатие в конце анимации. Fabric CI: сборка, JUnit и старт клиента с применёнными mixin прошли (коммит 327d604). Эффект в игровом мире НЕ проверен. |
 | Fade & Explosions | Explosion Particles | Отсутствует | No implementation/render hook found in baseline. |
 | Fade & Explosions | Explosion Color | Отсутствует | No implementation/render hook found in baseline. |
 | Fade & Explosions | Explosion Glow | Отсутствует | No implementation/render hook found in baseline. |
 | Fade & Explosions | Explosion Duration | Отсутствует | No implementation/render hook found in baseline. |
-| Combat | Hit Color | Отсутствует | No implementation/render hook found in baseline. |
-| Combat | Hit Particles | Отсутствует | No implementation/render hook found in baseline. |
-| Combat | Critical Particles | Отсутствует | No implementation/render hook found in baseline. |
+| Combat | Hit Color | Требует проверки в Minecraft | Модуль hit_color: перекраска строк hurt-вспышки в текстуре overlay (загрузка только при смене цвета). Влияет на все сущности, включая игрока. Fabric CI: сборка, JUnit и старт клиента с применёнными mixin прошли (коммит 327d604). Эффект в игровом мире НЕ проверен. |
+| Combat | Hit Particles | Требует проверки в Minecraft | Модуль hit_particles: dust-частицы при ударе игрока по живой сущности (AttackEntityCallback), общий бюджет частиц, потолок Safe Mode 6. Fabric CI: сборка, JUnit и старт клиента с применёнными mixin прошли (коммит 327d604). Эффект в игровом мире НЕ проверен. |
+| Combat | Critical Particles | Требует проверки в Minecraft | Модуль crit_particles: клиентская оценка условий крита (падение, не бег, кулдаун >0.9); настоящий крит определяет сервер. Fabric CI: сборка, JUnit и старт клиента с применёнными mixin прошли (коммит 327d604). Эффект в игровом мире НЕ проверен. |
 | Combat | Sharpness Particles | Отсутствует | No implementation/render hook found in baseline. |
-| Combat | Damage Particles | Отсутствует | No implementation/render hook found in baseline. |
+| Combat | Damage Particles | Требует проверки в Minecraft | Модуль damage_particles: частицы при падении синхронизированного здоровья сущности в радиусе; количество растёт с уроном. Fabric CI: сборка, JUnit и старт клиента с применёнными mixin прошли (коммит 327d604). Эффект в игровом мире НЕ проверен. |
 | Combat | Damage Tint | Отсутствует | No implementation/render hook found in baseline. |
 | Combat | Hurt Camera Control | Отсутствует | No implementation/render hook found in baseline. |
 | Combat | Hit Marker | Отсутствует | No implementation/render hook found in baseline. |
 | Combat | Kill Effects | Отсутствует | No implementation/render hook found in baseline. |
 | Combat | Target Highlight | Отсутствует | No implementation/render hook found in baseline. |
-| Combat | Target HUD | Отсутствует | No implementation/render hook found in baseline. |
-| Combat | Armor HUD | Отсутствует | No implementation/render hook found in baseline. |
-| Combat | Armor Durability | Отсутствует | No implementation/render hook found in baseline. |
+| Combat | Target HUD | Требует проверки в Minecraft | Модуль target_hud: имя, полоса здоровья и дистанция цели под прицелом или последней атакованной; перетаскивается в HUD Editor. Fabric CI: сборка, JUnit и старт клиента с применёнными mixin прошли (коммит 327d604). Эффект в игровом мире НЕ проверен. |
+| Combat | Armor HUD | Требует проверки в Minecraft | Модуль armor_hud: надетая броня, процент и полоса прочности, вертикальный/горизонтальный вариант. Fabric CI: сборка, JUnit и старт клиента с применёнными mixin прошли (коммит 327d604). Эффект в игровом мире НЕ проверен. |
+| Combat | Armor Durability | Требует проверки в Minecraft | Входит в armor_hud (процент и полоса). Отдельного модуля нет. Fabric CI: сборка, JUnit и старт клиента с применёнными mixin прошли (коммит 327d604). Эффект в игровом мире НЕ проверен. |
 | Combat | Enchantment Glint Control | Отсутствует | No implementation/render hook found in baseline. |
 | Combat | Custom Crosshair | Отсутствует | No implementation/render hook found in baseline. |
 | Combat | Attack Indicator | Отсутствует | No implementation/render hook found in baseline. |
-| Trails | Sword Trails | Отсутствует | No implementation/render hook found in baseline. |
+| Trails | Sword Trails | Требует проверки в Minecraft | Модуль sword_trails: dust-частицы по приблизительной дуге кончика меча (точная позиция кончика клиенту неизвестна). Fabric CI: сборка, JUnit и старт клиента с применёнными mixin прошли (коммит 327d604). Эффект в игровом мире НЕ проверен. |
 | Trails | Weapon Trails | Отсутствует | No implementation/render hook found in baseline. |
-| Trails | Pearl Trails | Отсутствует | No implementation/render hook found in baseline. |
-| Trails | Arrow Trails | Отсутствует | No implementation/render hook found in baseline. |
-| Trails | Potion Trails | Отсутствует | No implementation/render hook found in baseline. |
-| Trails | Projectile Trails | Отсутствует | No implementation/render hook found in baseline. |
+| Trails | Pearl Trails | Требует проверки в Minecraft | Модуль pearl_trails: частицы вдоль пути летящей жемчужины. Fabric CI: сборка, JUnit и старт клиента с применёнными mixin прошли (коммит 327d604). Эффект в игровом мире НЕ проверен. |
+| Trails | Arrow Trails | Частично реализовано | Стрелы покрыты projectile_trails; отдельной настройки нет. |
+| Trails | Potion Trails | Частично реализовано | Брошенные зелья — ProjectileEntity и покрыты projectile_trails; отдельной настройки нет; не проверено. |
+| Trails | Projectile Trails | Требует проверки в Minecraft | Модуль projectile_trails: частицы за снарядами (стрелы, трезубцы, брошенные предметы). Fabric CI: сборка, JUnit и старт клиента с применёнными mixin прошли (коммит 327d604). Эффект в игровом мире НЕ проверен. |
 | Trails | Player Tracers | Отсутствует | No implementation/render hook found in baseline. |
 | Trails | Projectile Tracers | Отсутствует | No implementation/render hook found in baseline. |
 | Trails | Trail Glow | Отсутствует | No implementation/render hook found in baseline. |
