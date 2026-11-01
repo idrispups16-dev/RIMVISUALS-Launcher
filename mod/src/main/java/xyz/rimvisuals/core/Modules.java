@@ -29,6 +29,18 @@ public final class Modules {
     public static final PearlTrails PEARL_TRAILS=new PearlTrails();
     public static final ProjectileTrails PROJECTILE_TRAILS=new ProjectileTrails();
     public static final SwordTrails SWORD_TRAILS=new SwordTrails();
+    public static final HitMarker HIT_MARKER=new HitMarker();
+    public static final KillEffects KILL_EFFECTS=new KillEffects();
+    public static final DamageTint DAMAGE_TINT=new DamageTint();
+    public static final CpsHud CPS_HUD=new CpsHud();
+    public static final KeystrokesHud KEYSTROKES_HUD=new KeystrokesHud();
+    public static final PotionHud POTION_HUD=new PotionHud();
+    public static final SpeedHud SPEED_HUD=new SpeedHud();
+    public static final SessionHud SESSION_HUD=new SessionHud();
+    public static final HandColor HAND_COLOR=new HandColor();
+    public static final CustomFog CUSTOM_FOG=new CustomFog();
+    public static final CustomSky CUSTOM_SKY=new CustomSky();
+    public static final HurtCamera HURT_CAMERA=new HurtCamera();
     public static final ArmorHud ARMOR_HUD=new ArmorHud();
     public static final TargetHud TARGET_HUD=new TargetHud();
     public static final TotemScale TOTEM_SCALE=new TotemScale();
@@ -38,8 +50,8 @@ public final class Modules {
     public static final Watermark WATERMARK = new Watermark();
     public static final PulseGlow PULSE = new PulseGlow();
     public static final ParticleOverlay PARTICLES = new ParticleOverlay();
-    public static final List<Module> ALL = List.of(INFO, WATERMARK, PULSE, PARTICLES, UI, PERFORMANCE, VIEWMODEL, SWING, HAND_LIGHTING, CRYSTAL_SCALE, CRYSTAL_FADE, TOTEM_SCALE, HIT_COLOR, HIT_PARTICLES, CRIT_PARTICLES, DAMAGE_PARTICLES, PEARL_TRAILS, PROJECTILE_TRAILS, SWORD_TRAILS, ARMOR_HUD, TARGET_HUD);
-    public static final List<HudModule> HUD = List.of(INFO, WATERMARK, ARMOR_HUD, TARGET_HUD);
+    public static final List<Module> ALL = List.of(INFO, WATERMARK, PULSE, PARTICLES, UI, PERFORMANCE, VIEWMODEL, SWING, HAND_LIGHTING, CRYSTAL_SCALE, CRYSTAL_FADE, TOTEM_SCALE, HIT_COLOR, HIT_PARTICLES, CRIT_PARTICLES, DAMAGE_PARTICLES, PEARL_TRAILS, PROJECTILE_TRAILS, SWORD_TRAILS, HIT_MARKER, KILL_EFFECTS, DAMAGE_TINT, CPS_HUD, KEYSTROKES_HUD, POTION_HUD, SPEED_HUD, SESSION_HUD, HAND_COLOR, CUSTOM_FOG, CUSTOM_SKY, HURT_CAMERA, ARMOR_HUD, TARGET_HUD);
+    public static final List<HudModule> HUD = List.of(INFO, WATERMARK, ARMOR_HUD, TARGET_HUD, CPS_HUD, KEYSTROKES_HUD, POTION_HUD, SPEED_HUD, SESSION_HUD);
 
     private static final Properties DEFAULTS=snapshot();
     public static void reset(Module m){if(m.toggleable)m.enabled=Boolean.parseBoolean(DEFAULTS.getProperty(m.id+".enabled"));for(Setting st:m.settings)st.load(DEFAULTS.getProperty(m.id+"."+st.key()));PERFORMANCE.seedPreset();VIEWMODEL.seedPreset();}

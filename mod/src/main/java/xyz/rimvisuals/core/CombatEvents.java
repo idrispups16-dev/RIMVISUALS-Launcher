@@ -17,6 +17,7 @@ import java.util.Set;
 public final class CombatEvents {
     private static LivingEntity lastTarget;
     private static long lastHitNanos;
+    private static boolean killHandled = true;
     private static final Map<Integer, Float> health = new HashMap<>();
     private static final Set<Integer> seen = new HashSet<>();
     private CombatEvents() {}
@@ -28,6 +29,9 @@ public final class CombatEvents {
             return ActionResult.PASS;
         });
     }
+
+    /** Milliseconds since your last attack on a living entity, or -1 if none yet. */
+    public static double msSinceLastHit() { return lastHitNanos == 0 ? -1 : (System.nanoTime() - lastHitNanos) / 1e6; }
 
     /** Entity you hit most recently, if still valid and within {@code holdSeconds}. */
     public static LivingEntity recentTarget(double holdSeconds) {
@@ -45,6 +49,7 @@ public final class CombatEvents {
     private static void onAttack(MinecraftClient mc, PlayerEntity player, LivingEntity target) {
         lastTarget = target;
         lastHitNanos = System.nanoTime();
+        killHandled = false;
         double x = target.getX(), y = target.getY() + target.getHeight() * .6, z = target.getZ();
         var hp = Modules.HIT_PARTICLES;
         if (hp.enabled) {
@@ -60,7 +65,20 @@ public final class CombatEvents {
         }
     }
 
+    private static void killCheck() {
+        LivingEntity t = lastTarget;
+        if (killHandled || t == null || !Modules.KILL_EFFECTS.enabled) return;
+        if ((System.nanoTime() - lastHitNanos) / 1e9 > 6) { killHandled = true; return; }
+        if (!t.isDead()) return;
+        killHandled = true;
+        long t0 = PerformanceMonitor.begin();
+        var k = Modules.KILL_EFFECTS;
+        Fx.burst(t.getX(), t.getY() + t.getHeight() * .5, t.getZ(), k.color.rgb, (int) k.count.value, (float) k.size.value, k.spread.value);
+        PerformanceMonitor.end("Kill Effects", t0);
+    }
+
     public static void tick(MinecraftClient mc) {
+        killCheck();
         var dp = Modules.DAMAGE_PARTICLES;
         if (!dp.enabled || mc.world == null || mc.player == null) { health.clear(); return; }
         long t = PerformanceMonitor.begin();
