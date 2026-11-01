@@ -77,7 +77,9 @@ jobs:
           jars=list(Path('mod/build/libs').glob('rimvisuals-*.jar'))
           assert len(jars)==1
           assert hashlib.sha256(jars[0].read_bytes()).hexdigest()==jars[0].with_suffix('.jar.sha256').read_text().strip()
-          shutil.copy2(jars[0],bundle/jars[0].name)
+          # Claude retained the mod version: use a content-addressed bundle name so a managed old JAR upgrades safely.
+          engine_name=jars[0].stem+'-'+hashlib.sha256(jars[0].read_bytes()).hexdigest()[:12]+'.jar'
+          shutil.copy2(jars[0],bundle/engine_name)
           name='fabric-api-0.141.6+1.21.11.jar'
           url='https://maven.fabricmc.net/net/fabricmc/fabric-api/fabric-api/0.141.6+1.21.11/'+name
           data=urllib.request.urlopen(url).read()
