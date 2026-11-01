@@ -128,7 +128,18 @@ jobs:
       - name: Scan original installer and record Authenticode/Defender evidence
         continue-on-error: true
         shell: pwsh
-        run: ./scripts/security/scan-windows.ps1 -Target original-installer -Report security-output/original-defender.json
+        run: |
+          # Defender can answer 'Provider load failure' / RPC errors right after being enabled. Retry only that
+          # transient 'unavailable' state; a real detection or any other status is never retried or hidden.
+          for ($attempt = 1; $attempt -le 4; $attempt++) {
+            ./scripts/security/scan-windows.ps1 -Target original-installer -Report security-output/original-defender.json
+            $status = (Get-Content security-output/original-defender.json -Raw | ConvertFrom-Json).status
+            Write-Host "Defender scan attempt $attempt status=$status"
+            if ($status -ne 'unavailable') { break }
+            Copy-Item security-output/original-defender.json "security-output/original-defender-attempt$attempt.json" -Force
+            Start-Sleep -Seconds 45
+          }
+          exit 0
       - name: Inspect original application sources without running them
         shell: pwsh
         run: |
