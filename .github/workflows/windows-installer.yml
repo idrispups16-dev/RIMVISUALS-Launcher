@@ -151,7 +151,19 @@ jobs:
         run: node scripts/security/package-evidence.mjs
       - name: Scan new installer and unpacked executable tree
         shell: pwsh
-        run: ./scripts/security/scan-windows.ps1 -Target release -Report security-output/new-defender.json
+        run: |
+          # Reuse PR9's bounded handling of transient Defender provider/RPC readiness errors.
+          # Retry this scan only; never rebuild or accept a detection as a passing result.
+          for ($attempt = 1; $attempt -le 4; $attempt++) {
+            try { ./scripts/security/scan-windows.ps1 -Target release -Report security-output/new-defender.json } catch { Write-Host "Defender attempt $attempt raised: $($_.Exception.Message)" }
+            $scan = Get-Content security-output/new-defender.json -Raw | ConvertFrom-Json
+            if ($scan.status -eq 'no-detection') { break }
+            if ($scan.status -ne 'unavailable' -or $scan.error -notmatch '(?i)provider load|remote procedure|\bRPC\b') { throw "Defender scan failed: $($scan.status): $($scan.error)" }
+            Copy-Item security-output/new-defender.json "security-output/new-defender-attempt$attempt.json" -Force
+            if ($attempt -lt 4) { Start-Sleep -Seconds 45 }
+          }
+          if ($scan.status -ne 'no-detection') { throw "Defender service remains unavailable: $($scan.error)" }
+
       - name: Verify silent installer in isolated Windows directory
         shell: pwsh
         run: |
