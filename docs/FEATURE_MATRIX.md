@@ -21,10 +21,10 @@ Baseline: 0.3.0-alpha.2, commit 2142161915d9e755dff396b5f12e450193492449. This r
 | Combat | Critical Particles | Требует проверки в Minecraft | Модуль crit_particles: клиентская оценка условий крита (падение, не бег, кулдаун >0.9); настоящий крит определяет сервер. Fabric CI: сборка, JUnit и старт клиента с применёнными mixin прошли (коммит 327d604). Эффект в игровом мире НЕ проверен. |
 | Combat | Sharpness Particles | Отсутствует | No implementation/render hook found in baseline. |
 | Combat | Damage Particles | Требует проверки в Minecraft | Модуль damage_particles: частицы при падении синхронизированного здоровья сущности в радиусе; количество растёт с уроном. Fabric CI: сборка, JUnit и старт клиента с применёнными mixin прошли (коммит 327d604). Эффект в игровом мире НЕ проверен. |
-| Combat | Damage Tint | Отсутствует | No implementation/render hook found in baseline. |
-| Combat | Hurt Camera Control | Отсутствует | No implementation/render hook found in baseline. |
-| Combat | Hit Marker | Отсутствует | No implementation/render hook found in baseline. |
-| Combat | Kill Effects | Отсутствует | No implementation/render hook found in baseline. |
+| Combat | Damage Tint | Требует проверки в Minecraft | Модуль damage_tint: красная виньетка по краям, пока идёт vanilla-таймер hurtTime. Fabric CI: сборка, JUnit, старт клиента с применёнными mixin прошли (коммиты 62db4ea, 857a419). Эффект в игровом мире НЕ проверен. |
+| Combat | Hurt Camera Control | Требует проверки в Minecraft | Модуль hurt_camera: ModifyConstant 14.0 в GameRenderer.tiltViewWhenHurt (0–150%); анимация смерти не меняется. Mixin сверен с исходниками 1.21.11. Fabric CI: сборка, JUnit, старт клиента с применёнными mixin прошли (коммиты 62db4ea, 857a419). Эффект в игровом мире НЕ проверен. |
+| Combat | Hit Marker | Требует проверки в Minecraft | Модуль hit_marker: 4 диагональные метки у прицела, затухание, длительность/длина/зазор. 2D-оверлей. Fabric CI: сборка, JUnit, старт клиента с применёнными mixin прошли (коммиты 62db4ea, 857a419). Эффект в игровом мире НЕ проверен. |
+| Combat | Kill Effects | Требует проверки в Minecraft | Модуль kill_effects: всплеск частиц, когда цель, по которой вы ударили (≤6 с назад), умирает (клиентская оценка по здоровью). Fabric CI: сборка, JUnit, старт клиента с применёнными mixin прошли (коммиты 62db4ea, 857a419). Эффект в игровом мире НЕ проверен. |
 | Combat | Target Highlight | Отсутствует | No implementation/render hook found in baseline. |
 | Combat | Target HUD | Требует проверки в Minecraft | Модуль target_hud: имя, полоса здоровья и дистанция цели под прицелом или последней атакованной; перетаскивается в HUD Editor. Fabric CI: сборка, JUnit и старт клиента с применёнными mixin прошли (коммит 327d604). Эффект в игровом мире НЕ проверен. |
 | Combat | Armor HUD | Требует проверки в Minecraft | Модуль armor_hud: надетая броня, процент и полоса прочности, вертикальный/горизонтальный вариант. Fabric CI: сборка, JUnit и старт клиента с применёнными mixin прошли (коммит 327d604). Эффект в игровом мире НЕ проверен. |
@@ -45,11 +45,11 @@ Baseline: 0.3.0-alpha.2, commit 2142161915d9e755dff396b5f12e450193492449. This r
 | Trails | Trail Width | Отсутствует | No implementation/render hook found in baseline. |
 | Trails | Trail Color | Отсутствует | No implementation/render hook found in baseline. |
 | Trails | Trail Fade | Отсутствует | No implementation/render hook found in baseline. |
-| World | Custom Sky | Отсутствует | No implementation/render hook found in baseline. |
-| World | Sky Fade | Отсутствует | No implementation/render hook found in baseline. |
-| World | Custom Fog | Отсутствует | No implementation/render hook found in baseline. |
-| World | Fog Color | Отсутствует | No implementation/render hook found in baseline. |
-| World | Fog Density | Отсутствует | No implementation/render hook found in baseline. |
+| World | Custom Sky | Требует проверки в Minecraft | Модуль custom_sky: подмена skyColor в SkyRendering.updateRenderState для Overworld-подобного купола; End/Nether, солнце, луна и звёзды не меняются. Fabric CI: сборка, JUnit, старт клиента с применёнными mixin прошли (коммиты 62db4ea, 857a419). Эффект в игровом мире НЕ проверен. |
+| World | Sky Fade | Требует проверки в Minecraft | Параметр «Sky fade (blend)» в custom_sky: смешивание ванильного и своего цвета неба. Fabric CI: сборка, JUnit, старт клиента с применёнными mixin прошли (коммиты 62db4ea, 857a419). Эффект в игровом мире НЕ проверен. |
+| World | Custom Fog | Требует проверки в Minecraft | Модуль custom_fog: цвет и дистанции тумана через ModifyArgs в FogRenderer.applyFog. Fabric CI: сборка, JUnit, старт клиента с применёнными mixin прошли (коммиты 62db4ea, 857a419). Эффект в игровом мире НЕ проверен. |
+| World | Fog Color | Требует проверки в Minecraft | Цвет и сила в custom_fog; тот же объект цвета используется для очистки кадра. Fabric CI: сборка, JUnit, старт клиента с применёнными mixin прошли (коммиты 62db4ea, 857a419). Эффект в игровом мире НЕ проверен. |
+| World | Fog Density | Требует проверки в Minecraft | Параметр «Fog distance (%)» 20–200 в custom_fog (масштаб дистанций тумана). Это дистанция, а не плотность в шейдере. Fabric CI: сборка, JUnit, старт клиента с применёнными mixin прошли (коммиты 62db4ea, 857a419). Эффект в игровом мире НЕ проверен. |
 | World | Weather Color | Отсутствует | No implementation/render hook found in baseline. |
 | World | Rain Opacity | Отсутствует | No implementation/render hook found in baseline. |
 | World | Snow Opacity | Отсутствует | No implementation/render hook found in baseline. |
@@ -73,14 +73,14 @@ Baseline: 0.3.0-alpha.2, commit 2142161915d9e755dff396b5f12e450193492449. This r
 | HUD | FPS | Частично реализовано | Existing source/UI; no recorded per-feature in-world acceptance or performance measurement. |
 | HUD | Ping | Частично реализовано | Existing source/UI; no recorded per-feature in-world acceptance or performance measurement. |
 | HUD | Coordinates | Частично реализовано | Existing source/UI; no recorded per-feature in-world acceptance or performance measurement. |
-| HUD | CPS | Отсутствует | No implementation/render hook found in baseline. |
-| HUD | Keystrokes | Отсутствует | No implementation/render hook found in baseline. |
+| HUD | CPS | Требует проверки в Minecraft | Модуль cps_hud: нажатия attack/use, считаемые по кадрам; при очень быстрых кликах выше FPS недосчитывает. Счётчик покрыт JUnit. Fabric CI: сборка, JUnit, старт клиента с применёнными mixin прошли (коммиты 62db4ea, 857a419). Эффект в игровом мире НЕ проверен. |
+| HUD | Keystrokes | Требует проверки в Minecraft | Модуль keystrokes_hud: WASD, прыжок, ЛКМ/ПКМ по вашим привязкам клавиш. Fabric CI: сборка, JUnit, старт клиента с применёнными mixin прошли (коммиты 62db4ea, 857a419). Эффект в игровом мире НЕ проверен. |
 | HUD | Armor Status | Отсутствует | No implementation/render hook found in baseline. |
-| HUD | Potion HUD | Отсутствует | No implementation/render hook found in baseline. |
+| HUD | Potion HUD | Требует проверки в Minecraft | Модуль potion_hud: эффекты игрока с уровнем и временем, подсветка последних 10 с. Fabric CI: сборка, JUnit, старт клиента с применёнными mixin прошли (коммиты 62db4ea, 857a419). Эффект в игровом мире НЕ проверен. |
 | HUD | Inventory HUD | Отсутствует | No implementation/render hook found in baseline. |
-| HUD | BPS / Speed | Отсутствует | No implementation/render hook found in baseline. |
+| HUD | BPS / Speed | Требует проверки в Minecraft | Модуль speed_hud: горизонтальная скорость по изменению позиции (блоков/с); формула покрыта JUnit. Fabric CI: сборка, JUnit, старт клиента с применёнными mixin прошли (коммиты 62db4ea, 857a419). Эффект в игровом мире НЕ проверен. |
 | HUD | Server Info | Отсутствует | No implementation/render hook found in baseline. |
-| HUD | Session Info | Отсутствует | No implementation/render hook found in baseline. |
+| HUD | Session Info | Требует проверки в Minecraft | Модуль session_hud: время в мире и адрес сервера. Fabric CI: сборка, JUnit, старт клиента с применёнными mixin прошли (коммиты 62db4ea, 857a419). Эффект в игровом мире НЕ проверен. |
 | HUD | Watermark | Частично реализовано | Existing source/UI; no recorded per-feature in-world acceptance or performance measurement. |
 | HUD | Custom Hotbar | Отсутствует | No implementation/render hook found in baseline. |
 | HUD | Scoreboard Fade | Отсутствует | No implementation/render hook found in baseline. |
@@ -110,10 +110,10 @@ Baseline: 0.3.0-alpha.2, commit 2142161915d9e755dff396b5f12e450193492449. This r
 | Hands | Hand Glow | Отсутствует | No implementation/render hook found in baseline. |
 | Hands | Hand Bloom | Отсутствует | No implementation/render hook found in baseline. |
 | Hands | Hand Outline | Отсутствует | No implementation/render hook found in baseline. |
-| Hands | Hand Color | Отсутствует | No implementation/render hook found in baseline. |
-| Hands | Hand Gradient | Отсутствует | No implementation/render hook found in baseline. |
-| Hands | Hand Transparency | Отсутствует | No implementation/render hook found in baseline. |
-| Hands | Hand Rainbow | Отсутствует | No implementation/render hook found in baseline. |
+| Hands | Hand Color | Требует проверки в Minecraft | Модуль hand_color: тонирование ТОЛЬКО модели руки (голая рука и рука с предметом) через перехват submitModelPart, раздельно для основной и второй руки. Предметы не окрашиваются. Fabric CI: сборка, JUnit, старт клиента с применёнными mixin прошли (коммиты 62db4ea, 857a419). Эффект в игровом мире НЕ проверен. |
+| Hands | Hand Gradient | Требует проверки в Minecraft | Режим Gradient в hand_color (анимированный переход между двумя цветами). Математика покрыта JUnit. Fabric CI: сборка, JUnit, старт клиента с применёнными mixin прошли (коммиты 62db4ea, 857a419). Эффект в игровом мире НЕ проверен. |
+| Hands | Hand Transparency | Требует проверки в Minecraft | Прозрачность руки (отдельно для каждой руки) в hand_color через альфу tint в translucent-слое. Реальный вид прозрачности не проверен. Fabric CI: сборка, JUnit, старт клиента с применёнными mixin прошли (коммиты 62db4ea, 857a419). Эффект в игровом мире НЕ проверен. |
+| Hands | Hand Rainbow | Требует проверки в Minecraft | Режим Rainbow в hand_color. Fabric CI: сборка, JUnit, старт клиента с применёнными mixin прошли (коммиты 62db4ea, 857a419). Эффект в игровом мире НЕ проверен. |
 | Hands | Hand Blur | Отсутствует | No implementation/render hook found in baseline. |
 | Interface | RGB / HEX | Частично реализовано | Existing source/UI; no recorded per-feature in-world acceptance or performance measurement. |
 | Interface | HSV | Отсутствует | No implementation/render hook found in baseline. |
