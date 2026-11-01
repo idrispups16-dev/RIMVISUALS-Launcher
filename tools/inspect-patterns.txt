@@ -1,1 +1,1 @@
-TexturedRenderLayers.java SpriteAtlasTexture.java AtlasIds.java
+HeldItemRenderer.java PlayerEntityRenderer.java FogRenderer.java SkyRendering.java WorldRenderer.java Camera.java LightmapTextureManager.java BlockRenderManager.java
