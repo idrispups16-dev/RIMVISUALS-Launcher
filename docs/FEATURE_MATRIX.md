@@ -19,7 +19,7 @@ Baseline: 0.3.0-alpha.2, commit 2142161915d9e755dff396b5f12e450193492449. This r
 | Combat | Hit Color | Требует проверки в Minecraft | Модуль hit_color: перекраска строк hurt-вспышки в текстуре overlay (загрузка только при смене цвета). Влияет на все сущности, включая игрока. Fabric CI: сборка, JUnit и старт клиента с применёнными mixin прошли (коммит 327d604). Эффект в игровом мире НЕ проверен. |
 | Combat | Hit Particles | Требует проверки в Minecraft | Модуль hit_particles: dust-частицы при ударе игрока по живой сущности (AttackEntityCallback), общий бюджет частиц, потолок Safe Mode 6. Fabric CI: сборка, JUnit и старт клиента с применёнными mixin прошли (коммит 327d604). Эффект в игровом мире НЕ проверен. |
 | Combat | Critical Particles | Требует проверки в Minecraft | Модуль crit_particles: клиентская оценка условий крита (падение, не бег, кулдаун >0.9); настоящий крит определяет сервер. Fabric CI: сборка, JUnit и старт клиента с применёнными mixin прошли (коммит 327d604). Эффект в игровом мире НЕ проверен. |
-| Combat | Sharpness Particles | Отсутствует | No implementation/render hook found in baseline. |
+| Combat | Sharpness Particles | Требует проверки в Minecraft | Модуль sharpness_particles: частицы при ударе предметом с Sharpness, количество растёт с уровнем (уровень читается из предмета в руке; при недоступном реестре эффект пропускается). Fabric CI на ветке feature/rimvisuals-mod-0.4: Gradle, JUnit и старт клиента прошли (запуск 41331926524). В игровом мире НЕ проверено. |
 | Combat | Damage Particles | Требует проверки в Minecraft | Модуль damage_particles: частицы при падении синхронизированного здоровья сущности в радиусе; количество растёт с уроном. Fabric CI: сборка, JUnit и старт клиента с применёнными mixin прошли (коммит 327d604). Эффект в игровом мире НЕ проверен. |
 | Combat | Damage Tint | Требует проверки в Minecraft | Модуль damage_tint: красная виньетка по краям, пока идёт vanilla-таймер hurtTime. Fabric CI: сборка, JUnit, старт клиента с применёнными mixin прошли (коммиты 62db4ea, 857a419). Эффект в игровом мире НЕ проверен. |
 | Combat | Hurt Camera Control | Требует проверки в Minecraft | Модуль hurt_camera: ModifyConstant 14.0 в GameRenderer.tiltViewWhenHurt (0–150%); анимация смерти не меняется. Mixin сверен с исходниками 1.21.11. Fabric CI: сборка, JUnit, старт клиента с применёнными mixin прошли (коммиты 62db4ea, 857a419). Эффект в игровом мире НЕ проверен. |
@@ -77,7 +77,7 @@ Baseline: 0.3.0-alpha.2, commit 2142161915d9e755dff396b5f12e450193492449. This r
 | HUD | Keystrokes | Требует проверки в Minecraft | Модуль keystrokes_hud: WASD, прыжок, ЛКМ/ПКМ по вашим привязкам клавиш. Fabric CI: сборка, JUnit, старт клиента с применёнными mixin прошли (коммиты 62db4ea, 857a419). Эффект в игровом мире НЕ проверен. |
 | HUD | Armor Status | Отсутствует | No implementation/render hook found in baseline. |
 | HUD | Potion HUD | Требует проверки в Minecraft | Модуль potion_hud: эффекты игрока с уровнем и временем, подсветка последних 10 с. Fabric CI: сборка, JUnit, старт клиента с применёнными mixin прошли (коммиты 62db4ea, 857a419). Эффект в игровом мире НЕ проверен. |
-| HUD | Inventory HUD | Отсутствует | No implementation/render hook found in baseline. |
+| HUD | Inventory HUD | Требует проверки в Minecraft | Модуль inventory_hud: сетка основного инвентаря 9×1–3, количество в стаке. Читает только ваш инвентарь. Fabric CI на ветке feature/rimvisuals-mod-0.4: Gradle, JUnit и старт клиента прошли (запуск 41331926524). В игровом мире НЕ проверено. |
 | HUD | BPS / Speed | Требует проверки в Minecraft | Модуль speed_hud: горизонтальная скорость по изменению позиции (блоков/с); формула покрыта JUnit. Fabric CI: сборка, JUnit, старт клиента с применёнными mixin прошли (коммиты 62db4ea, 857a419). Эффект в игровом мире НЕ проверен. |
 | HUD | Server Info | Отсутствует | No implementation/render hook found in baseline. |
 | HUD | Session Info | Требует проверки в Minecraft | Модуль session_hud: время в мире и адрес сервера. Fabric CI: сборка, JUnit, старт клиента с применёнными mixin прошли (коммиты 62db4ea, 857a419). Эффект в игровом мире НЕ проверен. |
@@ -87,7 +87,7 @@ Baseline: 0.3.0-alpha.2, commit 2142161915d9e755dff396b5f12e450193492449. This r
 | HUD | Chat Fade | Отсутствует | No implementation/render hook found in baseline. |
 | HUD | Bossbar Customizer | Отсутствует | No implementation/render hook found in baseline. |
 | HUD | Notifications | Отсутствует | No implementation/render hook found in baseline. |
-| HUD | Drag & Drop HUD Editor | Частично реализовано | Existing source/UI; no recorded per-feature in-world acceptance or performance measurement. |
+| HUD | Drag & Drop HUD Editor | Требует проверки в Minecraft | Right Shift → Edit HUD: перетаскивание, масштаб каждого элемента колесом мыши (0.5–2), правый клик сбрасывает элемент, привязка к сетке (настройка «HUD grid snap», сетка рисуется), общий Reset. Позиции и масштаб сохраняются в config. Математика snap/scale покрыта JUnit. Fabric CI на ветке feature/rimvisuals-mod-0.4: Gradle, JUnit и старт клиента прошли (запуск 41331926524). В игровом мире НЕ проверено. |
 | Optimization | Performance Safe Mode | Требует проверки в Minecraft | Source exists; startup smoke is not in-world verification. |
 | Optimization | Particle Limits | Требует проверки в Minecraft | Source exists; startup smoke is not in-world verification. |
 | Optimization | Adaptive Particles | Требует проверки в Minecraft | Source exists; startup smoke is not in-world verification. |
@@ -102,7 +102,7 @@ Baseline: 0.3.0-alpha.2, commit 2142161915d9e755dff396b5f12e450193492449. This r
 | Optimization | Low-End Preset | Требует проверки в Minecraft | Source exists; startup smoke is not in-world verification. |
 | Optimization | Balanced Preset | Требует проверки в Minecraft | Source exists; startup smoke is not in-world verification. |
 | Optimization | Ultra Preset | Требует проверки в Minecraft | Source exists; startup smoke is not in-world verification. |
-| Optimization | Performance Monitor | Требует проверки в Minecraft | Source exists; startup smoke is not in-world verification. |
+| Optimization | Performance Monitor | Требует проверки в Minecraft | Теперь выключен по умолчанию (для уже существующих config остаётся прежнее значение) и показывает 5 самых тяжёлых модулей вместо полного списка. Замеряет CPU-время отправки, не GPU и не FPS. |
 | Optimization | Per-module render timings | Требует проверки в Minecraft | Source exists; startup smoke is not in-world verification. |
 | Hands | Swing Animations | Реализовано, но не работает по отчёту пользователя | Existing HeldItemRenderer mixin; reproduce in-world, inspect submission matrices, then user retest. |
 | Hands | Viewmodel | Реализовано, но не работает по отчёту пользователя | Existing HeldItemRenderer mixin; reproduce in-world, inspect submission matrices, then user retest. |
