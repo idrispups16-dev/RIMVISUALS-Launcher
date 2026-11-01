@@ -40,7 +40,7 @@ public final class TargetHud extends HudModule {
         lastId = preview ? -1 : t.getId();
         int w = width(mc), h = height(mc);
         Gfx.round(c, x, y, w, h, 4, Gfx.withAlpha(0x08080F, (float) opacity.value));
-        c.fill(x, y + 3, x + 2, y + h - 3, Theme.accent());
+        c.fill(x, y + 3, x + 2, y + h - 3, accent());
         String name = preview ? "Target" : t.getDisplayName().getString();
         while (name.length() > 1 && mc.textRenderer.getWidth(name) > w - 14) name = name.substring(0, name.length() - 1);
         c.drawTextWithShadow(mc.textRenderer, name, x + 8, y + 4, Theme.text());

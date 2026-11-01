@@ -100,41 +100,71 @@ public final class Modules {
         return p;
     }
 
-    public static void save() { write(dir().resolve("config.properties"), snapshot()); }
-    public static void load() { apply(read(dir().resolve("config.properties"))); PERFORMANCE.seedPreset(); VIEWMODEL.seedPreset(); }
-
-    public static String cleanName(String n) {
-        String s = n == null ? "" : n.replaceAll("[^A-Za-z0-9_-]", "");
-        return s.length() > 24 ? s.substring(0, 24) : s;
+    public static void save() { Properties s = snapshot(); write(dir().resolve("config.properties"), s); lastSaved = s; }
+    public static void load() {
+        boolean existed = Files.exists(dir().resolve("config.properties"));
+        apply(read(dir().resolve("config.properties")));
+        PERFORMANCE.seedPreset(); VIEWMODEL.seedPreset();
+        if (existed) backupNow(); // one rolling backup per session of what was loaded
+        lastSaved = snapshot();
     }
 
-    public static boolean saveProfile(String name) {
-        String n = cleanName(name);
-        if (n.isEmpty()) return false;
-        write(profileDir().resolve(n + ".properties"), snapshot());
+    public static ConfigStore store() { return new ConfigStore(dir()); }
+    public static String cleanName(String n) { return ConfigStore.clean(n); }
+
+    public static boolean saveProfile(String name) { String n = cleanName(name); return !n.isEmpty() && store().save(n, snapshot()); }
+    public static boolean loadProfile(String name) {
+        var p = store().load(cleanName(name));
+        if (p.isEmpty()) return false;
+        apply(p.get());
+        save();
         return true;
     }
+    public static void deleteProfile(String name) { store().delete(cleanName(name)); }
+    public static List<String> listProfiles() { return store().list(); }
+    public static boolean renameProfile(String from, String to) { return store().rename(cleanName(from), cleanName(to)); }
+    public static boolean duplicateProfile(String from, String to) { return store().duplicate(cleanName(from), cleanName(to)); }
 
-    public static boolean loadProfile(String name) {
-        Path f = profileDir().resolve(cleanName(name) + ".properties");
-        if (!Files.exists(f)) return false;
-        apply(read(f));
+    /** Writes exports/NAME.json and returns its path, or null on failure. */
+    public static String exportProfile(String name) {
+        try { return store().exportJson(cleanName(name)).toString(); } catch (IOException e) { LOG.warn("Export failed", e); return null; }
+    }
+    public static List<String> importProfiles() { return store().importFolder(); }
+
+    public static boolean backupNow() {
+        try { store().backup(snapshot()); return true; } catch (IOException e) { LOG.warn("Backup failed", e); return false; }
+    }
+    public static boolean restoreLatestBackup() {
+        var p = store().latestBackup();
+        if (p.isEmpty()) return false;
+        apply(p.get());
         save();
         return true;
     }
 
-    public static void deleteProfile(String name) {
-        try { Files.deleteIfExists(profileDir().resolve(cleanName(name) + ".properties")); }
-        catch (IOException e) { LOG.warn("Could not delete profile {}", name, e); }
+    public static boolean applyPreset(String name) {
+        if (!Presets.apply(name)) return false;
+        saveProfile(name);
+        save();
+        return true;
     }
 
-    public static List<String> listProfiles() {
-        List<String> out = new ArrayList<>();
-        if (!Files.isDirectory(profileDir())) return out;
-        try (Stream<Path> s = Files.list(profileDir())) {
-            s.map(p -> p.getFileName().toString()).filter(n -> n.endsWith(".properties"))
-                    .map(n -> n.substring(0, n.length() - ".properties".length())).sorted().forEach(out::add);
-        } catch (IOException e) { LOG.warn("Could not list profiles", e); }
-        return out;
+    public static boolean bindServer(String address, String profile) { return store().bindServer(address, cleanName(profile)); }
+    public static boolean unbindServer(String address) { return store().unbindServer(address); }
+    public static java.util.Optional<String> serverProfile(String address) { return store().serverProfile(address); }
+    /** Loads the configuration bound to this server, if any. Returns its name. */
+    public static java.util.Optional<String> applyServerProfile(String address) {
+        var name = serverProfile(address);
+        if (name.isPresent() && loadProfile(name.get())) return name;
+        return java.util.Optional.empty();
+    }
+
+    private static Properties lastSaved;
+    private static int autosaveTicks;
+    /** Called every client tick; every 30 s writes config.properties if any setting changed. */
+    public static void autosaveTick() {
+        if (++autosaveTicks % 600 != 0) return;
+        if (lastSaved != null && lastSaved.equals(snapshot())) return;
+        save();
     }
 }

@@ -55,4 +55,15 @@ class HudMathTest {
         assertEquals(10, HudMath.scaled(20, .5));
         assertEquals(1, HudMath.scaled(0, 1));
     }
+
+    @org.junit.jupiter.api.Test void guideSnapAndMatch() {
+        int[] lines = {0, 100, 200};
+        assertEquals(100, xyz.rimvisuals.core.HudMath.guideSnap(97, 40, lines, 4), 1e-9);      // left edge to 100
+        assertEquals(160, xyz.rimvisuals.core.HudMath.guideSnap(158, 40, lines, 4), 1e-9);     // right edge (160+40) to 200
+        assertEquals(80, xyz.rimvisuals.core.HudMath.guideSnap(82, 40, lines, 4), 1e-9);       // centre (80+20) to 100
+        assertEquals(50, xyz.rimvisuals.core.HudMath.guideSnap(50, 40, lines, 4), 1e-9);       // nothing close
+        assertEquals(100, xyz.rimvisuals.core.HudMath.matchedGuide(100, 40, lines));
+        assertEquals(200, xyz.rimvisuals.core.HudMath.matchedGuide(160, 40, lines));
+        assertEquals(-1, xyz.rimvisuals.core.HudMath.matchedGuide(50, 40, lines));
+    }
 }

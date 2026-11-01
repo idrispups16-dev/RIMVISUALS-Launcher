@@ -55,7 +55,7 @@ public final class InfoHud extends HudModule {
     @Override public void draw(DrawContext c, MinecraftClient mc, int x, int y) {
         build(mc);
         int w = width(mc), h = height(mc);
-        int acc = Theme.accent();
+        int acc = accent();
         Gfx.round(c, x, y, w, h, 4, Gfx.withAlpha(0x08080F, (float) opacity.value));
         c.fill(x, y + 3, x + 2, y + h - 3, acc);
         c.drawTextWithShadow(mc.textRenderer, "RIMVISUALS", x + 8, y + 4, acc);

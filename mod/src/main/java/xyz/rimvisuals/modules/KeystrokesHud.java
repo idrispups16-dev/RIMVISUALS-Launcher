@@ -22,7 +22,7 @@ public final class KeystrokesHud extends HudModule {
 
     private void key(DrawContext c, MinecraftClient mc, int x, int y, int w, int h, KeyBinding k, String label) {
         boolean down = mc.currentScreen == null && k.isPressed();
-        int bg = down ? Gfx.withAlpha(Theme.accent() & 0xFFFFFF, .85f) : Gfx.withAlpha(0x08080F, (float) opacity.value);
+        int bg = down ? Gfx.withAlpha(accent() & 0xFFFFFF, .85f) : Gfx.withAlpha(0x08080F, (float) opacity.value);
         Gfx.round(c, x, y, w, h, 3, bg);
         int tw = mc.textRenderer.getWidth(label);
         c.drawTextWithShadow(mc.textRenderer, label, x + (w - tw) / 2, y + (h - 8) / 2, down ? 0xFFFFFFFF : Theme.text());

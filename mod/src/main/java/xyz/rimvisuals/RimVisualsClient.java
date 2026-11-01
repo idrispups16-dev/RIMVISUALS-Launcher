@@ -20,7 +20,7 @@ import xyz.rimvisuals.core.Modules;
 import xyz.rimvisuals.gui.ClickGui;
 
 public class RimVisualsClient implements ClientModInitializer {
-    public static KeyBinding menuKey;
+    public static KeyBinding menuKey, monitorKey;
 
     @Override
     public void onInitializeClient() {
@@ -29,7 +29,15 @@ public class RimVisualsClient implements ClientModInitializer {
         xyz.rimvisuals.core.CombatEvents.init();
         menuKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
                 "key.rimvisuals.menu", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_RIGHT_SHIFT, KeyBinding.Category.MISC));
+        monitorKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+                "key.rimvisuals.monitor", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_UNKNOWN, KeyBinding.Category.MISC));
+        net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> client.execute(() -> {
+            var entry = client.getCurrentServerEntry();
+            if (entry != null) Modules.applyServerProfile(entry.address).ifPresent(n -> org.slf4j.LoggerFactory.getLogger("rimvisuals").info("Loaded server configuration {}", n));
+        }));
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
+            Modules.autosaveTick();
+            while (monitorKey.wasPressed()) Modules.PERFORMANCE.monitor.value = !Modules.PERFORMANCE.monitor.value;
             SmokeTest.tick(client);
             xyz.rimvisuals.core.CombatEvents.tick(client);
             xyz.rimvisuals.core.RimOverlays.tick();

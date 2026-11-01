@@ -47,7 +47,7 @@ public final class ArmorHud extends HudModule {
         for (ItemStack i : s) any |= !i.isEmpty();
         if (!any && !(mc.currentScreen instanceof HudEditorScreen)) return;
         Gfx.round(c, x, y, width(mc), height(mc), 4, Gfx.withAlpha(0x08080F, (float) opacity.value));
-        c.fill(x, y + 3, x + 2, y + height(mc) - 3, Theme.accent());
+        c.fill(x, y + 3, x + 2, y + height(mc) - 3, accent());
         int cx = x + 6, cy = y + 4, step = vertical.value ? 20 : cell(mc);
         for (ItemStack st : s) {
             if (hideEmpty.value && st.isEmpty()) continue;

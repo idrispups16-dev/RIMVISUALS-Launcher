@@ -19,7 +19,8 @@ public class HudEditorScreen extends Screen {
     private final Screen parent;
     private HudModule grab;
     private double offX, offY;
-    private int bh, doneX, resetX, btnY, btnW;
+    private int bh, doneX, resetX, monX, btnY, btnW;
+    private int guideX = -1, guideY = -1;
 
     public HudEditorScreen(Screen parent) {
         super(Text.literal("RIMVISUALS HUD"));
@@ -60,12 +61,19 @@ public class HudEditorScreen extends Screen {
         ms.popMatrix();
 
         boolean mob = RimPlatform.mobile();
-        String hint = any ? "Drag to move  |  mouse wheel over an element: resize  |  right-click: reset element" : "No HUD element is enabled. Turn one on in the menu.";
+        String hint = any ? "Drag to move (snaps to guides and grid)  |  wheel: resize  |  right-click: reset  |  colours/opacity: menu > HUD" : "No HUD element is enabled. Turn one on in the menu.";
         c.drawText(textRenderer, hint, (width - textRenderer.getWidth(hint)) / 2, 10, Theme.text(), false);
         bh = mob ? 32 : 22; btnW = mob ? 110 : 90; btnY = height - bh - 12;
-        doneX = width / 2 - btnW - 6; resetX = width / 2 + 6;
+        int total = btnW * 3 + 24, start = (width - total) / 2;
+        doneX = start; resetX = start + btnW + 12; monX = start + (btnW + 12) * 2;
         button(c, doneX, "Done", acc);
         button(c, resetX, "Reset", Theme.card());
+        button(c, monX, "Monitor: " + (Modules.PERFORMANCE.monitor.value ? "On" : "Off"), Theme.card());
+        if (grab != null) {
+            int gc = Gfx.withAlpha(0x38BDF8, .8f);
+            if (guideX >= 0) c.fill(Math.round(guideX * hs), 0, Math.round(guideX * hs) + 1, height, gc);
+            if (guideY >= 0) c.fill(0, Math.round(guideY * hs), width, Math.round(guideY * hs) + 1, gc);
+        }
     }
 
     private void button(DrawContext c, int x, String label, int bg) {
@@ -88,6 +96,7 @@ public class HudEditorScreen extends Screen {
         }
         if (button != 0) return super.mouseClicked(click, doubled);
         if (inBtn(mx, my, doneX)) { close(); return true; }
+        if (inBtn(mx, my, monX)) { Modules.PERFORMANCE.monitor.value = !Modules.PERFORMANCE.monitor.value; return true; }
         if (inBtn(mx, my, resetX)) {
             for (HudModule m : Modules.HUD) { m.posX.set(m.defX); m.posY.set(m.defY); m.scale.set(1); }
             return true;
@@ -116,16 +125,37 @@ public class HudEditorScreen extends Screen {
         float hs = (float) Modules.UI.hudScale.value;
         int vw = Math.round(width / hs), vh = Math.round(height / hs);
         int w = RimHud.sw(grab, mc), h = RimHud.sh(grab, mc), grid = (int) Modules.UI.gridSnap.value;
-        grab.posX.set(Math.max(0, Math.min(vw - w, xyz.rimvisuals.core.HudMath.snap(mx / hs - offX, grid))));
-        grab.posY.set(Math.max(0, Math.min(vh - h, xyz.rimvisuals.core.HudMath.snap(my / hs - offY, grid))));
+        double rx = mx / hs - offX, ry = my / hs - offY;
+        int[] xl = guideLines(mc, true, vw, vh), yl = guideLines(mc, false, vw, vh);
+        double nx = xyz.rimvisuals.core.HudMath.guideSnap(rx, w, xl, 4), ny = xyz.rimvisuals.core.HudMath.guideSnap(ry, h, yl, 4);
+        if (nx == rx) nx = xyz.rimvisuals.core.HudMath.snap(rx, grid);
+        if (ny == ry) ny = xyz.rimvisuals.core.HudMath.snap(ry, grid);
+        nx = Math.max(0, Math.min(vw - w, nx)); ny = Math.max(0, Math.min(vh - h, ny));
+        grab.posX.set(nx); grab.posY.set(ny);
+        guideX = xyz.rimvisuals.core.HudMath.matchedGuide(grab.posX.value, w, xl);
+        guideY = xyz.rimvisuals.core.HudMath.matchedGuide(grab.posY.value, h, yl);
         return true;
     }
 
     @Override
     public boolean mouseReleased(Click click) {
         double mx=click.x(), my=click.y(); int button=click.button();
-        grab = null;
+        grab = null; guideX = guideY = -1;
         return super.mouseReleased(click);
+    }
+
+    /** Screen edges, screen centre and every other visible element's edges and centre. */
+    private int[] guideLines(MinecraftClient mc, boolean horizontal, int vw, int vh) {
+        java.util.ArrayList<Integer> out = new java.util.ArrayList<>();
+        int extent = horizontal ? vw : vh;
+        out.add(0); out.add(extent / 2); out.add(extent);
+        for (HudModule m : Modules.HUD) {
+            if (!m.enabled || m == grab) continue;
+            int w = RimHud.sw(m, mc), h = RimHud.sh(m, mc);
+            int pos = horizontal ? RimHud.clampX(m, vw, w) : RimHud.clampY(m, vh, h), size = horizontal ? w : h;
+            out.add(pos); out.add(pos + size); out.add(pos + size / 2);
+        }
+        return out.stream().mapToInt(Integer::intValue).toArray();
     }
 
     private HudModule hitTest(MinecraftClient mc, double x, double y, int vw, int vh) {
