@@ -25,7 +25,7 @@ public final class KeystrokesHud extends HudModule {
         int bg = down ? Gfx.withAlpha(accent() & 0xFFFFFF, .85f) : Gfx.withAlpha(0x08080F, (float) opacity.value);
         Gfx.round(c, x, y, w, h, 3, bg);
         int tw = mc.textRenderer.getWidth(label);
-        c.drawTextWithShadow(mc.textRenderer, label, x + (w - tw) / 2, y + (h - 8) / 2, down ? 0xFFFFFFFF : Theme.text());
+        Gfx.text(c, mc.textRenderer, label, x + (w - tw) / 2, y + (h - 8) / 2, down ? 0xFFFFFFFF : Theme.text());
     }
 
     @Override public void draw(DrawContext c, MinecraftClient mc, int x, int y) {

@@ -7,6 +7,7 @@ import net.minecraft.client.gui.DrawContext;
 public abstract class HudModule extends Module {
     public final Setting.Num posX, posY;
     public final Setting.Num scale;
+    public final Setting.Num elementOpacity;
     public final Setting.Bool customAccent;
     public final Setting.Color accentColor;
     public final int defX, defY;
@@ -17,6 +18,7 @@ public abstract class HudModule extends Module {
         posX = add(new Setting.Num("Pos X", defX, 0, 4000, 1)); posX.hidden = true;
         posY = add(new Setting.Num("Pos Y", defY, 0, 4000, 1)); posY.hidden = true;
         scale = add(new Setting.Num("Element scale", 1, .5, 2, .05));
+        elementOpacity = add(new Setting.Num("Element opacity", 1, .1, 1, .05));
         customAccent = add(new Setting.Bool("Custom accent", false));
         accentColor = add(new Setting.Color("Element accent", 0xA855F7));
     }

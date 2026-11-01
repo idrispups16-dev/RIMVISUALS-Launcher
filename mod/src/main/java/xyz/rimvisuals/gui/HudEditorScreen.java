@@ -61,7 +61,7 @@ public class HudEditorScreen extends Screen {
         ms.popMatrix();
 
         boolean mob = RimPlatform.mobile();
-        String hint = any ? "Drag to move (snaps to guides and grid)  |  wheel: resize  |  right-click: reset  |  colours/opacity: menu > HUD" : "No HUD element is enabled. Turn one on in the menu.";
+        String hint = any ? "Drag to move (snaps to guides and grid)  |  wheel: size  |  Shift+wheel: opacity  |  right-click: reset element  |  accent colour: menu > HUD" : "No HUD element is enabled. Turn one on in the menu.";
         c.drawText(textRenderer, hint, (width - textRenderer.getWidth(hint)) / 2, 10, Theme.text(), false);
         bh = mob ? 32 : 22; btnW = mob ? 110 : 90; btnY = height - bh - 12;
         int total = btnW * 3 + 24, start = (width - total) / 2;
@@ -91,14 +91,14 @@ public class HudEditorScreen extends Screen {
             float hr = (float) Modules.UI.hudScale.value;
             int vwr = Math.round(width / hr), vhr = Math.round(height / hr);
             HudModule hit = hitTest(mcr, mx / hr, my / hr, vwr, vhr);
-            if (hit != null) { hit.posX.set(hit.defX); hit.posY.set(hit.defY); hit.scale.set(1); return true; }
+            if (hit != null) { hit.posX.set(hit.defX); hit.posY.set(hit.defY); hit.scale.set(1); hit.elementOpacity.set(1); return true; }
             return super.mouseClicked(click, doubled);
         }
         if (button != 0) return super.mouseClicked(click, doubled);
         if (inBtn(mx, my, doneX)) { close(); return true; }
         if (inBtn(mx, my, monX)) { Modules.PERFORMANCE.monitor.value = !Modules.PERFORMANCE.monitor.value; return true; }
         if (inBtn(mx, my, resetX)) {
-            for (HudModule m : Modules.HUD) { m.posX.set(m.defX); m.posY.set(m.defY); m.scale.set(1); }
+            for (HudModule m : Modules.HUD) { m.posX.set(m.defX); m.posY.set(m.defY); m.scale.set(1); m.elementOpacity.set(1); }
             return true;
         }
         MinecraftClient mc = MinecraftClient.getInstance();
@@ -174,7 +174,10 @@ public class HudEditorScreen extends Screen {
         float hs = (float) Modules.UI.hudScale.value;
         HudModule m = hitTest(mc, mouseX / hs, mouseY / hs, Math.round(width / hs), Math.round(height / hs));
         if (m == null) return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
-        m.scale.set(m.scale.value + Math.signum(verticalAmount) * .05);
+        boolean shift = org.lwjgl.glfw.GLFW.glfwGetKey(mc.getWindow().getHandle(), org.lwjgl.glfw.GLFW.GLFW_KEY_LEFT_SHIFT) == org.lwjgl.glfw.GLFW.GLFW_PRESS
+                || org.lwjgl.glfw.GLFW.glfwGetKey(mc.getWindow().getHandle(), org.lwjgl.glfw.GLFW.GLFW_KEY_RIGHT_SHIFT) == org.lwjgl.glfw.GLFW.GLFW_PRESS;
+        if (shift) m.elementOpacity.set(m.elementOpacity.value + Math.signum(verticalAmount) * .05);
+        else m.scale.set(m.scale.value + Math.signum(verticalAmount) * .05);
         return true;
     }
 

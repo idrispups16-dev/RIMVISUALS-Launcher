@@ -47,7 +47,7 @@ public final class ArmorHud extends HudModule {
         for (ItemStack i : s) any |= !i.isEmpty();
         if (!any && !(mc.currentScreen instanceof HudEditorScreen)) return;
         Gfx.round(c, x, y, width(mc), height(mc), 4, Gfx.withAlpha(0x08080F, (float) opacity.value));
-        c.fill(x, y + 3, x + 2, y + height(mc) - 3, accent());
+        Gfx.fill(c, x, y + 3, x + 2, y + height(mc) - 3, accent());
         int cx = x + 6, cy = y + 4, step = vertical.value ? 20 : cell(mc);
         for (ItemStack st : s) {
             if (hideEmpty.value && st.isEmpty()) continue;
@@ -56,8 +56,8 @@ public final class ArmorHud extends HudModule {
                 if (st.isDamageable()) {
                     float f = 1f - st.getDamage() / (float) st.getMaxDamage();
                     int col = Gfx.mix(0xFFFF4444, 0xFF55FF55, f);
-                    if (bars.value) { c.fill(cx, cy + 15, cx + 16, cy + 16, 0xFF000000); c.fill(cx, cy + 15, cx + Math.round(16 * f), cy + 16, col); }
-                    if (percent.value) c.drawTextWithShadow(mc.textRenderer, Math.round(f * 100) + "%", cx + 19, cy + 4, col);
+                    if (bars.value) { Gfx.fill(c, cx, cy + 15, cx + 16, cy + 16, 0xFF000000); Gfx.fill(c, cx, cy + 15, cx + Math.round(16 * f), cy + 16, col); }
+                    if (percent.value) Gfx.text(c, mc.textRenderer, Math.round(f * 100) + "%", cx + 19, cy + 4, col);
                 }
             }
             if (vertical.value) cy += step; else cx += step;

@@ -54,13 +54,13 @@ public final class PotionHud extends HudModule {
         if (names.isEmpty()) return;
         int w = width(mc), h = height(mc);
         Gfx.round(c, x, y, w, h, 4, Gfx.withAlpha(0x08080F, (float) opacity.value));
-        c.fill(x, y + 3, x + 2, y + h - 3, accent());
-        c.drawTextWithShadow(mc.textRenderer, "Effects", x + 8, y + 4, accent());
+        Gfx.fill(c, x, y + 3, x + 2, y + h - 3, accent());
+        Gfx.text(c, mc.textRenderer, "Effects", x + 8, y + 4, accent());
         int ty = y + 14;
         for (int i = 0; i < names.size(); i++) {
-            c.drawTextWithShadow(mc.textRenderer, names.get(i), x + 8, ty, Theme.text());
+            Gfx.text(c, mc.textRenderer, names.get(i), x + 8, ty, Theme.text());
             String t = times.get(i);
-            c.drawTextWithShadow(mc.textRenderer, t, x + w - 6 - mc.textRenderer.getWidth(t), ty, warn.value && low.get(i) ? 0xFFFF5555 : Theme.muted());
+            Gfx.text(c, mc.textRenderer, t, x + w - 6 - mc.textRenderer.getWidth(t), ty, warn.value && low.get(i) ? 0xFFFF5555 : Theme.muted());
             ty += 10;
         }
     }

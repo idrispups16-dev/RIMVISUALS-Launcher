@@ -36,7 +36,7 @@ public final class CpsHud extends HudModule {
     @Override public void draw(DrawContext c, MinecraftClient mc, int x, int y) {
         sample(mc);
         Gfx.round(c, x, y, width(mc), height(mc), 4, Gfx.withAlpha(0x08080F, (float) opacity.value));
-        c.fill(x, y + 3, x + 2, y + height(mc) - 3, accent());
-        c.drawTextWithShadow(mc.textRenderer, text(mc), x + 8, y + 5, Theme.text());
+        Gfx.fill(c, x, y + 3, x + 2, y + height(mc) - 3, accent());
+        Gfx.text(c, mc.textRenderer, text(mc), x + 8, y + 5, Theme.text());
     }
 }

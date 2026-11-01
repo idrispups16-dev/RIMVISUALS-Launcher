@@ -57,11 +57,11 @@ public final class InfoHud extends HudModule {
         int w = width(mc), h = height(mc);
         int acc = accent();
         Gfx.round(c, x, y, w, h, 4, Gfx.withAlpha(0x08080F, (float) opacity.value));
-        c.fill(x, y + 3, x + 2, y + h - 3, acc);
-        c.drawTextWithShadow(mc.textRenderer, "RIMVISUALS", x + 8, y + 4, acc);
+        Gfx.fill(c, x, y + 3, x + 2, y + h - 3, acc);
+        Gfx.text(c, mc.textRenderer, "RIMVISUALS", x + 8, y + 4, acc);
         int ty = y + 14;
         for (String s : lines) {
-            c.drawTextWithShadow(mc.textRenderer, s, x + 8, ty, Theme.text());
+            Gfx.text(c, mc.textRenderer, s, x + 8, ty, Theme.text());
             ty += 10;
         }
     }

@@ -22,7 +22,7 @@ public final class InventoryHud extends HudModule {
     @Override public void draw(DrawContext c, MinecraftClient mc, int x, int y) {
         if (mc.player == null) return;
         Gfx.round(c, x, y, width(mc), height(mc), 4, Gfx.withAlpha(0x08080F, (float) opacity.value));
-        c.fill(x, y + 3, x + 2, y + height(mc) - 3, accent());
+        Gfx.fill(c, x, y + 3, x + 2, y + height(mc) - 3, accent());
         int r = (int) rows.value;
         for (int row = 0; row < r; row++) for (int col = 0; col < 9; col++) {
             ItemStack st = mc.player.getInventory().getStack(9 + row * 9 + col);

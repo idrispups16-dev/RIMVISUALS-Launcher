@@ -17,13 +17,16 @@ public final class RimHud {
 
     public static void drawScaled(DrawContext c, MinecraftClient mc, HudModule m, int x, int y) {
         float s = (float) m.scale.value;
-        if (s == 1f) { m.draw(c, mc, x, y); return; }
-        var ms = c.getMatrices();
-        ms.pushMatrix();
-        ms.translate(x, y);
-        ms.scale(s, s);
-        m.draw(c, mc, 0, 0);
-        ms.popMatrix();
+        xyz.rimvisuals.core.Gfx.hudAlpha = (float) m.elementOpacity.value;
+        try {
+            if (s == 1f) { m.draw(c, mc, x, y); return; }
+            var ms = c.getMatrices();
+            ms.pushMatrix();
+            ms.translate(x, y);
+            ms.scale(s, s);
+            m.draw(c, mc, 0, 0);
+            ms.popMatrix();
+        } finally { xyz.rimvisuals.core.Gfx.hudAlpha = 1f; }
     }
 
     public static int clampX(HudModule m, int vw, int w) { return Math.max(0, Math.min((int) m.posX.value, Math.max(0, vw - w))); }
