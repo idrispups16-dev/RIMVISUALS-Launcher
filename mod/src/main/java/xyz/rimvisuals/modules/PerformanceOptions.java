@@ -5,7 +5,7 @@ public final class PerformanceOptions extends Module {
  public final Setting.Bool safe=add(new Setting.Bool("Performance Safe Mode",true));
  public final Setting.Bool reducedMotion=add(new Setting.Bool("Reduced motion",false));
  public final Setting.Bool adaptive=add(new Setting.Bool("Adaptive particles",true));
- public final Setting.Bool monitor=add(new Setting.Bool("Performance monitor",true));
+ public final Setting.Bool monitor=add(new Setting.Bool("Performance monitor",false));
  public final Setting.Num particleLimit=add(new Setting.Num("Particle limit",16,0,80,1));
  public final Setting.Num targetFps=add(new Setting.Num("Target FPS",60,30,240,1));
  public final Setting.Mode preset=add(new Setting.Mode("Preset",0,"Low-End","Balanced","Ultra","Custom"));

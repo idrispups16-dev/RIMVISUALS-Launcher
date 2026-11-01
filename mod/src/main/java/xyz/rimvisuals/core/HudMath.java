@@ -23,6 +23,12 @@ public final class HudMath {
         return (float) Math.max(0, Math.min(1, 1 - age / duration));
     }
 
+    /** Snaps a value to a grid; grid <= 0 disables snapping. */
+    public static double snap(double v, int grid) { return grid <= 0 ? v : Math.round(v / grid) * (double) grid; }
+
+    /** Size of an element after scaling, never below one unit. */
+    public static int scaled(int size, double scale) { return Math.max(1, (int) Math.round(size * scale)); }
+
     /** Horizontal speed in blocks per second from a position delta. */
     public static double bps(double dx, double dz, double seconds) {
         if (seconds <= 0) return 0;

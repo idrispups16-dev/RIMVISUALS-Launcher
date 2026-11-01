@@ -44,4 +44,15 @@ class HudMathTest {
         assertEquals(0f, DamageTint.intensity(5, 0), 0);
         assertEquals(1f, DamageTint.intensity(20, 10), 0);
     }
+    @Test void snapRoundsToGridAndZeroDisables() {
+        assertEquals(16.0, HudMath.snap(13, 8), 0);
+        assertEquals(8.0, HudMath.snap(11, 8) - 0, 0);
+        assertEquals(13.4, HudMath.snap(13.4, 0), 0);
+        assertEquals(0.0, HudMath.snap(3, 8), 0);
+    }
+    @Test void scaledSizeNeverCollapses() {
+        assertEquals(40, HudMath.scaled(20, 2));
+        assertEquals(10, HudMath.scaled(20, .5));
+        assertEquals(1, HudMath.scaled(0, 1));
+    }
 }
