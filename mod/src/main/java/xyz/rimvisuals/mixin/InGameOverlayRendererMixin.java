@@ -18,6 +18,11 @@ public class InGameOverlayRendererMixin {
     @Shadow private int floatingItemTimer;
     @Unique private float rimTick;
 
+    @Inject(method = "setFloatingItem(Lnet/minecraft/item/ItemStack;Lnet/minecraft/util/math/random/Random;)V", at = @At("HEAD"))
+    private void rimTotemUsed(net.minecraft.item.ItemStack stack, net.minecraft.util.math.random.Random random, CallbackInfo ci) {
+        if (stack.isOf(net.minecraft.item.Items.TOTEM_OF_UNDYING)) xyz.rimvisuals.core.Notifier.totemUsed();
+    }
+
     @Inject(method = "renderFloatingItem(Lnet/minecraft/client/util/math/MatrixStack;FLnet/minecraft/client/render/command/OrderedRenderCommandQueue;)V", at = @At("HEAD"))
     private void rimTickProgress(MatrixStack matrices, float tickProgress, OrderedRenderCommandQueue queue, CallbackInfo ci) {
         rimTick = tickProgress;

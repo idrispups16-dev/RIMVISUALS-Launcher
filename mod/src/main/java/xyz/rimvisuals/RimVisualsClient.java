@@ -38,6 +38,7 @@ public class RimVisualsClient implements ClientModInitializer {
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             Modules.autosaveTick();
             xyz.rimvisuals.core.WorldColors.tick(client);
+            xyz.rimvisuals.core.Notifier.tick(client);
             while (monitorKey.wasPressed()) Modules.PERFORMANCE.monitor.value = !Modules.PERFORMANCE.monitor.value;
             SmokeTest.tick(client);
             xyz.rimvisuals.core.CombatEvents.tick(client);
