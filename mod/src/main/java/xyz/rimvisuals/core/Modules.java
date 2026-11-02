@@ -76,7 +76,7 @@ public final class Modules {
     public static void reset(Module m){if(m.toggleable)m.enabled=Boolean.parseBoolean(DEFAULTS.getProperty(m.id+".enabled"));for(Setting st:m.settings)st.load(DEFAULTS.getProperty(m.id+"."+st.key()));PERFORMANCE.seedPreset();VIEWMODEL.seedPreset();}
     private Modules() {}
 
-    private static Path dir() { return FabricLoader.getInstance().getConfigDir().resolve("rimvisuals"); }
+    static Path dir() { return FabricLoader.getInstance().getConfigDir().resolve("rimvisuals"); }
     private static Path profileDir() { return dir().resolve("profiles"); }
 
     public static Properties snapshot() {
