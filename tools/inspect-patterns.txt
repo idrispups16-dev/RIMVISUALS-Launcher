@@ -1,1 +1,1 @@
-VertexConsumer.java BlockStateModel.java BlockModelPart.java BakedQuad.java OrderedRenderCommandQueue.java ClientPlayNetworkHandler.java ExplosionS2CPacket.java RespawnAnchorBlock.java InGameOverlayRenderer.java ItemCooldownManager.java MovingBlockRenderState.java ItemRenderer.java ItemRenderState.java ModelCommandRenderer.java BlockRenderManager.java
+TexturedRenderLayers.java SpriteAtlasTexture.java BasicItemModel.java ItemModelManager.java ClientWorld.java LightmapTextureManager.java ClientPlayerEntity.java
