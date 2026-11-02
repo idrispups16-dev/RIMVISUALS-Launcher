@@ -10,7 +10,8 @@ public final class SmokeTest {
   if(!audited){audited=true;MixinEnvironment.getCurrentEnvironment().audit();}
   ++ticks;
   if(ticks==41){IntegrationChecks.run();
-   var editor=new xyz.rimvisuals.gui.HudEditorScreen(null);
+   var hudParent=new net.minecraft.client.gui.screen.TitleScreen();
+   var editor=new xyz.rimvisuals.gui.HudEditorScreen(hudParent);
    client.setScreen(editor);
    if(net.fabricmc.fabric.api.client.screen.v1.Screens.getButtons(editor).size()!=12)throw new IllegalStateException("HUD toolbar missing");
    float previousAlpha=xyz.rimvisuals.core.Gfx.hudAlpha;
@@ -19,7 +20,7 @@ public final class SmokeTest {
     if(Math.abs(((xyz.rimvisuals.core.ItemOpacity)(Object)itemState).rimOpacity()-.35f)>.00001)throw new IllegalStateException("Deferred item opacity was lost");
    }finally{xyz.rimvisuals.core.Gfx.hudAlpha=previousAlpha;}
    editor.close();
-   if(client.currentScreen!=null)throw new IllegalStateException("HUD editor did not close");
+   if(client.currentScreen!=hudParent)throw new IllegalStateException("HUD editor did not return to parent");
    LoggerFactory.getLogger("rimvisuals").info("RIM_HUD_EDITOR_OK: toolbar initialization and close; chat input requires an in-world player");
    var saved=xyz.rimvisuals.core.Modules.snapshot();try{
    var modules=xyz.rimvisuals.core.Modules.SWING;modules.enabled=true;xyz.rimvisuals.core.Modules.PERFORMANCE.reducedMotion.value=false;
