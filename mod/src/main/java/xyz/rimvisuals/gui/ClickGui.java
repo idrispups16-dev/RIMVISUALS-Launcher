@@ -244,7 +244,7 @@ public class ClickGui extends Screen {
             if(hover)tooltip=m.name+": "+m.description;
             int sw=25;
             txt(c,textRenderer.trimToWidth(m.name,cardW-48),x+10,y+9,m.toggleable&&!m.enabled?Theme.muted():Theme.text());
-            txt(c,m.toggleable?(m.enabled?"ENABLED":"DISABLED"):"SETTINGS",x+10,y+25,m.toggleable&&m.enabled?Theme.accent2():Theme.muted());
+            txt(c,!m.suppressionReason().isEmpty()?m.suppressionReason():m.toggleable?(m.enabled?"ENABLED":"DISABLED"):"SETTINGS",x+10,y+25,m.toggleable&&m.enabled?Theme.accent2():Theme.muted());
             hit(x,y,cardW-(m.toggleable?sw+12:0),cardH-6,()->{selected=m;detailScroll=0;detailA.value=0;focus=null;},null);
             if(m.toggleable){drawSwitch(c,x+cardW-sw-9,y+14,sw,14,m,m.enabled);hit(x+cardW-sw-12,y,sw+12,cardH-6,()->m.enabled=!m.enabled,null);}
         }

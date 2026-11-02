@@ -19,13 +19,13 @@ public final class SessionHud extends HudModule {
     public final Setting.Num opacity = add(new Setting.Num("Opacity", .65, .2, 1, .05));
     private final List<String> lines = new ArrayList<>();
     private long worldStart, next;
-    private Object lastWorld;
+    private int lastWorldId;
 
     public SessionHud() { super("session_hud", "Session Info", "Play time in this world and the current server address", 6, 208); }
 
     private void build(MinecraftClient mc) {
         long now = System.nanoTime();
-        if (mc.world != lastWorld) { lastWorld = mc.world; worldStart = now; }
+        if (System.identityHashCode(mc.world) != lastWorldId) { lastWorldId = System.identityHashCode(mc.world); worldStart = now; }
         if (now < next) return;
         next = now + 250_000_000L;
         lines.clear();

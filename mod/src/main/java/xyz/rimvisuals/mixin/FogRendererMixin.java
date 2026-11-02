@@ -17,7 +17,7 @@ public class FogRendererMixin {
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/fog/FogRenderer;applyFog(Ljava/nio/ByteBuffer;ILorg/joml/Vector4f;FFFFFF)V"))
     private void rimFog(Args args) {
         var fog = Modules.CUSTOM_FOG;
-        if (!fog.enabled) return;
+        if(!fog.enabled){if(Modules.ATMOSPHERE.enabled){Vector4f c=args.get(2);int rgb=Modules.ATMOSPHERE.rgb();float t=(float)Modules.ATMOSPHERE.strength.value;c.set(c.x+(((rgb>>16)&255)/255f-c.x)*t,c.y+(((rgb>>8)&255)/255f-c.y)*t,c.z+((rgb&255)/255f-c.z)*t,c.w);}return;}
         long t0 = PerformanceMonitor.begin();
         if (fog.recolor.value && fog.strength.value > 0) {
             // Mutate the same Vector4f the game returns as the clear colour so sky edge and fog agree.

@@ -34,6 +34,7 @@ public class RimVisualsClient implements ClientModInitializer {
                 "key.rimvisuals.monitor", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_UNKNOWN, KeyBinding.Category.MISC));
         xyz.rimvisuals.core.Keybinds.init();
         xyz.rimvisuals.core.LocalData.init();
+        net.fabricmc.fabric.api.client.rendering.v1.TooltipComponentCallback.EVENT.register(data -> data instanceof xyz.rimvisuals.modules.ShulkerPreview.Data preview ? new xyz.rimvisuals.gui.ShulkerTooltip(preview) : null);
         net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> client.execute(() -> {
             var entry = client.getCurrentServerEntry();
             if (entry != null) Modules.applyServerProfile(entry.address).ifPresent(n -> org.slf4j.LoggerFactory.getLogger("rimvisuals").info("Loaded server configuration {}", n));
@@ -42,6 +43,7 @@ public class RimVisualsClient implements ClientModInitializer {
             xyz.rimvisuals.core.PerformanceMonitor.setEnabled(Modules.PERFORMANCE.monitor.value || Modules.PERFORMANCE.diagnostics.value);
             xyz.rimvisuals.core.Fx.beginTick();
             Modules.autosaveTick();
+            Modules.SOUND_CONTROLLER.refresh(client);
             xyz.rimvisuals.core.WorldColors.tick(client);
             xyz.rimvisuals.core.Notifier.tick(client);
             xyz.rimvisuals.core.Keybinds.tick(client);
@@ -53,7 +55,7 @@ public class RimVisualsClient implements ClientModInitializer {
             Modules.VIEWMODEL.presets();
             LauncherSettings.tick();
             if (Modules.PERFORMANCE.diagnostics.value && ++diagnosticTicks % 200 == 0)
-                org.slf4j.LoggerFactory.getLogger("rimvisuals").info("RIM_CPU_DIAGNOSTICS (CPU submission only): {}", xyz.rimvisuals.core.PerformanceMonitor.report());
+                org.slf4j.LoggerFactory.getLogger("rimvisuals").info("RIM_CPU_DIAGNOSTICS (CPU submission only): {} | {}", xyz.rimvisuals.core.PerformanceMonitor.report(), xyz.rimvisuals.core.FrameTimes.report());
 
         });
         HudRenderCallback.EVENT.register(RimHud::render);

@@ -59,5 +59,17 @@
   "key.rimvisuals.toggle.totem_bar": "RIMVISUALS: Toggle Totem Bar",
   "key.rimvisuals.toggle.saturation_hud": "RIMVISUALS: Toggle Saturation HUD",
   "key.rimvisuals.toggle.low_hp_hud": "RIMVISUALS: Toggle Low HP",
-  "key.rimvisuals.toggle.tnt_timer": "RIMVISUALS: Toggle TNT Timer"
+  "key.rimvisuals.toggle.tnt_timer": "RIMVISUALS: Toggle TNT Timer",
+  "key.rimvisuals.toggle.shulker_preview": "RIMVISUALS: Toggle Shulker Preview",
+  "key.rimvisuals.toggle.crosshair": "RIMVISUALS: Toggle Crosshair",
+  "key.rimvisuals.toggle.atmosphere": "RIMVISUALS: Toggle Atmosphere",
+  "key.rimvisuals.toggle.aspect_ratio": "RIMVISUALS: Toggle Aspect Ratio",
+  "key.rimvisuals.toggle.sound_controller": "RIMVISUALS: Toggle Sound Controller",
+  "key.rimvisuals.toggle.item_swap": "RIMVISUALS: Toggle Item Swap",
+  "key.rimvisuals.toggle.item_physics": "RIMVISUALS: Toggle Item Physics (visual)",
+  "key.rimvisuals.toggle.china_hat": "RIMVISUALS: Toggle China Hat",
+  "key.rimvisuals.toggle.block_overlay": "RIMVISUALS: Toggle Block Overlay",
+  "key.rimvisuals.toggle.hotkeys_hud": "RIMVISUALS: Toggle Assigned Keys HUD",
+  "key.rimvisuals.toggle.compass_hud": "RIMVISUALS: Toggle Compass HUD",
+  "key.rimvisuals.swap": "RIMVISUALS: Item Swap to offhand"
 }

@@ -23,7 +23,12 @@
     "WorldRendererMixin",
     "ChatScreenAccessor",
     "ItemGuiOpacityMixin",
-    "GuiItemOpacityMixin"
+    "GuiItemOpacityMixin",
+    "InGameHudMixin",
+    "ItemEntityStateMixin",
+    "ItemEntityRendererMixin",
+    "SoundSystemMixin",
+    "ItemStackTooltipMixin"
   ],
   "injectors": {
     "defaultRequire": 1
