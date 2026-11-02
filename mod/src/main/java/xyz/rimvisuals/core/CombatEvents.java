@@ -67,7 +67,7 @@ public final class CombatEvents {
         int level=sp.enabled?sharpnessLevel(mc,player):0;
         boolean critical=cp.enabled&&looksCritical(player);
         int active=(hp.enabled?1:0)+(sp.enabled&&level>0?1:0)+(critical?1:0);
-        int cap=Modules.PERFORMANCE.effectLimit();
+        int cap=Fx.remaining();
         if (hp.enabled) {
             long t = PerformanceMonitor.begin();
             Fx.burst(x, y, z, hp.color.rgb, ParticleMath.fairShare((int)hp.count.value,active,cap), (float) hp.size.value, hp.speed.value,hp.opacity.value);
@@ -127,7 +127,7 @@ public final class CombatEvents {
             Float prev = health.put(id, now);
             if (prev != null && now < prev - .01f) {
                 int n = ParticleMath.damageCount(prev - now, (int) dp.perHeart.value, (int) dp.cap.value);
-                Fx.burst(le.getX(), le.getY() + le.getHeight() * .6, le.getZ(), dp.color.rgb, n, (float) dp.size.value, .12,dp.opacity.value);
+                Fx.burstAmbient(le.getX(), le.getY() + le.getHeight() * .6, le.getZ(), dp.color.rgb, n, (float) dp.size.value, .12,dp.opacity.value);
             }
         }
         health.keySet().retainAll(seen);

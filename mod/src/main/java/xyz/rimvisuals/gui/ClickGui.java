@@ -241,7 +241,7 @@ public class ClickGui extends Screen {
             if(y<ctop||y+cardH>cbot)continue;
             boolean hover=in(mx,my,x,y,cardW,cardH-6);
             Gfx.roundBorder(c,x,y,cardW,cardH-6,7,f(hover?Theme.cardHover():Theme.card()),f(selected==m?Theme.accent2():0xff252438));
-            if(hover)tooltip=m.name+": "+m.description;
+            if(hover)tooltip=m.name+": "+m.description+" "+m.statusNote();
             int sw=25;
             txt(c,textRenderer.trimToWidth(m.name,cardW-48),x+10,y+9,m.toggleable&&!m.enabled?Theme.muted():Theme.text());
             txt(c,!m.suppressionReason().isEmpty()?m.suppressionReason():m.toggleable?(m.enabled?"ENABLED":"DISABLED"):"SETTINGS",x+10,y+25,m.toggleable&&m.enabled?Theme.accent2():Theme.muted());
@@ -260,6 +260,7 @@ public class ClickGui extends Screen {
         txt(c,textRenderer.trimToWidth(selected.name,cw-65),cx+58,ctop+10,Theme.text());
         ctop+=32;cy=ctop-Math.round(detailA.to(detailScroll,16));
         c.enableScissor(cx,ctop,cx+cw,cbot);
+        if(!selected.statusNote().isEmpty())infoRow(c,textRenderer.trimToWidth(selected.statusNote(),cw-16));
         int resetY=begin(rowH());if(resetY!=NONE)button(c,cx+8,resetY,cw-16,rowH()-3,"Reset module",mx,my,()->Modules.reset(selected),false);
         for(Setting st:selected.settings)if(!st.hidden)settingRow(c,st,mx,my,1);
         detailMax=Math.max(0,cy-(ctop-Math.round(detailA.value))-(cbot-ctop));
@@ -288,7 +289,7 @@ public class ClickGui extends Screen {
         int y = begin(h);
         if (y != NONE) {
             int sw = mob ? 30 : 24, swh = mob ? 16 : 12;
-            boolean hov = in(mx, my, cx, y, cw, h - 3);if(hov)tooltip=m.name+": "+m.description;
+            boolean hov = in(mx, my, cx, y, cw, h - 3);if(hov)tooltip=m.name+": "+m.description+" "+m.statusNote();
             Gfx.round(c, cx, y, cw, h - 3, 5, f(hov ? Theme.cardHover() : Theme.card()));
             if (m.toggleable && m.enabled) c.fill(cx, y + 6, cx + 2, y + h - 9, f(Theme.accent()));
             txt(c, textRenderer.trimToWidth(m.name,cw-65), cx + 9, y + (mob ? 7 : 5), Theme.text());
@@ -308,7 +309,8 @@ public class ClickGui extends Screen {
             }
         }
         if (isOpen) {
-            int resetY=begin(rowH());if(resetY!=NONE)button(c,cx+8,resetY,cw-16,rowH()-3,"Reset module to defaults",mx,my,()->Modules.reset(m),false);
+            if(!selected.statusNote().isEmpty())infoRow(c,textRenderer.trimToWidth(selected.statusNote(),cw-16));
+        int resetY=begin(rowH());if(resetY!=NONE)button(c,cx+8,resetY,cw-16,rowH()-3,"Reset module to defaults",mx,my,()->Modules.reset(m),false);
             for (Setting st : m.settings) if (!st.hidden) settingRow(c, st, mx, my, a);
             cy += 4;
         }

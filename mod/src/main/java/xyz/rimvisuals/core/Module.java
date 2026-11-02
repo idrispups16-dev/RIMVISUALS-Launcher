@@ -21,8 +21,9 @@ public class Module {
     public String suppressionReason(){
         if(!enabled)return "";
         boolean combat=COMBAT_PARTICLES.contains(id);
-        if(combat)return Modules.PERFORMANCE.effectLimit()==0?"PARTICLES OFF":Modules.PERFORMANCE.safe.value?"LIMITED: 6/TICK":"";
+        if(combat)return Modules.PERFORMANCE.effectLimit()==0?"PARTICLES OFF":Modules.PERFORMANCE.safe.value?"LIMITED: "+Modules.PERFORMANCE.effectLimit()+"/TICK":"";
         return Modules.PERFORMANCE.safe.value&&SAFE_SUPPRESSED.contains(id)?"SAFE MODE":"";
     }
+    public String statusNote(){return "";}
     public <T extends Setting> T add(T setting) { settings.add(setting); return setting; }
 }

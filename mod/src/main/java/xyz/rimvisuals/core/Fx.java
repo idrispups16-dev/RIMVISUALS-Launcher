@@ -7,17 +7,23 @@ import net.minecraft.particle.DustParticleEffect;
 public final class Fx {
     private Fx() {}
     private static final EmissionBudget shared=new EmissionBudget();
-    public static void beginTick(){shared.reset();}
-    public static void refund(int count){shared.refund(count);}
+    private static final EmissionBudget ambient=new EmissionBudget();
+    private static long requested,admitted,created;
+    public static void beginTick(){shared.reset();ambient.reset();}
+    public static int remaining(){return shared.remaining(Modules.PERFORMANCE.effectLimit());}
+    public static String report(){return "particles requested="+requested+" admitted="+admitted+" created="+created+" tick-cap="+Modules.PERFORMANCE.effectLimit();}
+    public static int ambientBudget(int n){int amount=ambient.take(n,Modules.PERFORMANCE.effectLimit()/3);return budget(amount);}
+    public static void burstAmbient(double x,double y,double z,int rgb,int count,float size,double speed,double alpha){int n=ambient.take(count,Modules.PERFORMANCE.effectLimit()/3);burst(x,y,z,rgb,n,size,speed,alpha);}
+    public static void refund(int count){shared.refund(count);ambient.refund(count);admitted-=Math.max(0,count);}
     private static boolean near(MinecraftClient mc,double x,double y,double z){return mc.player!=null&&mc.player.squaredDistanceTo(x,y,z)<=48*48;}
 
     public static int budget(int requested) {
         MinecraftClient mc = MinecraftClient.getInstance();
-        return shared.take(Modules.PERFORMANCE.effectParticles(requested, mc.getCurrentFps()), Modules.PERFORMANCE.effectLimit());
+        Fx.requested+=Math.max(0,requested);int n=shared.take(Modules.PERFORMANCE.effectParticles(requested, mc.getCurrentFps()), Modules.PERFORMANCE.effectLimit());admitted+=n;return n;
     }
 
     public static void burst(double x,double y,double z,int rgb,int requested,float size,double speed){burst(x,y,z,rgb,requested,size,speed,1);}
-    public static void opacity(net.minecraft.client.particle.Particle particle,float alpha){if(particle instanceof net.minecraft.client.particle.BillboardParticle)((xyz.rimvisuals.mixin.ParticleOpacityAccessor)(Object)particle).rimAlpha(Math.max(0,Math.min(1,alpha)));}
+    public static void opacity(net.minecraft.client.particle.Particle particle,float alpha){if(particle!=null)created++;if(particle instanceof net.minecraft.client.particle.BillboardParticle)((xyz.rimvisuals.mixin.ParticleOpacityAccessor)(Object)particle).rimAlpha(Math.max(0,Math.min(1,alpha)));}
     public static void burst(double x, double y, double z, int rgb, int requested, float size, double speed,double alpha) {
         MinecraftClient mc = MinecraftClient.getInstance();
         if (mc.world == null || !near(mc,x,y,z)) return;
