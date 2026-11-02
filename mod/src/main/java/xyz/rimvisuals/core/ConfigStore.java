@@ -132,7 +132,7 @@ public final class ConfigStore {
             if (settings.size() == 0 || settings.size() > MAX_ENTRIES) return Optional.empty();
             Properties p = new Properties();
             for (Map.Entry<String, JsonElement> e : settings.entrySet()) {
-                if (!e.getKey().matches("[a-z0-9_.\\-]{1,80}") || !e.getValue().isJsonPrimitive()) return Optional.empty();
+                if (!e.getKey().matches("[a-z0-9_.()%\\-]{1,120}") || !e.getValue().isJsonPrimitive()) return Optional.empty();
                 String v = e.getValue().getAsString();
                 if (v.length() > 200) return Optional.empty();
                 p.setProperty(e.getKey(), v);
