@@ -31,7 +31,7 @@ public final class WorldColors {
     private static Object lastWorld;
     private static int appliedSig;
 
-    /** Called every client tick; rebuilds terrain once, 12 ticks after the colour settings stop changing. */
+    /** Called every client tick; defers rebuilding until the menu closes and changes settle; at most once per 100 ticks. */
     public static void tick(net.minecraft.client.MinecraftClient mc) {
         if (mc.world != lastWorld) {lastWorld=mc.world;lastSig=signature();appliedSig=lastSig;pending=cooldown=0;return;}
         if (mc.world==null) return;

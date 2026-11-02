@@ -114,6 +114,8 @@ class ConfigStoreTest {
         s.delete("pvp");
         assertTrue(s.serverProfile("play.example.com").isEmpty(), "binding to deleted profile is ignored");
         s.save("pvp", props("k", "v"));
+        assertTrue(s.serverProfile("play.example.com").isEmpty(), "recreating a deleted name must not restore a stale binding");
+        assertTrue(s.bindServer("play.example.com", "pvp"));
         assertTrue(s.unbindServer("play.example.com"));
         assertTrue(s.serverProfile("play.example.com").isEmpty());
     }

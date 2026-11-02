@@ -72,7 +72,17 @@ public final class ConfigStore {
 
     public boolean delete(String name) {
         if (clean(name).isEmpty()) return false;
-        try { return Files.deleteIfExists(file(name)); } catch (IOException e) { return false; }
+        if(!exists(name))return false;
+        try {
+            Properties saved=read(file(name));backup(saved);
+            Properties bindings=Files.isRegularFile(servers())?read(servers()):new Properties();
+            Properties changed=new Properties();changed.putAll(bindings);
+            changed.entrySet().removeIf(e->clean(name).equals(e.getValue()));
+            if(!changed.equals(bindings))write(servers(),changed);
+            try {Files.delete(file(name));}
+            catch(IOException e){if(!changed.equals(bindings))write(servers(),bindings);throw e;}
+            return true;
+        }catch(IOException e){return false;}
     }
 
     /** Copies {@code from} to a new profile {@code to}; fails if the target exists or names are invalid. */

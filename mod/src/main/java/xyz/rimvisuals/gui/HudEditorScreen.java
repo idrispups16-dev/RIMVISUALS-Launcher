@@ -21,6 +21,7 @@ public class HudEditorScreen extends Screen {
     private final Runnable afterClose;
     private double offX, offY;
 
+    private int toolbarY, columns, lastGrid=8;
     private int guideX = -1, guideY = -1;
 
     public HudEditorScreen(Screen parent) {
@@ -36,11 +37,15 @@ public class HudEditorScreen extends Screen {
     @Override protected void init() {
         String[] labels = {"Done", "Menu", "Grid", "Monitor", "Reset one", "Reset all",
                            "Left", "Center X", "Right", "Top", "Center Y", "Bottom"};
-        int bw = Math.max(1, (width - 14) / 6);
+        columns=Math.max(1,Math.min(6,(width-8)/68));
+        int rows=(labels.length+columns-1)/columns;
+        toolbarY=Math.max(30,height-rows*23-2);
+        int bw=Math.max(1,(width-8-columns)/columns);
+        if(Modules.UI.gridSnap.value>0) lastGrid=(int)Modules.UI.gridSnap.value;
         for (int i = 0; i < labels.length; i++) {
             final int action = i;
             addDrawableChild(net.minecraft.client.gui.widget.ButtonWidget.builder(Text.literal(labels[i]), b -> action(action))
-                .dimensions(4 + (i % 6) * (bw + 1), height - 48 + (i / 6) * 23, bw, 20).build());
+                .dimensions(4 + (i % columns) * (bw + 1), toolbarY + (i / columns) * 23, bw, 20).build());
         }
     }
 
@@ -52,7 +57,7 @@ public class HudEditorScreen extends Screen {
     private void action(int action) {
         if (action == 0) { close(); return; }
         if (action == 1) { MinecraftClient.getInstance().setScreen(new ClickGui()); return; }
-        if (action == 2) { Modules.UI.gridSnap.set(Modules.UI.gridSnap.value > 0 ? 0 : 8); return; }
+        if (action == 2) { if(Modules.UI.gridSnap.value>0){lastGrid=(int)Modules.UI.gridSnap.value;Modules.UI.gridSnap.set(0);}else Modules.UI.gridSnap.set(lastGrid); return; }
         if (action == 3) { Modules.PERFORMANCE.monitor.value = !Modules.PERFORMANCE.monitor.value; return; }
         if (action == 4) { if (selected != null) resetElement(selected); return; }
         if (action == 5) { for (HudModule m : Modules.HUD) resetElement(m); return; }
@@ -112,7 +117,7 @@ public class HudEditorScreen extends Screen {
     @Override
     public boolean mouseClicked(Click click, boolean doubled) {
         double mx=click.x(), my=click.y(); int button=click.button();
-        if (my >= height - 48) return super.mouseClicked(click, doubled);
+        if (my >= toolbarY) return super.mouseClicked(click, doubled);
         if (button == 1) {
             MinecraftClient mcr = MinecraftClient.getInstance();
             float hr = (float) Modules.UI.hudScale.value;

@@ -114,7 +114,7 @@ public final class Modules {
         return p;
     }
 
-    public static void save() { Properties s = snapshot(); if(write(dir().resolve("config.properties"), s)) lastSaved = s; }
+    public static boolean save() { Properties s = snapshot(); if(!write(dir().resolve("config.properties"), s)) return false; lastSaved = s; return true; }
     public static void load() {
         boolean existed = Files.exists(dir().resolve("config.properties"));
         apply(read(dir().resolve("config.properties")));
@@ -132,9 +132,10 @@ public final class Modules {
         var p = store().load(cleanName(name));
         if (p.isEmpty()) return false;
         if (!backupNow()) return false;
+        var previous=snapshot();
         apply(p.get());
-        save();
-        return true;
+        if(save())return true;
+        apply(previous);return false;
     }
     public static boolean deleteProfile(String name) { return store().delete(cleanName(name)); }
     public static List<String> listProfiles() { return store().list(); }
@@ -154,9 +155,10 @@ public final class Modules {
         var p = store().latestBackup();
         if (p.isEmpty()) return false;
         if (!backupNow()) return false;
+        var previous=snapshot();
         apply(p.get());
-        save();
-        return true;
+        if(save())return true;
+        apply(previous);return false;
     }
 
     public static boolean applyPreset(String name) {

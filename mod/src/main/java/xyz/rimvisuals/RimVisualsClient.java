@@ -62,21 +62,21 @@ public class RimVisualsClient implements ClientModInitializer {
         ClientLifecycleEvents.CLIENT_STOPPING.register(client -> Modules.save());
     }
 
+    public static void openHudFromChat(MinecraftClient client, Screen screen) {
+        var field = ((xyz.rimvisuals.mixin.ChatScreenAccessor) screen).rimChatField();
+        String draft = field.getText();
+        client.setScreen(new xyz.rimvisuals.gui.HudEditorScreen(screen, () -> {
+            var restored = ((xyz.rimvisuals.mixin.ChatScreenAccessor) screen).rimChatField();
+            restored.setText(draft); screen.setFocused(restored); restored.setFocused(true);
+        }));
+    }
+
     private static void addMenuButton(MinecraftClient client, Screen screen, int w, int h) {
         boolean mob = RimPlatform.mobile();
         if (screen instanceof net.minecraft.client.gui.screen.ChatScreen) {
-            // Top-right corner, away from the input line; a button never takes keyboard focus from the chat field.
+            // Away from the input line; restore the draft and input focus on return.
             int bw = mob ? 96 : 76, bh = mob ? 26 : 18;
-            var edit = ButtonWidget.builder(Text.literal("HUD Editor"), b -> {
-                        var field = ((xyz.rimvisuals.mixin.ChatScreenAccessor) screen).rimChatField();
-                        String draft = field.getText();
-                        client.setScreen(new xyz.rimvisuals.gui.HudEditorScreen(screen, () -> {
-                            var restored = ((xyz.rimvisuals.mixin.ChatScreenAccessor) screen).rimChatField();
-                            restored.setText(draft);
-                            screen.setFocused(restored);
-                            restored.setFocused(true);
-                        }));
-                    })
+            var edit = ButtonWidget.builder(Text.literal("HUD Editor"), b -> openHudFromChat(client, screen))
                     .dimensions(w - bw - 6, 6, bw, bh).build();
             edit.setFocused(false);
             Screens.getButtons(screen).add(edit);

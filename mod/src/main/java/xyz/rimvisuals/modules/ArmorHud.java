@@ -22,14 +22,15 @@ public final class ArmorHud extends HudModule {
 
     public ArmorHud() { super("armor_hud", "Armor HUD", "Worn armour pieces with durability percent and bar", 6, 60); }
 
+    private final ItemStack[] out = new ItemStack[4];
+    private ItemStack[] preview;
     private ItemStack[] stacks(MinecraftClient mc) {
-        ItemStack[] out = new ItemStack[4];
         boolean any = false;
         for (int i = 0; i < 4; i++) { out[i] = mc.player == null ? ItemStack.EMPTY : mc.player.getEquippedStack(SLOTS[i]); any |= !out[i].isEmpty(); }
         if (!any && mc.currentScreen instanceof HudEditorScreen) {
-            out[0] = new ItemStack(Items.NETHERITE_HELMET); out[1] = new ItemStack(Items.NETHERITE_CHESTPLATE);
-            out[2] = new ItemStack(Items.NETHERITE_LEGGINGS); out[3] = new ItemStack(Items.NETHERITE_BOOTS);
-            out[1].setDamage(out[1].getMaxDamage() / 3); out[3].setDamage(out[3].getMaxDamage() / 2);
+            if(preview==null){preview=new ItemStack[]{new ItemStack(Items.NETHERITE_HELMET),new ItemStack(Items.NETHERITE_CHESTPLATE),new ItemStack(Items.NETHERITE_LEGGINGS),new ItemStack(Items.NETHERITE_BOOTS)};
+                preview[1].setDamage(preview[1].getMaxDamage()/3);preview[3].setDamage(preview[3].getMaxDamage()/2);}
+            return preview;
         }
         return out;
     }

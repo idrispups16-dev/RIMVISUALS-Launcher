@@ -19,6 +19,9 @@ public final class TargetHud extends HudModule {
     public final Setting.Num opacity = add(new Setting.Num("Opacity", .65, .2, 1, .05));
     private float shown = 1f;
     private int lastId = -1;
+    private long nextLabels;
+    private int labelTarget=Integer.MIN_VALUE;
+    private String labelName="",labelHealth="",labelDistance="";
 
     public TargetHud() { super("target_hud", "Target HUD", "Name, health bar and distance of your current target. Uses health the game already syncs to you.", 200, 6); }
 
@@ -41,16 +44,21 @@ public final class TargetHud extends HudModule {
         int w = width(mc), h = height(mc);
         Gfx.round(c, x, y, w, h, 4, Gfx.withAlpha(0x08080F, (float) opacity.value));
         Gfx.fill(c, x, y + 3, x + 2, y + h - 3, accent());
-        String name = preview ? "Target" : t.getDisplayName().getString();
-        while (name.length() > 1 && mc.textRenderer.getWidth(name) > w - 14) name = name.substring(0, name.length() - 1);
-        Gfx.text(c, mc.textRenderer, name, x + 8, y + 4, Theme.text());
+        long now=System.nanoTime();int targetId=preview?-1:t.getId();
+        if(now>=nextLabels||targetId!=labelTarget){
+            nextLabels=now+100_000_000L;labelTarget=targetId;
+            labelName=mc.textRenderer.trimToWidth(preview?"Target":t.getDisplayName().getString(),w-14);
+            labelHealth=String.format(java.util.Locale.ROOT,"%.1f / %.0f",hp,max);
+            labelDistance=preview?"4.2 m":String.format(java.util.Locale.ROOT,"%.1f m",mc.player.distanceTo(t));
+        }
+        Gfx.text(c, mc.textRenderer, labelName, x + 8, y + 4, Theme.text());
         int bx = x + 8, by = y + 15, bw = w - 16;
         Gfx.fill(c, bx, by, bx + bw, by + 6, 0xFF000000);
         Gfx.fill(c, bx, by, bx + Math.round(bw * shown), by + 6, Gfx.mix(0xFFFF4444, 0xFF55FF55, frac));
-        String num = String.format(java.util.Locale.ROOT, "%.1f / %.0f", hp, max);
+        String num = labelHealth;
         if (!distance.value) { Gfx.text(c, mc.textRenderer, num, bx, by + 8, Theme.muted()); return; }
         Gfx.text(c, mc.textRenderer, num, bx, by + 8, Theme.muted());
-        String d = preview ? "4.2 m" : String.format(java.util.Locale.ROOT, "%.1f m", mc.player.distanceTo(t));
+        String d = labelDistance;
         Gfx.text(c, mc.textRenderer, d, x + w - 8 - mc.textRenderer.getWidth(d), by + 8, Theme.muted());
     }
 }

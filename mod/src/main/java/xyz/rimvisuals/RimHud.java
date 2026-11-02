@@ -48,7 +48,7 @@ public final class RimHud {
         if (Modules.DAMAGE_TINT.enabled) {long t=PerformanceMonitor.begin();Modules.DAMAGE_TINT.draw(ctx,mc,w,h);PerformanceMonitor.end("Damage Tint",t);}
         if (Modules.GOLDEN_APPLE_GLOW.enabled) {long t=PerformanceMonitor.begin();Modules.GOLDEN_APPLE_GLOW.draw(ctx,mc,w,h);PerformanceMonitor.end("Golden Apple Glow",t);}
         if (Modules.HIT_MARKER.enabled && mc.currentScreen == null) {long t=PerformanceMonitor.begin();Modules.HIT_MARKER.draw(ctx,w,h);PerformanceMonitor.end("Hit Marker",t);}
-        if (mc.currentScreen instanceof HudEditorScreen) return;
+        if (mc.currentScreen instanceof HudEditorScreen) {PerformanceMonitor.end("HUD overlays",total);return;}
         float hs = (float) Modules.UI.hudScale.value;
         int vw = Math.round(w / hs), vh = Math.round(h / hs);
         var ms = ctx.getMatrices();
