@@ -1,1 +1,1 @@
-HeldItemRenderer.java PlayerEntityRenderer.java FogRenderer.java SkyRendering.java WorldRenderer.java Camera.java LightmapTextureManager.java BlockRenderManager.java
+MinecraftClient.java EntityRenderer.java WeatherRendering.java BiomeColors.java ClientWorld.java Std140Builder.java LightmapTextureManager.java BackgroundRenderer.java BiomeEffects.java FluidRenderer.java ColorProviderRegistry.java BlockColors.java OutlineVertexConsumerProvider.java
