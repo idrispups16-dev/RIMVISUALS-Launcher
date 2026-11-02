@@ -19,6 +19,8 @@ class GuiRenderHookTest {
    },ClassReader.SKIP_DEBUG|ClassReader.SKIP_FRAMES);
   }
   assertFalse(calls.isEmpty(),"prepareItem mapping disappeared");
-  System.out.println("RIM_GUI_ITEM_CALLS: "+String.join("; ",calls));
+  String target="net/minecraft/client/gui/render/state/TexturedQuadGuiElementRenderState.<init>(Lcom/mojang/blaze3d/pipeline/RenderPipeline;Lnet/minecraft/client/texture/TextureSetup;Lorg/joml/Matrix3x2f;IIIIFFFFILnet/minecraft/client/gui/ScreenRect;Lnet/minecraft/client/gui/ScreenRect;)V";
+  assertTrue(calls.contains(target),"1.21.11 item opacity constructor changed: "+calls);
+  System.out.println("RIM_GUI_ITEM_HOOK_OK: canonical constructor with scissor and bounds");
  }
 }

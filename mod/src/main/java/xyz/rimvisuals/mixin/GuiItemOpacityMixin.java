@@ -13,6 +13,6 @@ public class GuiItemOpacityMixin {
  @Unique private float rimAlpha=1;
  @Inject(method="prepareItem",at=@At("HEAD"))
  private void rimItem(ItemGuiElementRenderState state,float u,float v,int pixels,int side,CallbackInfo ci){rimAlpha=((ItemOpacity)(Object)state).rimOpacity();}
- @ModifyArg(method="prepareItem",at=@At(value="INVOKE",target="Lnet/minecraft/client/gui/render/state/TexturedQuadGuiElementRenderState;<init>(Lcom/mojang/blaze3d/pipeline/RenderPipeline;Lnet/minecraft/client/texture/TextureSetup;Lorg/joml/Matrix3x2f;IIIIFFFFILnet/minecraft/client/gui/ScreenRect;)V"),index=11)
+ @ModifyArg(method="prepareItem",at=@At(value="INVOKE",target="Lnet/minecraft/client/gui/render/state/TexturedQuadGuiElementRenderState;<init>(Lcom/mojang/blaze3d/pipeline/RenderPipeline;Lnet/minecraft/client/texture/TextureSetup;Lorg/joml/Matrix3x2f;IIIIFFFFILnet/minecraft/client/gui/ScreenRect;Lnet/minecraft/client/gui/ScreenRect;)V"),index=11)
  private int rimTint(int color){return xyz.rimvisuals.core.Gfx.multiplyAlpha(color,rimAlpha);}
 }
