@@ -53,7 +53,7 @@ public class RimVisualsClient implements ClientModInitializer {
             Modules.VIEWMODEL.presets();
             LauncherSettings.tick();
             if (Modules.PERFORMANCE.diagnostics.value && ++diagnosticTicks % 200 == 0)
-                org.slf4j.LoggerFactory.getLogger("rimvisuals").info("RIM_CPU_DIAGNOSTICS (CPU submission only): {}", xyz.rimvisuals.core.PerformanceMonitor.report());
+                org.slf4j.LoggerFactory.getLogger("rimvisuals").info("RIM_CPU_DIAGNOSTICS (CPU submission only): {} | {}", xyz.rimvisuals.core.PerformanceMonitor.report(), xyz.rimvisuals.core.FrameTimes.report());
 
         });
         HudRenderCallback.EVENT.register(RimHud::render);

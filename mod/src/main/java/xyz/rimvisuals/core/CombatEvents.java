@@ -94,13 +94,14 @@ public final class CombatEvents {
     }
 
     public static void tick(MinecraftClient mc) {
+        if(Modules.PERFORMANCE.safe.value){health.clear();return;}
         killCheck();
         var dp = Modules.DAMAGE_PARTICLES;
         if (!dp.enabled || mc.world == null || mc.player == null) { health.clear(); return; }
         long t = PerformanceMonitor.begin();
         double r2 = dp.range.value * dp.range.value;
         seen.clear();
-        for (Entity e : mc.world.getEntities()) {
+        for (Entity e : mc.world.getEntitiesByClass(LivingEntity.class,mc.player.getBoundingBox().expand(dp.range.value),e -> true)) {
             if (!(e instanceof LivingEntity le) || !le.isAlive()) continue;
             boolean self = le == mc.player;
             int mode = dp.targets.index;

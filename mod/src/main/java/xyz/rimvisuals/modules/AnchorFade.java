@@ -83,6 +83,7 @@ public final class AnchorFade extends Module {
     }
 
     private void spawn(ClientWorld world, BlockPos pos, BlockState state) {
+        if(xyz.rimvisuals.core.Modules.PERFORMANCE.safe.value)return;
         long now = System.nanoTime();
         if (pos.equals(lastGhostPos) && now - lastGhostNanos < 1_500_000_000L) return; // already handled for this explosion
         if (ghosts.size() >= 8) return;
@@ -107,6 +108,7 @@ public final class AnchorFade extends Module {
     public float scaleAt(float t) { return shrink.value ? Easing.lerp(1f, (float) endScale.value, Easing.apply(easing.index, t)) : 1f; }
 
     public void render(MatrixStack matrices, OrderedRenderCommandQueue queue, Vec3d cam) {
+        if(!enabled||xyz.rimvisuals.core.Modules.PERFORMANCE.safe.value){ghosts.clear();pendingPos=null;return;}
         if (ghosts.isEmpty()) return;
         long t0 = PerformanceMonitor.begin();
         long now = System.nanoTime(), dur = (long) (duration.value * 1_000_000L);
@@ -119,6 +121,7 @@ public final class AnchorFade extends Module {
             b = 1f + ((tintColor.rgb & 255) / 255f - 1f) * k;
         }
         for (Ghost g : ghosts) {
+            if(g.pos.getSquaredDistance(cam)>48*48)continue;
             float t = (now - g.startNanos) / (float) dur;
             float a = alphaAt(t), s = scaleAt(t);
             if (a <= .01f || s <= .01f) continue;

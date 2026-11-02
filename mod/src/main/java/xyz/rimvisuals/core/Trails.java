@@ -30,9 +30,9 @@ public final class Trails {
         if ((!pearl.enabled && !proj.enabled && !sword.enabled) || mc.world == null || mc.player == null) { swing.clear(); return; }
         long t0 = PerformanceMonitor.begin();
         int budget = Fx.budget(24); // hard ceiling of particles for ALL trails this tick
-        if (budget <= 0) { PerformanceMonitor.end("Trails", t0); return; }
+        if (budget <= 0) { swing.clear();PerformanceMonitor.end("Trails", t0); return; }
         seen.clear();
-        for (Entity e : mc.world.getEntities()) {
+        for (Entity e : mc.world.getOtherEntities(mc.player,mc.player.getBoundingBox().expand(48),e -> e instanceof ProjectileEntity || (sword.enabled && e instanceof PlayerEntity))) {
             if (budget <= 0) break;
             double d2 = e.squaredDistanceTo(mc.player);
             if (e instanceof EnderPearlEntity) {
@@ -43,6 +43,7 @@ public final class Trails {
                 budget -= sword(mc, p, budget);
             }
         }
+        if(sword.enabled && budget>0)budget-=sword(mc,mc.player,budget);
         Fx.refund(budget);
         swing.keySet().retainAll(seen);
         PerformanceMonitor.end("Trails", t0);

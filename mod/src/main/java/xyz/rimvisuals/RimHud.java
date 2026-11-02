@@ -41,6 +41,7 @@ public final class RimHud {
     public static void render(DrawContext ctx, RenderTickCounter tick) {
         MinecraftClient mc = MinecraftClient.getInstance();
         if (mc.player == null || mc.options.hudHidden) return;
+        if(Modules.PERFORMANCE.diagnostics.value)xyz.rimvisuals.core.FrameTimes.record(System.nanoTime());
         int w = ctx.getScaledWindowWidth(), h = ctx.getScaledWindowHeight();
         long total=PerformanceMonitor.begin();
         if (Modules.PULSE.enabled && !Modules.PERFORMANCE.safe.value) {long t=PerformanceMonitor.begin();Modules.PULSE.render(ctx,w,h);PerformanceMonitor.end("Pulse Glow",t);}
