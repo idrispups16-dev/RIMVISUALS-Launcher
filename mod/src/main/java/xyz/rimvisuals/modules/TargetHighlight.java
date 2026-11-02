@@ -22,7 +22,7 @@ public final class TargetHighlight extends Module {
 
     /** Outline colour (RGB) for this entity, or -1 when it is not highlighted. Last hit wins over crosshair. */
     public int colorFor(Entity e, MinecraftClient mc) {
-        if (!enabled || e == null || e == mc.player) return -1;
+        if (!enabled || e == null || mc.player == null || e == mc.player || !xyz.rimvisuals.core.Modules.PERFORMANCE.outlineAllowed(e.squaredDistanceTo(mc.player))) return -1;
         if (lastHit.value) {
             LivingEntity t = CombatEvents.recentTarget(hold.value);
             if (t == e) return hitColor.rgb;

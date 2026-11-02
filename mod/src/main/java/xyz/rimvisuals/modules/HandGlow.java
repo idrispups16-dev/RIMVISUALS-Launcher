@@ -21,11 +21,11 @@ public final class HandGlow extends Module {
     public final Setting.Bool off = add(new Setting.Bool("Off hand", true));
 
     public HandGlow() {
-        super("hand_glow", "Hand Glow", "Translucent glowing halo around your first-person arm (stacked enlarged copies of the arm, fully lit). Geometry halo, not a bloom filter. Safe Mode uses one layer.", Category.SHADER_HANDS);
+        super("hand_glow", "Hand Glow", "Translucent glowing halo around your first-person arm (stacked enlarged copies of the arm, fully lit). Geometry halo, not a bloom filter. Safe Mode suppresses the halo; Balanced caps it at one layer.", Category.SHADER_HANDS);
         enabled = false;
     }
 
-    public int layerCount() { return Modules.PERFORMANCE.safe.value ? 1 : (int) Math.max(1, Math.min(MAX_LAYERS, Math.round(layers.value))); }
+    public int layerCount() { return Modules.PERFORMANCE.glowLayers((int) Math.max(1, Math.min(MAX_LAYERS, Math.round(layers.value)))); }
 
     /** Uniform scale of shell {@code i} (0 = closest to the arm). */
     public static float shellScale(int i, int count, double size) { return 1f + (float) size * (i + 1) / count; }

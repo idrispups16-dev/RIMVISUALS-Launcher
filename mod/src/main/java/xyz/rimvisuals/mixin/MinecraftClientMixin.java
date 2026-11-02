@@ -14,7 +14,9 @@ public class MinecraftClientMixin {
     private void rimOutline(Entity entity, CallbackInfoReturnable<Boolean> cir) {
         if (cir.getReturnValueZ()) return;
         MinecraftClient mc = (MinecraftClient) (Object) this;
+        long t=xyz.rimvisuals.core.PerformanceMonitor.begin();
         if ((Modules.ENTITY_OUTLINE.enabled && Modules.ENTITY_OUTLINE.selects(entity, mc.player)) || Modules.TARGET_HIGHLIGHT.colorFor(entity, mc) != -1)
             cir.setReturnValue(true);
+        xyz.rimvisuals.core.PerformanceMonitor.end("Entity outlines",t);
     }
 }

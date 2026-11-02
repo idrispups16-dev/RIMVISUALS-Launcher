@@ -19,21 +19,32 @@ public final class WorldColors {
 
     /** Terrain-affecting settings in one number; when it changes, chunk meshes must be rebuilt. */
     public static int signature() {
-        int h = 17;
-        for (Module m : new Module[]{Modules.WATER_COLOR, Modules.LAVA_COLOR, Modules.BIOME_COLORS}) {
-            h = h * 31 + (m.enabled ? 1 : 0);
-            for (Setting s : m.settings) h = h * 31 + s.save().hashCode();
-        }
+        var w=Modules.WATER_COLOR; var l=Modules.LAVA_COLOR; var b=Modules.BIOME_COLORS;
+        int h = w.enabled ? 31*w.color.rgb + Double.hashCode(w.strength.value) : 0;
+        h=31*h+(l.enabled ? 31*l.color.rgb+Double.hashCode(l.strength.value) : 0);
+        h=31*h+(b.enabled ? 31*(b.grass.value ? b.grassColor.rgb : 0)
+            +(b.foliage.value ? b.foliageColor.rgb : 0)+Double.hashCode(b.strength.value) : 0);
         return h;
     }
 
-    private static int lastSig = Integer.MIN_VALUE, pending;
+    private static int lastSig = Integer.MIN_VALUE, pending, cooldown;
+    private static Object lastWorld;
+    private static int appliedSig;
 
     /** Called every client tick; rebuilds terrain once, 12 ticks after the colour settings stop changing. */
     public static void tick(net.minecraft.client.MinecraftClient mc) {
+        if (mc.world != lastWorld) {lastWorld=mc.world;lastSig=signature();appliedSig=lastSig;pending=cooldown=0;return;}
+        if (mc.world==null) return;
+        if(cooldown>0)cooldown--;
         int sig = signature();
         if (lastSig == Integer.MIN_VALUE) { lastSig = sig; return; }
         if (sig != lastSig) { lastSig = sig; pending = 12; return; }
-        if (pending > 0 && --pending == 0 && mc.worldRenderer != null && mc.world != null) mc.worldRenderer.reload();
+        if (pending>0) pending--;
+        if(pending==0 && sig!=appliedSig && cooldown==0 && !(mc.currentScreen instanceof xyz.rimvisuals.gui.ClickGui)) {
+            long t=PerformanceMonitor.begin();
+            mc.worldRenderer.reload();
+            PerformanceMonitor.end("World terrain reload",t);
+            appliedSig=sig;cooldown=100;
+        }
     }
 }

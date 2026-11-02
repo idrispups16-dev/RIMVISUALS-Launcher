@@ -18,16 +18,14 @@ public final class NotificationsHud extends HudModule {
     public final Setting.Num armorThreshold = add(new Setting.Num("Durability threshold (%)", 10, 3, 40, 1));
     public final Setting.Num seconds = add(new Setting.Num("Display time (s)", 4, 1, 10, .5));
     public final Setting.Num opacity = add(new Setting.Num("Opacity", .7, .2, 1, .05));
+    private static final List<Notifier.Note> PREVIEW = List.of(new Notifier.Note("Example notification",0xFFC93C,Long.MAX_VALUE,0));
     private static final int ROW = 16, W = 150;
 
     public NotificationsHud() { super("notifications", "Notifications", "Short alerts: totem used, low health, low armor durability", 6, 150); }
 
     private List<Notifier.Note> notes(MinecraftClient mc) {
-        List<Notifier.Note> n = new java.util.ArrayList<>(Notifier.active());
-        if (n.isEmpty() && mc.currentScreen instanceof xyz.rimvisuals.gui.HudEditorScreen) { // editor preview only
-            long now = System.nanoTime();
-            n.add(new Notifier.Note("Example notification", 0xFFC93C, now + 1_000_000_000L, now));
-        }
+        List<Notifier.Note> n = Notifier.active();
+        if (n.isEmpty() && mc.currentScreen instanceof xyz.rimvisuals.gui.HudEditorScreen) return PREVIEW;
         return n;
     }
 

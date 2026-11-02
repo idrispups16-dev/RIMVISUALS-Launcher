@@ -21,6 +21,7 @@ import xyz.rimvisuals.gui.ClickGui;
 
 public class RimVisualsClient implements ClientModInitializer {
     public static KeyBinding menuKey, monitorKey;
+    private int diagnosticTicks;
 
     @Override
     public void onInitializeClient() {
@@ -36,6 +37,8 @@ public class RimVisualsClient implements ClientModInitializer {
             if (entry != null) Modules.applyServerProfile(entry.address).ifPresent(n -> org.slf4j.LoggerFactory.getLogger("rimvisuals").info("Loaded server configuration {}", n));
         }));
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
+            xyz.rimvisuals.core.PerformanceMonitor.setEnabled(Modules.PERFORMANCE.monitor.value || Modules.PERFORMANCE.diagnostics.value);
+            xyz.rimvisuals.core.Fx.beginTick();
             Modules.autosaveTick();
             xyz.rimvisuals.core.WorldColors.tick(client);
             xyz.rimvisuals.core.Notifier.tick(client);
@@ -47,6 +50,8 @@ public class RimVisualsClient implements ClientModInitializer {
             Modules.PERFORMANCE.applyPreset();
             Modules.VIEWMODEL.presets();
             LauncherSettings.tick();
+            if (Modules.PERFORMANCE.diagnostics.value && ++diagnosticTicks % 200 == 0)
+                org.slf4j.LoggerFactory.getLogger("rimvisuals").info("RIM_CPU_DIAGNOSTICS (CPU submission only): {}", xyz.rimvisuals.core.PerformanceMonitor.report());
             while (menuKey.wasPressed()) {
                 if (client.currentScreen == null) client.setScreen(new xyz.rimvisuals.gui.HudEditorScreen(null));
             }

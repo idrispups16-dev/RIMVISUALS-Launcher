@@ -43,6 +43,7 @@ public final class Trails {
                 budget -= sword(mc, p, budget);
             }
         }
+        Fx.refund(budget);
         swing.keySet().retainAll(seen);
         PerformanceMonitor.end("Trails", t0);
     }
