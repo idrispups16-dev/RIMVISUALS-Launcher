@@ -93,6 +93,12 @@ public final class CombatEvents {
         Fx.burst(lastTarget.getX(),lastTarget.getY()+lastTarget.getHeight()*.6,lastTarget.getZ(),c.color.rgb,(int)c.count.value,(float)c.size.value,.2,c.opacity.value);
     }
 
+    public static void onDamage(int id){var mc=MinecraftClient.getInstance();var d=Modules.DAMAGE_PARTICLES;if(!d.enabled||d.source.index!=0||mc.world==null||mc.player==null)return;
+        var entity=mc.world.getEntityById(id);if(!(entity instanceof LivingEntity e))return;
+        boolean self=e==mc.player;if((d.targets.index==0&&self)||(d.targets.index==1&&!self)||e.squaredDistanceTo(mc.player)>d.range.value*d.range.value)return;
+        Fx.burstAmbient(e.getX(),e.getY()+e.getHeight()*.6,e.getZ(),d.color.rgb,(int)d.hurtCount.value,(float)d.size.value,.1,d.opacity.value);
+    }
+
     private static void killCheck() {
         LivingEntity t = lastTarget;
         if (killHandled || t == null || !Modules.KILL_EFFECTS.enabled) return;
@@ -111,7 +117,7 @@ public final class CombatEvents {
         if(Modules.PERFORMANCE.effectLimit()==0){health.clear();return;}
         killCheck();
         var dp = Modules.DAMAGE_PARTICLES;
-        if (!dp.enabled || mc.world == null || mc.player == null) { health.clear(); return; }
+        if (!dp.enabled || dp.source.index!=1 || mc.world == null || mc.player == null) { health.clear(); return; }
         long t = PerformanceMonitor.begin();
         double r2 = dp.range.value * dp.range.value;
         seen.clear();

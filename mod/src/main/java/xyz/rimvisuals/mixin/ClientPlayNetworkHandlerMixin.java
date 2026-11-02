@@ -13,6 +13,8 @@ import xyz.rimvisuals.core.Modules;
 public class ClientPlayNetworkHandlerMixin {
     @Inject(method="onEntityAnimation(Lnet/minecraft/network/packet/s2c/play/EntityAnimationS2CPacket;)V",at=@At("HEAD"))
     private void rimAnimation(net.minecraft.network.packet.s2c.play.EntityAnimationS2CPacket packet,CallbackInfo ci){var mc=MinecraftClient.getInstance();if(mc.isOnThread()&&mc.world!=null)xyz.rimvisuals.core.CombatEvents.onAnimation(packet.getEntityId(),packet.getAnimationId());}
+    @Inject(method="onEntityDamage(Lnet/minecraft/network/packet/s2c/play/EntityDamageS2CPacket;)V",at=@At("HEAD"))
+    private void rimDamage(net.minecraft.network.packet.s2c.play.EntityDamageS2CPacket packet,CallbackInfo ci){var mc=MinecraftClient.getInstance();if(mc.isOnThread()&&mc.world!=null)xyz.rimvisuals.core.CombatEvents.onDamage(packet.entityId());}
     /** Runs twice per packet (network thread, then game thread); only the game-thread pass acts. */
     @Inject(method = "onExplosion(Lnet/minecraft/network/packet/s2c/play/ExplosionS2CPacket;)V", at = @At("HEAD"))
     private void rimExplosion(ExplosionS2CPacket packet, CallbackInfo ci) {

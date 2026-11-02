@@ -183,6 +183,7 @@ public final class Modules {
     }
 
     public static boolean applyPreset(String name) {
+        if(!Presets.ENABLED.containsKey(name)||!backupNow())return false;
         if (!Presets.apply(name)) return false;
         save();
         return true;
