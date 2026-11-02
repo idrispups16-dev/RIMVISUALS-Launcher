@@ -35,6 +35,6 @@ public final class WorldVisual extends xyz.rimvisuals.core.Module {
   m.push();m.translate(x,y,z);q.submitCustom(m,RenderLayers.debugQuads(),(entry,v)->{var matrix=entry.getPositionMatrix();for(int i=0;i<32;i+=step){v.vertex(matrix,0,h,0).color(col);v.vertex(matrix,COS[i+step]*rad,0,SIN[i+step]*rad).color(col);v.vertex(matrix,COS[i]*rad,0,SIN[i]*rad).color(col);v.vertex(matrix,0,h,0).color(col);}});m.pop();
  }
  private void box(MatrixStack m,OrderedRenderCommandQueue q,Box b){int col=Gfx.withAlpha(color.rgb,(float)opacity.value);
-  q.submitCustom(m,RenderLayers.debugFilledBox(),(entry,v)->{var matrix=entry.getPositionMatrix();for(int[] face:FACES)for(int i:face)v.vertex(matrix,(float)((i&1)==0?b.minX:b.maxX),(float)((i&2)==0?b.minY:b.maxY),(float)((i&4)==0?b.minZ:b.maxZ)).color(col);});
+  q.submitCustom(m,RenderLayers.debugQuads(),(entry,v)->{var matrix=entry.getPositionMatrix();for(int[] face:FACES)for(int i:face)v.vertex(matrix,(float)((i&1)==0?b.minX:b.maxX),(float)((i&2)==0?b.minY:b.maxY),(float)((i&4)==0?b.minZ:b.maxZ)).color(col);});
  }
 }
