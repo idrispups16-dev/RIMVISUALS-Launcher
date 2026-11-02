@@ -40,17 +40,17 @@ public final class TargetHud extends HudModule {
         lastId = preview ? -1 : t.getId();
         int w = width(mc), h = height(mc);
         Gfx.round(c, x, y, w, h, 4, Gfx.withAlpha(0x08080F, (float) opacity.value));
-        c.fill(x, y + 3, x + 2, y + h - 3, Theme.accent());
+        Gfx.fill(c, x, y + 3, x + 2, y + h - 3, accent());
         String name = preview ? "Target" : t.getDisplayName().getString();
         while (name.length() > 1 && mc.textRenderer.getWidth(name) > w - 14) name = name.substring(0, name.length() - 1);
-        c.drawTextWithShadow(mc.textRenderer, name, x + 8, y + 4, Theme.text());
+        Gfx.text(c, mc.textRenderer, name, x + 8, y + 4, Theme.text());
         int bx = x + 8, by = y + 15, bw = w - 16;
-        c.fill(bx, by, bx + bw, by + 6, 0xFF000000);
-        c.fill(bx, by, bx + Math.round(bw * shown), by + 6, Gfx.mix(0xFFFF4444, 0xFF55FF55, frac));
+        Gfx.fill(c, bx, by, bx + bw, by + 6, 0xFF000000);
+        Gfx.fill(c, bx, by, bx + Math.round(bw * shown), by + 6, Gfx.mix(0xFFFF4444, 0xFF55FF55, frac));
         String num = String.format(java.util.Locale.ROOT, "%.1f / %.0f", hp, max);
-        if (!distance.value) { c.drawTextWithShadow(mc.textRenderer, num, bx, by + 8, Theme.muted()); return; }
-        c.drawTextWithShadow(mc.textRenderer, num, bx, by + 8, Theme.muted());
+        if (!distance.value) { Gfx.text(c, mc.textRenderer, num, bx, by + 8, Theme.muted()); return; }
+        Gfx.text(c, mc.textRenderer, num, bx, by + 8, Theme.muted());
         String d = preview ? "4.2 m" : String.format(java.util.Locale.ROOT, "%.1f m", mc.player.distanceTo(t));
-        c.drawTextWithShadow(mc.textRenderer, d, x + w - 8 - mc.textRenderer.getWidth(d), by + 8, Theme.muted());
+        Gfx.text(c, mc.textRenderer, d, x + w - 8 - mc.textRenderer.getWidth(d), by + 8, Theme.muted());
     }
 }

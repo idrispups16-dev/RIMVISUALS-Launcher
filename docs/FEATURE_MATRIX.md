@@ -19,7 +19,7 @@ Baseline: 0.3.0-alpha.2, commit 2142161915d9e755dff396b5f12e450193492449. This r
 | Combat | Hit Color | Требует проверки в Minecraft | Модуль hit_color: перекраска строк hurt-вспышки в текстуре overlay (загрузка только при смене цвета). Влияет на все сущности, включая игрока. Fabric CI: сборка, JUnit и старт клиента с применёнными mixin прошли (коммит 327d604). Эффект в игровом мире НЕ проверен. |
 | Combat | Hit Particles | Требует проверки в Minecraft | Модуль hit_particles: dust-частицы при ударе игрока по живой сущности (AttackEntityCallback), общий бюджет частиц, потолок Safe Mode 6. Fabric CI: сборка, JUnit и старт клиента с применёнными mixin прошли (коммит 327d604). Эффект в игровом мире НЕ проверен. |
 | Combat | Critical Particles | Требует проверки в Minecraft | Модуль crit_particles: клиентская оценка условий крита (падение, не бег, кулдаун >0.9); настоящий крит определяет сервер. Fabric CI: сборка, JUnit и старт клиента с применёнными mixin прошли (коммит 327d604). Эффект в игровом мире НЕ проверен. |
-| Combat | Sharpness Particles | Отсутствует | No implementation/render hook found in baseline. |
+| Combat | Sharpness Particles | Требует проверки в Minecraft | Модуль sharpness_particles: частицы при ударе предметом с Sharpness, количество растёт с уровнем (уровень читается из предмета в руке; при недоступном реестре эффект пропускается). Fabric CI на ветке feature/rimvisuals-mod-0.4: Gradle, JUnit и старт клиента прошли (запуск 41331926524). В игровом мире НЕ проверено. |
 | Combat | Damage Particles | Требует проверки в Minecraft | Модуль damage_particles: частицы при падении синхронизированного здоровья сущности в радиусе; количество растёт с уроном. Fabric CI: сборка, JUnit и старт клиента с применёнными mixin прошли (коммит 327d604). Эффект в игровом мире НЕ проверен. |
 | Combat | Damage Tint | Требует проверки в Minecraft | Модуль damage_tint: красная виньетка по краям, пока идёт vanilla-таймер hurtTime. Fabric CI: сборка, JUnit, старт клиента с применёнными mixin прошли (коммиты 62db4ea, 857a419). Эффект в игровом мире НЕ проверен. |
 | Combat | Hurt Camera Control | Требует проверки в Minecraft | Модуль hurt_camera: ModifyConstant 14.0 в GameRenderer.tiltViewWhenHurt (0–150%); анимация смерти не меняется. Mixin сверен с исходниками 1.21.11. Fabric CI: сборка, JUnit, старт клиента с применёнными mixin прошли (коммиты 62db4ea, 857a419). Эффект в игровом мире НЕ проверен. |
@@ -77,7 +77,7 @@ Baseline: 0.3.0-alpha.2, commit 2142161915d9e755dff396b5f12e450193492449. This r
 | HUD | Keystrokes | Требует проверки в Minecraft | Модуль keystrokes_hud: WASD, прыжок, ЛКМ/ПКМ по вашим привязкам клавиш. Fabric CI: сборка, JUnit, старт клиента с применёнными mixin прошли (коммиты 62db4ea, 857a419). Эффект в игровом мире НЕ проверен. |
 | HUD | Armor Status | Отсутствует | No implementation/render hook found in baseline. |
 | HUD | Potion HUD | Требует проверки в Minecraft | Модуль potion_hud: эффекты игрока с уровнем и временем, подсветка последних 10 с. Fabric CI: сборка, JUnit, старт клиента с применёнными mixin прошли (коммиты 62db4ea, 857a419). Эффект в игровом мире НЕ проверен. |
-| HUD | Inventory HUD | Отсутствует | No implementation/render hook found in baseline. |
+| HUD | Inventory HUD | Требует проверки в Minecraft | Модуль inventory_hud: сетка основного инвентаря 9×1–3, количество в стаке. Читает только ваш инвентарь. Fabric CI на ветке feature/rimvisuals-mod-0.4: Gradle, JUnit и старт клиента прошли (запуск 41331926524). В игровом мире НЕ проверено. |
 | HUD | BPS / Speed | Требует проверки в Minecraft | Модуль speed_hud: горизонтальная скорость по изменению позиции (блоков/с); формула покрыта JUnit. Fabric CI: сборка, JUnit, старт клиента с применёнными mixin прошли (коммиты 62db4ea, 857a419). Эффект в игровом мире НЕ проверен. |
 | HUD | Server Info | Отсутствует | No implementation/render hook found in baseline. |
 | HUD | Session Info | Требует проверки в Minecraft | Модуль session_hud: время в мире и адрес сервера. Fabric CI: сборка, JUnit, старт клиента с применёнными mixin прошли (коммиты 62db4ea, 857a419). Эффект в игровом мире НЕ проверен. |
@@ -87,7 +87,7 @@ Baseline: 0.3.0-alpha.2, commit 2142161915d9e755dff396b5f12e450193492449. This r
 | HUD | Chat Fade | Отсутствует | No implementation/render hook found in baseline. |
 | HUD | Bossbar Customizer | Отсутствует | No implementation/render hook found in baseline. |
 | HUD | Notifications | Отсутствует | No implementation/render hook found in baseline. |
-| HUD | Drag & Drop HUD Editor | Частично реализовано | Existing source/UI; no recorded per-feature in-world acceptance or performance measurement. |
+| HUD | Drag & Drop HUD Editor | Требует проверки в Minecraft | Right Shift → Edit HUD: перетаскивание, масштаб каждого элемента колесом мыши (0.5–2), правый клик сбрасывает элемент, привязка к сетке (настройка «HUD grid snap», сетка рисуется), общий Reset. Позиции и масштаб сохраняются в config. Математика snap/scale покрыта JUnit. Fabric CI на ветке feature/rimvisuals-mod-0.4: Gradle, JUnit и старт клиента прошли (запуск 41331926524). В игровом мире НЕ проверено. |
 | Optimization | Performance Safe Mode | Требует проверки в Minecraft | Source exists; startup smoke is not in-world verification. |
 | Optimization | Particle Limits | Требует проверки в Minecraft | Source exists; startup smoke is not in-world verification. |
 | Optimization | Adaptive Particles | Требует проверки в Minecraft | Source exists; startup smoke is not in-world verification. |
@@ -102,7 +102,7 @@ Baseline: 0.3.0-alpha.2, commit 2142161915d9e755dff396b5f12e450193492449. This r
 | Optimization | Low-End Preset | Требует проверки в Minecraft | Source exists; startup smoke is not in-world verification. |
 | Optimization | Balanced Preset | Требует проверки в Minecraft | Source exists; startup smoke is not in-world verification. |
 | Optimization | Ultra Preset | Требует проверки в Minecraft | Source exists; startup smoke is not in-world verification. |
-| Optimization | Performance Monitor | Требует проверки в Minecraft | Source exists; startup smoke is not in-world verification. |
+| Optimization | Performance Monitor | Требует проверки в Minecraft | Теперь выключен по умолчанию (для уже существующих config остаётся прежнее значение) и показывает 5 самых тяжёлых модулей вместо полного списка. Замеряет CPU-время отправки, не GPU и не FPS. |
 | Optimization | Per-module render timings | Требует проверки в Minecraft | Source exists; startup smoke is not in-world verification. |
 | Hands | Swing Animations | Реализовано, но не работает по отчёту пользователя | Existing HeldItemRenderer mixin; reproduce in-world, inspect submission matrices, then user retest. |
 | Hands | Viewmodel | Реализовано, но не работает по отчёту пользователя | Existing HeldItemRenderer mixin; reproduce in-world, inspect submission matrices, then user retest. |
@@ -153,3 +153,39 @@ Baseline: 0.3.0-alpha.2, commit 2142161915d9e755dff396b5f12e450193492449. This r
 | Launcher | Java Auto-install | Реализовано, проверено в CI | electron/java-runtime.cjs: Temurin JRE 21 x64, SHA-256, проверка redirect-хостов; tests/java-runtime-smoke.js скачивает и запускает Java в CI. |
 | Helpers | FT Helper | Требует уточнения | User will provide exact functions; no empty menu entry. |
 | Helpers | HV Helper | Требует уточнения | User will provide exact functions; no empty menu entry. |
+
+## Update 0.4.0 (commit after 862f33d): HUD Editor, CFG Manager, World Tweaks, Hand Glow
+
+CI evidence: Gradle build + JUnit + Minecraft startup smoke test green (mixin targets resolve against 1.21.11). **None of these has been verified visually in a world** — see manual scenarios.
+
+| Feature | Status | How it works | Manual check |
+|---|---|---|---|
+| HUD per-element opacity | Требует проверки в Minecraft | `Gfx.hudAlpha` multiplies panel/text/fill alpha; item icons (Armor/Inventory HUD) stay opaque | Shift+wheel on an element in HUD Editor |
+| HUD guides / accent / monitor toggle | Требует проверки в Minecraft | `HudMath.guideSnap` (tested) | Drag near centre/other element |
+| CFG Manager | Реализовано, тесты ConfigStore | profiles, JSON import/export, backups, autosave, server binding, presets | Profiles tab |
+| Fullbright | Требует проверки в Minecraft | `LightmapTextureManager.update` gamma arg | Dark cave, toggle |
+| Night Vision Fade | Требует проверки в Minecraft | lightmap night-vision arg, linear last 10 s | Short potion |
+| Golden Apple Glow | Требует проверки в Minecraft | HUD edge overlay while absorption > 0 | Eat golden apple |
+| Entity Outline | Требует проверки в Minecraft | `MinecraftClient.hasOutline` + outline colour redirect (vanilla glow pass) | Other player / mob behind wall |
+| Water / Lava / Biome colours | Требует проверки в Minecraft | `BiomeColors` + `FluidRenderer` lava constant; terrain reload after settings settle | Ocean, lava lake, grass |
+| Weather Color | Требует проверки в Minecraft | `WeatherRendering.renderPieces` colour/alpha | Rain/snow |
+| Hand Glow | Требует проверки в Minecraft | 1–4 enlarged translucent arm copies, fully lit; slight offset from arm pivot possible | First-person with empty hand |
+| Hand Outline / Bloom / Blur | **Не реализовано** | need front-face-culled hull pass / post-processing framebuffers; no honest implementation without in-game verification | — |
+
+## Update 0.4.0 (second batch): Anchor Fade/Scale, Totem Fade, Explosion Effects, Target Highlight, Cooldowns, Notifications
+
+CI: Gradle build + JUnit + Minecraft startup smoke test (mixin targets resolved against real 1.21.11 sources). **Not verified visually in a world.**
+
+| Feature | Status | How it works / limits | Manual check |
+|---|---|---|---|
+| Anchor Fade / Scale | Требует проверки в Minecraft | Client-only ghost of the anchor model (quads drawn through `translucentMovingBlock`), created **only** when an explosion packet with radius exactly 5 and centre exactly at an anchor block's centre arrives and the anchor was seen in the client world (before or just after the block update). Mining/other removal never creates a ghost. Duration 200–500 ms, opacity, scale, tint, easing configurable. No world/hitbox/server changes. | Charge an anchor in the Overworld, click it with a block/glowstone-less hand, watch the spot |
+| Totem Fade | Требует проверки в Minecraft | Floating totem quads are re-submitted through the items-atlas translucent layer with alpha (queue proxy matched by call shape). Works with Totem Scale. | Pop a totem |
+| Explosion Effects | Требует проверки в Minecraft | Extra dust ring + sparks on every explosion packet within range; uses shared particle budget; Safe Mode suppresses | Crystal / TNT |
+| Target Highlight | Требует проверки в Minecraft | Vanilla glow-outline pass for crosshair target and last-hit target | Aim at a mob/player |
+| Cooldowns HUD | Требует проверки в Minecraft | `ItemCooldownManager.getCooldownProgress` for stacks in inventory | Throw an ender pearl |
+| Notifications HUD | Требует проверки в Minecraft | Totem used (setFloatingItem hook), low health, low armor durability with hysteresis | Take damage / pop totem |
+| Enchantment Glint Control, Scoreboard/Chat Fade, Hotbar, ESP, HW/FT Helper | **Отсутствует** | not started | — |
+| Hand Outline / Bloom / Blur | **Не реализовано** | Outline needs an inverted-hull pass with front-face culling around the arm pivot; Bloom/Blur need post-processing framebuffers. Neither can be made honest without in-game verification, so no toggle exists. Hand Glow is the implemented alternative. | — |
+
+## Следующий этап (не начат в коде)
+Enchantment Glint Control, Scoreboard Fade, Chat Fade, Custom Hotbar, Player/Item ESP, Hand Outline/Bloom/Blur: статус **Отсутствует** (только разбор исходников 1.21.11 `RenderPipelines`, `InGameHud`, `ChatHud` запущен на служебной ветке `claude-dev-tools`; кода в этой ветке нет).

@@ -43,8 +43,8 @@ public final class SessionHud extends HudModule {
         build(mc);
         if (lines.isEmpty()) return;
         Gfx.round(c, x, y, width(mc), height(mc), 4, Gfx.withAlpha(0x08080F, (float) opacity.value));
-        c.fill(x, y + 3, x + 2, y + height(mc) - 3, Theme.accent());
+        Gfx.fill(c, x, y + 3, x + 2, y + height(mc) - 3, accent());
         int ty = y + 4;
-        for (String s : lines) { c.drawTextWithShadow(mc.textRenderer, s, x + 8, ty, Theme.text()); ty += 10; }
+        for (String s : lines) { Gfx.text(c, mc.textRenderer, s, x + 8, ty, Theme.text()); ty += 10; }
     }
 }

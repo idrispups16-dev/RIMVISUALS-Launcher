@@ -22,5 +22,6 @@ public final class InterfaceModule extends Module {
     public final Setting.Num backdrop=add(new Setting.Num("Backdrop opacity",.7,0,1,.01));
     public final Setting.Color background=add(new Setting.Color("Panel background",0x0e0b18));
     public final Setting.Color secondary=add(new Setting.Color("Gradient accent",0x3b82f6));
+    public final Setting.Num gridSnap=add(new Setting.Num("HUD grid snap",0,0,32,2));
     public float animSpeed() { return (float) animationSpeed.value; }
 }

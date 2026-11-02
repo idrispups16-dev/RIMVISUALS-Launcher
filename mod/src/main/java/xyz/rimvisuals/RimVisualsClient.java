@@ -20,7 +20,7 @@ import xyz.rimvisuals.core.Modules;
 import xyz.rimvisuals.gui.ClickGui;
 
 public class RimVisualsClient implements ClientModInitializer {
-    public static KeyBinding menuKey;
+    public static KeyBinding menuKey, monitorKey;
 
     @Override
     public void onInitializeClient() {
@@ -29,7 +29,17 @@ public class RimVisualsClient implements ClientModInitializer {
         xyz.rimvisuals.core.CombatEvents.init();
         menuKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
                 "key.rimvisuals.menu", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_RIGHT_SHIFT, KeyBinding.Category.MISC));
+        monitorKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+                "key.rimvisuals.monitor", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_UNKNOWN, KeyBinding.Category.MISC));
+        net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> client.execute(() -> {
+            var entry = client.getCurrentServerEntry();
+            if (entry != null) Modules.applyServerProfile(entry.address).ifPresent(n -> org.slf4j.LoggerFactory.getLogger("rimvisuals").info("Loaded server configuration {}", n));
+        }));
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
+            Modules.autosaveTick();
+            xyz.rimvisuals.core.WorldColors.tick(client);
+            xyz.rimvisuals.core.Notifier.tick(client);
+            while (monitorKey.wasPressed()) Modules.PERFORMANCE.monitor.value = !Modules.PERFORMANCE.monitor.value;
             SmokeTest.tick(client);
             xyz.rimvisuals.core.CombatEvents.tick(client);
             xyz.rimvisuals.core.RimOverlays.tick();
@@ -48,8 +58,17 @@ public class RimVisualsClient implements ClientModInitializer {
     }
 
     private static void addMenuButton(MinecraftClient client, Screen screen, int w, int h) {
-        if (!(screen instanceof TitleScreen) && !(screen instanceof GameMenuScreen)) return;
         boolean mob = RimPlatform.mobile();
+        if (screen instanceof net.minecraft.client.gui.screen.ChatScreen) {
+            // Top-right corner, away from the input line; a button never takes keyboard focus from the chat field.
+            int bw = mob ? 96 : 76, bh = mob ? 26 : 18;
+            var edit = ButtonWidget.builder(Text.literal("HUD Editor"), b -> client.setScreen(new xyz.rimvisuals.gui.HudEditorScreen(null)))
+                    .dimensions(w - bw - 6, 6, bw, bh).build();
+            edit.setFocused(false);
+            Screens.getButtons(screen).add(edit);
+            return;
+        }
+        if (!(screen instanceof TitleScreen) && !(screen instanceof GameMenuScreen)) return;
         Screens.getButtons(screen).add(ButtonWidget.builder(Text.literal("RIMVISUALS"), b -> client.setScreen(new ClickGui()))
                 .dimensions(6, 6, mob ? 110 : 84, mob ? 26 : 20).build());
     }

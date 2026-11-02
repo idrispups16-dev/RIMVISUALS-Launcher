@@ -18,9 +18,21 @@ public class InGameOverlayRendererMixin {
     @Shadow private int floatingItemTimer;
     @Unique private float rimTick;
 
+    @Inject(method = "setFloatingItem(Lnet/minecraft/item/ItemStack;Lnet/minecraft/util/math/random/Random;)V", at = @At("HEAD"))
+    private void rimTotemUsed(net.minecraft.item.ItemStack stack, net.minecraft.util.math.random.Random random, CallbackInfo ci) {
+        if (stack.isOf(net.minecraft.item.Items.TOTEM_OF_UNDYING)) xyz.rimvisuals.core.Notifier.totemUsed();
+    }
+
     @Inject(method = "renderFloatingItem(Lnet/minecraft/client/util/math/MatrixStack;FLnet/minecraft/client/render/command/OrderedRenderCommandQueue;)V", at = @At("HEAD"))
     private void rimTickProgress(MatrixStack matrices, float tickProgress, OrderedRenderCommandQueue queue, CallbackInfo ci) {
         rimTick = tickProgress;
+    }
+
+    @org.spongepowered.asm.mixin.injection.Redirect(method = "renderFloatingItem(Lnet/minecraft/client/util/math/MatrixStack;FLnet/minecraft/client/render/command/OrderedRenderCommandQueue;)V",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/item/ItemRenderState;render(Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/command/OrderedRenderCommandQueue;III)V"))
+    private void rimTotemFade(net.minecraft.client.render.item.ItemRenderState state, MatrixStack matrices, OrderedRenderCommandQueue queue, int light, int overlay, int outline) {
+        float a = Modules.TOTEM_FADE.alpha((40 - floatingItemTimer + rimTick) / 40.0F);
+        state.render(matrices, a >= .999f ? queue : xyz.rimvisuals.modules.TotemFade.fading(queue, a), light, overlay, outline);
     }
 
     @ModifyArgs(method = "renderFloatingItem(Lnet/minecraft/client/util/math/MatrixStack;FLnet/minecraft/client/render/command/OrderedRenderCommandQueue;)V",

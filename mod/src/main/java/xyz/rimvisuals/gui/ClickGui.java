@@ -10,6 +10,8 @@ import net.minecraft.text.Text;
 import org.lwjgl.glfw.GLFW;
 import xyz.rimvisuals.RimPlatform;
 import xyz.rimvisuals.core.Anim;
+import xyz.rimvisuals.core.ConfigStore;
+import xyz.rimvisuals.core.Presets;
 import xyz.rimvisuals.core.Gfx;
 import xyz.rimvisuals.core.Module;
 import xyz.rimvisuals.core.Modules;
@@ -360,23 +362,81 @@ public class ClickGui extends Screen {
                 status = "Saved: " + n;
             }, true);
         }
+        // toolbar: presets and file actions
+        int th = mob ? 34 : 26;
+        String[] presetNames = Presets.ENABLED.keySet().toArray(new String[0]);
+        int ty = begin(th);
+        if (ty != NONE) {
+            int bw = (cw - 4 * (presetNames.length - 1)) / presetNames.length;
+            for (int k = 0; k < presetNames.length; k++) {
+                String pn = presetNames[k];
+                button(c, cx + k * (bw + 4), ty, bw, th - 4, pn.replace('_', ' '), mx, my,
+                        () -> status = Modules.applyPreset(pn) ? "Preset applied: " + pn.replace('_', ' ') : "Unknown preset", false);
+            }
+        }
+        int fy = begin(th);
+        if (fy != NONE) {
+            String[] labels = {"Backup", "Restore", "Import", "Server"};
+            int bw = (cw - 4 * (labels.length - 1)) / labels.length;
+            Runnable[] actions = {
+                    () -> status = Modules.backupNow() ? "Backup saved (last " + ConfigStore.MAX_BACKUPS + " kept)" : "Backup failed",
+                    () -> { status = Modules.restoreLatestBackup() ? "Restored latest backup" : "No backup found"; profiles = Modules.listProfiles(); },
+                    () -> { var got = Modules.importProfiles(); profiles = Modules.listProfiles();
+                            status = got.isEmpty() ? "Nothing to import: put .json files into config/rimvisuals/imports" : "Imported: " + String.join(", ", got); },
+                    () -> { String a = serverAddress();
+                            status = a == null ? "Join a server first" : Modules.serverProfile(a).map(n -> "This server uses: " + n).orElse("No configuration bound to " + a); }
+            };
+            for (int k = 0; k < labels.length; k++) button(c, cx + k * (bw + 4), fy, bw, th - 4, labels[k], mx, my, actions[k], false);
+        }
         if (!status.isEmpty()) infoRow(c, status);
         if (profiles.isEmpty()) infoRow(c, "No profiles yet. Save your current setup above.");
+        infoRow(c, "Name field: Save / Copy to / Rename to. Export writes config/rimvisuals/exports.");
         for (String name : profiles) {
-            int ph = mob ? 36 : 28;
+            int ph = mob ? 74 : 58;
             int py = begin(ph);
             if (py == NONE) continue;
             Gfx.round(c, cx, py, cw, ph - 3, 5, f(Theme.card()));
-            txt(c, textRenderer.trimToWidth(name, cw - 140), cx + 9, py + (ph - 3 - 8) / 2, Theme.text());
-            int bw1 = mob ? 54 : 46, bw2 = mob ? 60 : 52, bh = ph - 9;
-            int dx = cx + cw - bw2 - 5, lx = dx - bw1 - 4;
-            button(c, lx, py + 3, bw1, bh, "Load", mx, my, () -> status = Modules.loadProfile(name) ? "Loaded: " + name : "Could not load " + name, true);
-            button(c, dx, py + 3, bw2, bh, "Delete", mx, my, () -> {
-                Modules.deleteProfile(name);
-                profiles = Modules.listProfiles();
-                status = "Deleted: " + name;
-            }, false);
+            String bound = serverAddress() != null && Modules.serverProfile(serverAddress()).filter(name::equals).isPresent() ? "  [server]" : "";
+            txt(c, textRenderer.trimToWidth(name + bound, cw - 20), cx + 9, py + 6, Theme.text());
+            String[] labels = {"Load", "Copy", "Rename", "Export", "Server", "Delete"};
+            int per = 3, bw = (cw - 18 - 4 * (per - 1)) / per, bh = (ph - 3 - 22) / 2 - 2;
+            for (int k = 0; k < labels.length; k++) {
+                int bx = cx + 9 + (k % per) * (bw + 4), by = py + 19 + (k / per) * (bh + 3);
+                String label = labels[k];
+                button(c, bx, by, bw, bh, label, mx, my, () -> profileAction(label, name), label.equals("Load"));
+            }
         }
+    }
+
+    private String serverAddress() {
+        var e = client == null ? null : client.getCurrentServerEntry();
+        return e == null ? null : e.address;
+    }
+
+    private void profileAction(String action, String name) {
+        String target = Modules.cleanName(profileName.text);
+        switch (action) {
+            case "Load" -> status = Modules.loadProfile(name) ? "Loaded: " + name : "Could not load " + name;
+            case "Copy" -> {
+                if (target.isEmpty()) status = "Type the new name in the field first";
+                else status = Modules.duplicateProfile(name, target) ? "Copied to: " + target : "Could not copy (name taken?)";
+            }
+            case "Rename" -> {
+                if (target.isEmpty()) status = "Type the new name in the field first";
+                else status = Modules.renameProfile(name, target) ? "Renamed to: " + target : "Could not rename (name taken?)";
+            }
+            case "Export" -> { String p = Modules.exportProfile(name); status = p == null ? "Export failed" : "Exported: " + p; }
+            case "Server" -> {
+                String a = serverAddress();
+                if (a == null) status = "Join a server first";
+                else if (Modules.serverProfile(a).filter(name::equals).isPresent()) status = Modules.unbindServer(a) ? "Unbound " + a : "Could not unbind";
+                else status = Modules.bindServer(a, name) ? name + " will load on " + a : "Could not bind";
+            }
+            case "Delete" -> { Modules.deleteProfile(name); status = "Deleted: " + name; }
+            default -> { }
+        }
+        profiles = Modules.listProfiles();
+        if (!action.equals("Load") && !action.equals("Export") && !action.equals("Server")) profileName.text = "";
     }
 
     // ---------- input ----------

@@ -46,6 +46,15 @@ public final class CombatEvents {
                 && p.getAttackCooldownProgress(.5f) > .9f;
     }
 
+    static int sharpnessLevel(MinecraftClient mc, PlayerEntity player) {
+        try {
+            var entry = mc.world.getRegistryManager().getOrThrow(net.minecraft.registry.RegistryKeys.ENCHANTMENT).getOrThrow(net.minecraft.enchantment.Enchantments.SHARPNESS);
+            return net.minecraft.enchantment.EnchantmentHelper.getLevel(entry, player.getMainHandStack());
+        } catch (RuntimeException e) {
+            return 0; // registry not ready; skip the effect instead of risking a crash in an event handler
+        }
+    }
+
     private static void onAttack(MinecraftClient mc, PlayerEntity player, LivingEntity target) {
         lastTarget = target;
         lastHitNanos = System.nanoTime();
@@ -56,6 +65,13 @@ public final class CombatEvents {
             long t = PerformanceMonitor.begin();
             Fx.burst(x, y, z, hp.color.rgb, (int) hp.count.value, (float) hp.size.value, hp.speed.value);
             PerformanceMonitor.end("Hit Particles", t);
+        }
+        var sp = Modules.SHARPNESS_PARTICLES;
+        if (sp.enabled) {
+            long t = PerformanceMonitor.begin();
+            int level = sharpnessLevel(mc, player);
+            if (level > 0) Fx.burst(x, y, z, sp.color.rgb, level * (int) sp.perLevel.value, (float) sp.size.value, .2);
+            PerformanceMonitor.end("Sharpness Particles", t);
         }
         var cp = Modules.CRIT_PARTICLES;
         if (cp.enabled && looksCritical(player)) {
