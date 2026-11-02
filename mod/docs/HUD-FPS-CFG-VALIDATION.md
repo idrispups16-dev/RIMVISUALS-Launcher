@@ -1,5 +1,8 @@
 # 0.4.0 HUD, CPU diagnostics and CFG checkpoint
 
+Historical PR12 baseline. The newer 0.4.0-ui.1 input/UI behavior is documented in
+UI-REFERENCE-MATRIX.md; Right Shift now opens ClickGUI, and HUD Editor is a separate entry.
+
 Branch: `fix/rimvisuals-hud-fps-gpt`, based on Claude's `decc476bbc78c0cd69108b44050153876636a8d1`.
 No launcher, website, main or user Minecraft directory changes.
 
@@ -10,8 +13,8 @@ The required catalogue has 13 elements. The registry now derives every HudModule
 including the previously omitted Cooldowns/Notifications and a movable Performance Monitor.
 The monitor retains the existing `performance.performance_monitor` switch for old configs.
 
-Right Shift opens HUD Editor (remappable through Minecraft Controls). The editor's Menu button
-opens ClickGUI; title/pause RIMVISUALS entry points remain available. Chat's HUD Editor button
+In the PR12 baseline Right Shift opened HUD Editor; 0.4.0-ui.1 corrects this to ClickGUI.
+The current editor has Color for selected-element settings and returns to its parent; title/pause RIMVISUALS entry points remain available. Chat's HUD Editor button
 returns to the same ChatScreen and restores draft text and field focus on Done/Escape.
 Drag selects an element; selection survives mouse release. Wheel scales; Shift+wheel changes
 its opacity. Right click resets layout, scale, opacity and custom accent for that element.

@@ -96,6 +96,9 @@ Minecraft Controls remains usable. RIM actions (ClickGUI, HUD, monitor, module s
 registered with vanilla KeyBinding, so keyboard/mouse dispatch and game-screen suppression are
 shared with Minecraft rather than implemented by a global raw-input hook.
 
+HUD Editor has a Color action for the selected element; it opens the actual HSV/RGB/HEX settings
+and returns to the editor on Escape, preserving the chat parent.
+
 The menu has Visuals/HUD/Utilities, two-column cards, cached search, animated switches,
 independently scrollable selected settings, CFG and local management entry points. A narrow
 layout displays settings as a full detail pane with Back; a wide layout keeps cards alongside it.
@@ -121,3 +124,16 @@ No screen, texture or font resources are created every frame while the menu is c
 6. Compare a fixed scene and identical settings with UI closed/open, Safe Mode, Balanced and
    Ultra. Warm up chunks; repeat 60-second samples. CPU timings are not GPU measurements.
    No controlled FPS improvement or in-world visual correctness is claimed by build success.
+
+## New HUD/Zoom block
+
+The 0.4.0-ui.1 JAR adds Totem Bar (main inventory + offhand), Saturation HUD, configurable
+Low HP, TNT Timer (up to eight loaded primed TNT within a 48-block query), and camera Zoom.
+These are off by default, refresh text/data at 10 Hz, and save their settings/layout through CFG.
+Zoom uses the 1.21.11 getFov return hook, smooth or Reduced Motion transitions, and a remappable
+Toggle Zoom binding. It never modifies attack timing, movement or mouse sensitivity.
+
+In Windows: count totems while moving stacks to/from offhand; eat/run and observe saturation;
+reduce/heal your health around the Low HP threshold; ignite TNT in a disposable test world and
+compare the fuse HUD to detonation; bind/toggle Zoom and check restoration on disable/opening UI.
+Do not report these visual effects as confirmed until these scenarios pass in a world.
