@@ -29,7 +29,12 @@ public final class InventoryHud extends HudModule {
             if (st.isEmpty()) continue;
             int ix = x + 4 + col * 18 + 1, iy = y + 4 + row * 18 + 1;
             c.drawItem(st, ix, iy);
-            if (counts.value) c.drawStackOverlay(mc.textRenderer, st, ix, iy);
+            if (counts.value) {
+                if(st.getCount()>1){String count=Integer.toString(st.getCount());Gfx.text(c,mc.textRenderer,count,ix+17-mc.textRenderer.getWidth(count),iy+9,0xffffffff);}
+                if(st.isItemBarVisible()){Gfx.fill(c,ix+2,iy+13,ix+15,iy+15,0xff000000);Gfx.fill(c,ix+2,iy+13,ix+2+st.getItemBarStep(),iy+14,0xff000000|st.getItemBarColor());}
+                float cooldown=mc.player.getItemCooldownManager().getCooldownProgress(st,0f);
+                if(cooldown>0)Gfx.fill(c,ix,iy+(int)Math.floor(16*(1-cooldown)),ix+16,iy+16,0x80ffffff);
+            }
         }
     }
 }

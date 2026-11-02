@@ -27,6 +27,7 @@ public abstract class Setting {
             super(name); this.min = min; this.max = max; this.step = step; this.value = value;
         }
         public void set(double v) {
+            if (!Double.isFinite(v)) return;
             v = Math.max(min, Math.min(max, v));
             if (step > 0) v = Math.round(v / step) * step;
             value = Math.max(min, Math.min(max, v));

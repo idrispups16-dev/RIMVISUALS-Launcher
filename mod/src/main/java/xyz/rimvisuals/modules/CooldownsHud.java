@@ -42,10 +42,16 @@ public final class CooldownsHud extends HudModule {
         return out;
     }
 
+    private List<Row> cached=List.of();
+    private long nextRefresh;
+    private Object lastPlayer;
     private List<Row> shown(MinecraftClient mc) {
+        long now=System.nanoTime();
+        if(now<nextRefresh&&lastPlayer==mc.player) return cached;
+        lastPlayer=mc.player;nextRefresh=now+50_000_000L;
         List<Row> r = rows(mc);
         if (r.isEmpty() && mc.currentScreen instanceof xyz.rimvisuals.gui.HudEditorScreen) r.add(new Row(new ItemStack(Items.ENDER_PEARL), .6f)); // editor preview only
-        return r;
+        cached=r;return cached;
     }
 
     @Override public int width(MinecraftClient mc) { return W; }

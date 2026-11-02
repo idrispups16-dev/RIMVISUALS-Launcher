@@ -26,6 +26,8 @@ public abstract class HudModule extends Module {
     /** Accent used for this element: its own colour when enabled, otherwise the theme accent. */
     public int accent() { return customAccent.value ? 0xFF000000 | accentColor.rgb : Theme.accent(); }
 
+    public boolean visible() { return enabled; }
+
     public abstract int width(MinecraftClient mc);
     public abstract int height(MinecraftClient mc);
     public abstract void draw(DrawContext c, MinecraftClient mc, int x, int y);

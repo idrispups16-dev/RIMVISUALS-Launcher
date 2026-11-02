@@ -12,11 +12,18 @@ public final class RimHud {
     private RimHud() {}
 
     /** Element size in HUD units after the per-element scale. */
-    public static int sw(HudModule m, MinecraftClient mc) { return xyz.rimvisuals.core.HudMath.scaled(m.width(mc), m.scale.value); }
-    public static int sh(HudModule m, MinecraftClient mc) { return xyz.rimvisuals.core.HudMath.scaled(m.height(mc), m.scale.value); }
+    public static int sw(HudModule m, MinecraftClient mc) { return xyz.rimvisuals.core.HudMath.scaled(m.width(mc), fittedScale(m, mc)); }
+    public static int sh(HudModule m, MinecraftClient mc) { return xyz.rimvisuals.core.HudMath.scaled(m.height(mc), fittedScale(m, mc)); }
+
+    public static double fittedScale(HudModule m, MinecraftClient mc) {
+        double hs = Modules.UI.hudScale.value;
+        return Math.min(m.scale.value, Math.min(
+            mc.getWindow().getScaledWidth() / hs / Math.max(1, m.width(mc)),
+            mc.getWindow().getScaledHeight() / hs / Math.max(1, m.height(mc))));
+    }
 
     public static void drawScaled(DrawContext c, MinecraftClient mc, HudModule m, int x, int y) {
-        float s = (float) m.scale.value;
+        float s = (float) fittedScale(m, mc);
         xyz.rimvisuals.core.Gfx.hudAlpha = (float) m.elementOpacity.value;
         try {
             if (s == 1f) { m.draw(c, mc, x, y); return; }
@@ -24,8 +31,7 @@ public final class RimHud {
             ms.pushMatrix();
             ms.translate(x, y);
             ms.scale(s, s);
-            m.draw(c, mc, 0, 0);
-            ms.popMatrix();
+            try { m.draw(c, mc, 0, 0); } finally { ms.popMatrix(); }
         } finally { xyz.rimvisuals.core.Gfx.hudAlpha = 1f; }
     }
 
@@ -42,14 +48,14 @@ public final class RimHud {
         if (Modules.DAMAGE_TINT.enabled) {long t=PerformanceMonitor.begin();Modules.DAMAGE_TINT.draw(ctx,mc,w,h);PerformanceMonitor.end("Damage Tint",t);}
         if (Modules.GOLDEN_APPLE_GLOW.enabled) {long t=PerformanceMonitor.begin();Modules.GOLDEN_APPLE_GLOW.draw(ctx,mc,w,h);PerformanceMonitor.end("Golden Apple Glow",t);}
         if (Modules.HIT_MARKER.enabled && mc.currentScreen == null) {long t=PerformanceMonitor.begin();Modules.HIT_MARKER.draw(ctx,w,h);PerformanceMonitor.end("Hit Marker",t);}
-        if (mc.currentScreen instanceof HudEditorScreen) return;
+        if (mc.currentScreen instanceof HudEditorScreen) {PerformanceMonitor.end("HUD overlays",total);return;}
         float hs = (float) Modules.UI.hudScale.value;
         int vw = Math.round(w / hs), vh = Math.round(h / hs);
         var ms = ctx.getMatrices();
         ms.pushMatrix();
         ms.scale(hs, hs);
         for (HudModule m : Modules.HUD) {
-            if (!m.enabled) continue;
+            if (!m.visible()) continue;
             long moduleStart=PerformanceMonitor.begin();
             int mw = sw(m, mc), mh = sh(m, mc);
             drawScaled(ctx, mc, m, clampX(m, vw, mw), clampY(m, vh, mh));
@@ -57,6 +63,5 @@ public final class RimHud {
         }
         ms.popMatrix();
         PerformanceMonitor.end("HUD total",total);
-        if(Modules.PERFORMANCE.monitor.value){int y=h-12;ctx.drawText(mc.textRenderer,"RIM CPU (top 5) | Safe: "+Modules.PERFORMANCE.safe.value,6,y,0xff88ccff,false);for(String line:PerformanceMonitor.top(5)){y-=10;ctx.drawText(mc.textRenderer,line,6,y,0xffccccdd,false);}}
     }
 }

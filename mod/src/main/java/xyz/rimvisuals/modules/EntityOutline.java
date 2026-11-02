@@ -19,7 +19,7 @@ public final class EntityOutline extends Module {
     }
 
     public boolean selects(Entity e, Entity self) {
-        if (e == self || e == null) return false;
+        if (e == self || e == null || self == null || !xyz.rimvisuals.core.Modules.PERFORMANCE.outlineAllowed(e.squaredDistanceTo(self))) return false;
         if (e instanceof PlayerEntity) return players.value;
         if (e instanceof Monster) return hostile.value;
         return others.value && e instanceof net.minecraft.entity.LivingEntity;

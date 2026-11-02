@@ -20,7 +20,10 @@
     "WeatherRenderingMixin",
     "ClientPlayNetworkHandlerMixin",
     "ClientWorldMixin",
-    "WorldRendererMixin"
+    "WorldRendererMixin",
+    "ChatScreenAccessor",
+    "ItemGuiOpacityMixin",
+    "GuiItemOpacityMixin"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -40,7 +40,7 @@ public class PlayerEntityRendererMixin {
             tint = Modules.HAND_COLOR.tint(rimRight == mainIsRight, System.nanoTime());
         }
         PerformanceMonitor.end("Hand Color", t0);
-        if (Modules.HAND_GLOW.enabled && !rimGlowDone && rimSkin != null) {
+        if (Modules.HAND_GLOW.enabled && !Modules.PERFORMANCE.safe.value && !rimGlowDone && rimSkin != null) {
             rimGlowDone = true; // renderArm submits the sleeve too; glow is drawn once per arm
             long g0 = PerformanceMonitor.begin();
             boolean mainIsRight = MinecraftClient.getInstance().options.getMainArm().getValue() == Arm.RIGHT;

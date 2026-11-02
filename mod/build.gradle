@@ -34,3 +34,6 @@ tasks.withType(org.gradle.api.tasks.bundling.AbstractArchiveTask).configureEach 
     preserveFileTimestamps = false
     reproducibleFileOrder = true
 }
+
+// Keep concise bytecode hook diagnostics visible when Minecraft mappings change.
+test { testLogging { showStandardStreams = true } }

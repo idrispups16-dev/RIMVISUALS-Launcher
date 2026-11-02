@@ -81,6 +81,30 @@ class ConfigStoreTest {
         assertEquals("" + (ConfigStore.MAX_BACKUPS + 3), s.latestBackup().orElseThrow().getProperty("n"));
     }
 
+    @Test void createNeverOverwritesAndRenamePreservesServerBinding() {
+        var s=new ConfigStore(dir);
+        assertTrue(s.create("old",props("k","first")));
+        assertFalse(s.create("old",props("k","lost")));
+        assertTrue(s.bindServer("example.com","old"));
+        assertTrue(s.rename("old","new"));
+        assertEquals("first",s.load("new").orElseThrow().getProperty("k"));
+        assertEquals("new",s.serverProfile("example.com").orElseThrow());
+    }
+
+    @Test void rejectsUnknownSchemaButAcceptsLegacyJson() throws Exception {
+        var s=new ConfigStore(dir);Path f=dir.resolve("old.json");
+        Files.writeString(f,"{\"name\":\"old\",\"settings\":{\"hud.pos_x\":\"3\"}}");
+        assertTrue(s.importJson(f).isPresent());
+        Files.writeString(f,"{\"schema\":2,\"name\":\"next\",\"settings\":{\"hud.pos_x\":\"4\"}}");
+        assertTrue(s.importJson(f).isEmpty());
+    }
+
+    @Test void atomicSaveLeavesNoTemporaryFiles() throws Exception {
+        var s=new ConfigStore(dir);assertTrue(s.save("p",props("a","1")));assertTrue(s.save("p",props("a","2")));
+        assertEquals("2",s.load("p").orElseThrow().getProperty("a"));
+        try(var files=Files.list(s.profiles())){assertEquals(1,files.count());}
+    }
+
     @Test void serverBindings() {
         ConfigStore s = new ConfigStore(dir);
         s.save("pvp", props("k", "v"));
@@ -90,6 +114,8 @@ class ConfigStoreTest {
         s.delete("pvp");
         assertTrue(s.serverProfile("play.example.com").isEmpty(), "binding to deleted profile is ignored");
         s.save("pvp", props("k", "v"));
+        assertTrue(s.serverProfile("play.example.com").isEmpty(), "recreating a deleted name must not restore a stale binding");
+        assertTrue(s.bindServer("play.example.com", "pvp"));
         assertTrue(s.unbindServer("play.example.com"));
         assertTrue(s.serverProfile("play.example.com").isEmpty());
     }

@@ -67,8 +67,9 @@ public final class Modules {
     public static final Watermark WATERMARK = new Watermark();
     public static final PulseGlow PULSE = new PulseGlow();
     public static final ParticleOverlay PARTICLES = new ParticleOverlay();
-    public static final List<Module> ALL = List.of(INFO, WATERMARK, PULSE, PARTICLES, UI, PERFORMANCE, VIEWMODEL, SWING, HAND_LIGHTING, CRYSTAL_SCALE, CRYSTAL_FADE, TOTEM_SCALE, HIT_COLOR, HIT_PARTICLES, CRIT_PARTICLES, DAMAGE_PARTICLES, PEARL_TRAILS, PROJECTILE_TRAILS, SWORD_TRAILS, SHARPNESS_PARTICLES, INVENTORY_HUD, HIT_MARKER, KILL_EFFECTS, DAMAGE_TINT, CPS_HUD, KEYSTROKES_HUD, POTION_HUD, SPEED_HUD, SESSION_HUD, HAND_COLOR, CUSTOM_FOG, HAND_GLOW, WATER_COLOR, LAVA_COLOR, WEATHER_COLOR, BIOME_COLORS, ENTITY_OUTLINE, TARGET_HIGHLIGHT, TOTEM_FADE, ANCHOR_FADE, EXPLOSION_EFFECTS, COOLDOWNS_HUD, NOTIFICATIONS, FULLBRIGHT, NIGHT_VISION_FADE, GOLDEN_APPLE_GLOW, CUSTOM_SKY, HURT_CAMERA, ARMOR_HUD, TARGET_HUD);
-    public static final List<HudModule> HUD = List.of(INFO, WATERMARK, ARMOR_HUD, TARGET_HUD, CPS_HUD, KEYSTROKES_HUD, POTION_HUD, SPEED_HUD, SESSION_HUD, INVENTORY_HUD);
+    public static final PerformanceHud PERFORMANCE_HUD = new PerformanceHud();
+    public static final List<Module> ALL = List.of(INFO, WATERMARK, PULSE, PARTICLES, UI, PERFORMANCE, VIEWMODEL, SWING, HAND_LIGHTING, CRYSTAL_SCALE, CRYSTAL_FADE, TOTEM_SCALE, HIT_COLOR, HIT_PARTICLES, CRIT_PARTICLES, DAMAGE_PARTICLES, PEARL_TRAILS, PROJECTILE_TRAILS, SWORD_TRAILS, SHARPNESS_PARTICLES, INVENTORY_HUD, HIT_MARKER, KILL_EFFECTS, DAMAGE_TINT, CPS_HUD, KEYSTROKES_HUD, POTION_HUD, SPEED_HUD, SESSION_HUD, HAND_COLOR, CUSTOM_FOG, HAND_GLOW, WATER_COLOR, LAVA_COLOR, WEATHER_COLOR, BIOME_COLORS, ENTITY_OUTLINE, TARGET_HIGHLIGHT, TOTEM_FADE, ANCHOR_FADE, EXPLOSION_EFFECTS, COOLDOWNS_HUD, NOTIFICATIONS, FULLBRIGHT, NIGHT_VISION_FADE, GOLDEN_APPLE_GLOW, CUSTOM_SKY, HURT_CAMERA, ARMOR_HUD, TARGET_HUD, PERFORMANCE_HUD);
+    public static final List<HudModule> HUD = ALL.stream().filter(HudModule.class::isInstance).map(HudModule.class::cast).toList();
 
     private static final Properties DEFAULTS=snapshot();
     public static void reset(Module m){if(m.toggleable)m.enabled=Boolean.parseBoolean(DEFAULTS.getProperty(m.id+".enabled"));for(Setting st:m.settings)st.load(DEFAULTS.getProperty(m.id+"."+st.key()));PERFORMANCE.seedPreset();VIEWMODEL.seedPreset();}
@@ -100,11 +101,9 @@ public final class Modules {
         PERFORMANCE.seedPreset(); VIEWMODEL.seedPreset();
     }
 
-    private static void write(Path file, Properties p) {
-        try {
-            Files.createDirectories(file.getParent());
-            try (var out = Files.newOutputStream(file)) { p.store(out, "RIMVISUALS"); }
-        } catch (IOException e) { LOG.warn("Could not write {}", file, e); }
+    private static boolean write(Path file, Properties p) {
+        try {ConfigStore.write(file,p);return true;}
+        catch(IOException e){LOG.warn("Could not write {}",file,e);return false;}
     }
 
     private static Properties read(Path file) {
@@ -115,7 +114,7 @@ public final class Modules {
         return p;
     }
 
-    public static void save() { Properties s = snapshot(); write(dir().resolve("config.properties"), s); lastSaved = s; }
+    public static boolean save() { Properties s = snapshot(); if(!write(dir().resolve("config.properties"), s)) return false; lastSaved = s; return true; }
     public static void load() {
         boolean existed = Files.exists(dir().resolve("config.properties"));
         apply(read(dir().resolve("config.properties")));
@@ -127,15 +126,18 @@ public final class Modules {
     public static ConfigStore store() { return new ConfigStore(dir()); }
     public static String cleanName(String n) { return ConfigStore.clean(n); }
 
+    public static boolean createProfile(String name) {return store().create(cleanName(name),snapshot());}
     public static boolean saveProfile(String name) { String n = cleanName(name); return !n.isEmpty() && store().save(n, snapshot()); }
     public static boolean loadProfile(String name) {
         var p = store().load(cleanName(name));
         if (p.isEmpty()) return false;
+        if (!backupNow()) return false;
+        var previous=snapshot();
         apply(p.get());
-        save();
-        return true;
+        if(save())return true;
+        apply(previous);return false;
     }
-    public static void deleteProfile(String name) { store().delete(cleanName(name)); }
+    public static boolean deleteProfile(String name) { return store().delete(cleanName(name)); }
     public static List<String> listProfiles() { return store().list(); }
     public static boolean renameProfile(String from, String to) { return store().rename(cleanName(from), cleanName(to)); }
     public static boolean duplicateProfile(String from, String to) { return store().duplicate(cleanName(from), cleanName(to)); }
@@ -152,14 +154,15 @@ public final class Modules {
     public static boolean restoreLatestBackup() {
         var p = store().latestBackup();
         if (p.isEmpty()) return false;
+        if (!backupNow()) return false;
+        var previous=snapshot();
         apply(p.get());
-        save();
-        return true;
+        if(save())return true;
+        apply(previous);return false;
     }
 
     public static boolean applyPreset(String name) {
         if (!Presets.apply(name)) return false;
-        saveProfile(name);
         save();
         return true;
     }
@@ -178,7 +181,7 @@ public final class Modules {
     private static int autosaveTicks;
     /** Called every client tick; every 30 s writes config.properties if any setting changed. */
     public static void autosaveTick() {
-        if (++autosaveTicks % 600 != 0) return;
+        if (!UI.autoSave.value || ++autosaveTicks % 600 != 0) return;
         if (lastSaved != null && lastSaved.equals(snapshot())) return;
         save();
     }
