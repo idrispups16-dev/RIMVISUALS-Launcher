@@ -265,7 +265,7 @@ public class ClickGui extends Screen {
         if(!selected.statusNote().isEmpty())infoRow(c,textRenderer.trimToWidth(selected.statusNote(),cw-16));
         int resetY=begin(rowH());if(resetY!=NONE)button(c,cx+8,resetY,cw-16,rowH()-3,"Reset module",mx,my,()->Modules.reset(selected),false);
         if(selected instanceof xyz.rimvisuals.modules.ServerHelper helper){
-            int joinY=begin(rowH());if(joinY!=NONE)button(c,cx+8,joinY,cw-16,rowH()-3,"Manual server connection",mx,my,()->client.setScreen(new HelperConnectScreen(this,helper.ft)),false);
+            int joinY=begin(rowH());if(joinY!=NONE)button(c,cx+8,joinY,cw-16,rowH()-3,"Open HW/FT Settings",mx,my,()->client.setScreen(new HelperSettingsScreen(this,helper.ft)),false);
             int cfgY=begin(rowH());if(cfgY!=NONE)button(c,cx+8,cfgY,cw-16,rowH()-3,"Save separate server CFG",mx,my,()->{String name=(helper.ft?"FunTime":"HolyWorld")+"_"+System.currentTimeMillis();if(Modules.createProfile(name)){Modules.save();status="Saved CFG: "+name;xyz.rimvisuals.core.Notifier.push("Saved CFG: "+name,0x8B8BFF);}else status="Could not save server CFG";},false);
         }
         for(Setting st:selected.settings)if(!st.hidden)settingRow(c,st,mx,my,1);

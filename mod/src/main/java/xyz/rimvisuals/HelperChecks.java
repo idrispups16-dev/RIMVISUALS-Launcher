@@ -19,6 +19,11 @@ public final class HelperChecks {
   ServerHelpers.updateConnection("funtime.su.unrelated.example");if(ServerHelpers.active()!=null||!s.timers.isEmpty()||!s.region.isEmpty())throw new IllegalStateException("Wrong server retained helper data");
   Modules.HW_HELPER.enabled=true;ServerHelpers.updateConnection("hub.holyworld.me");if(ServerHelpers.active()!=Modules.HW_HELPER)throw new IllegalStateException("HolyWorld matching failed");
   Modules.HW_HELPER.enabled=false;ServerHelpers.updateConnection("hub.holyworld.me");if(ServerHelpers.active()!=null)throw new IllegalStateException("Disabled helper stayed active");
+  for(String id:java.util.List.of("hw_helper","ft_helper","helper_events","helper_cooldowns","helper_regions","helper_notifications","helper_settings","helper_refresh","helper_trap_plast"))if(xyz.rimvisuals.core.Keybinds.actions().stream().noneMatch(a->a.id().equals(id)))throw new IllegalStateException("Missing helper bind: "+id);
+  var bind=xyz.rimvisuals.core.Keybinds.actions().stream().filter(a->a.id().equals("helper_refresh")).findFirst().orElseThrow();
+  bind.key().setBoundKey(net.minecraft.client.util.InputUtil.Type.MOUSE.createFromCode(4));var bound=Modules.snapshot();bind.key().setBoundKey(net.minecraft.client.util.InputUtil.Type.KEYSYM.createFromCode(-1));Modules.apply(bound);if(!bind.key().getBoundKeyTranslationKey().equals("key.mouse.5"))throw new IllegalStateException("Helper bind CFG roundtrip failed");
+  var gameplay=h.tracker;gameplay.cooldown("Trapka",2,true,"smoke estimate",1000);if(gameplay.ready(3000).size()!=1||!gameplay.ready(3001).isEmpty())throw new IllegalStateException("READY routing failed");
+  ServerHelpers.clear();if(!gameplay.cooldowns.isEmpty()||!gameplay.events.isEmpty())throw new IllegalStateException("Tracker disconnect failed");
   org.slf4j.LoggerFactory.getLogger("rimvisuals").info("RIM_HELPERS_OK: config roundtrip/reset, synthetic receive routing/dedup, host gating and session cleanup, no public-server test");
  }finally{ServerHelpers.clear();Modules.apply(saved);}}
 }
