@@ -28,6 +28,13 @@ public class InGameOverlayRendererMixin {
         rimTick = tickProgress;
     }
 
+    @org.spongepowered.asm.mixin.injection.Redirect(method = "renderFloatingItem(Lnet/minecraft/client/util/math/MatrixStack;FLnet/minecraft/client/render/command/OrderedRenderCommandQueue;)V",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/item/ItemRenderState;render(Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/command/OrderedRenderCommandQueue;III)V"))
+    private void rimTotemFade(net.minecraft.client.render.item.ItemRenderState state, MatrixStack matrices, OrderedRenderCommandQueue queue, int light, int overlay, int outline) {
+        float a = Modules.TOTEM_FADE.alpha((40 - floatingItemTimer + rimTick) / 40.0F);
+        state.render(matrices, a >= .999f ? queue : xyz.rimvisuals.modules.TotemFade.fading(queue, a), light, overlay, outline);
+    }
+
     @ModifyArgs(method = "renderFloatingItem(Lnet/minecraft/client/util/math/MatrixStack;FLnet/minecraft/client/render/command/OrderedRenderCommandQueue;)V",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/util/math/MatrixStack;scale(FFF)V"))
     private void rimTotemScale(Args args) {

@@ -59,4 +59,14 @@ class EventEffectsTest {
         assertFalse(Notifier.rearm(900, 1000, 10));
         assertTrue(Notifier.rearm(800, 1000, 10));
     }
+
+    @Test void totemFadeHoldsThenFades() {
+        var t = new xyz.rimvisuals.modules.TotemFade();
+        assertEquals(1f, t.alpha(.9f), "disabled = vanilla");
+        t.enabled = true; t.easing.index = 0; t.start.set(.5); t.endOpacity.set(.1);
+        assertEquals(1f, t.alpha(.3f), 1e-6);
+        assertEquals(1f, t.alpha(.5f), 1e-6);
+        assertEquals(.55f, t.alpha(.75f), 1e-5);
+        assertEquals(.1f, t.alpha(1f), 1e-6);
+    }
 }
