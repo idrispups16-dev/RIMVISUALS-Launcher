@@ -40,6 +40,7 @@ public final class RimHud {
         if (Modules.PULSE.enabled && !Modules.PERFORMANCE.safe.value) {long t=PerformanceMonitor.begin();Modules.PULSE.render(ctx,w,h);PerformanceMonitor.end("Pulse Glow",t);}
         if (Modules.PARTICLES.enabled && Modules.PARTICLES.overlay.value && !Modules.PERFORMANCE.safe.value) {long t=PerformanceMonitor.begin();Modules.PARTICLES.drawOverlay(ctx,w,h);PerformanceMonitor.end("Particles",t);}
         if (Modules.DAMAGE_TINT.enabled) {long t=PerformanceMonitor.begin();Modules.DAMAGE_TINT.draw(ctx,mc,w,h);PerformanceMonitor.end("Damage Tint",t);}
+        if (Modules.GOLDEN_APPLE_GLOW.enabled) {long t=PerformanceMonitor.begin();Modules.GOLDEN_APPLE_GLOW.draw(ctx,mc,w,h);PerformanceMonitor.end("Golden Apple Glow",t);}
         if (Modules.HIT_MARKER.enabled && mc.currentScreen == null) {long t=PerformanceMonitor.begin();Modules.HIT_MARKER.draw(ctx,w,h);PerformanceMonitor.end("Hit Marker",t);}
         if (mc.currentScreen instanceof HudEditorScreen) return;
         float hs = (float) Modules.UI.hudScale.value;

@@ -11,7 +11,8 @@
     "PlayerEntityRendererMixin",
     "FogRendererMixin",
     "SkyRenderingMixin",
-    "GameRendererMixin"
+    "GameRendererMixin",
+    "LightmapTextureManagerMixin"
   ],
   "injectors": {
     "defaultRequire": 1
