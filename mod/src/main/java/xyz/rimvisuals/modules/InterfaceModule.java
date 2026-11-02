@@ -17,8 +17,8 @@ public final class InterfaceModule extends Module {
         toggleable = false;
     }
 
-    public final Setting.Num panelWidth=add(new Setting.Num("Panel width",600,480,900,10));
-    public final Setting.Num panelHeight=add(new Setting.Num("Panel height",360,280,600,10));
+    public final Setting.Num panelWidth=add(new Setting.Num("Panel width",840,480,900,10));
+    public final Setting.Num panelHeight=add(new Setting.Num("Panel height",440,280,600,10));
     public final Setting.Num opacity=add(new Setting.Num("Panel opacity",.94,.2,1,.01));
     public final Setting.Num backdrop=add(new Setting.Num("Backdrop opacity",.7,0,1,.01));
     public final Setting.Color background=add(new Setting.Color("Panel background",0x0e0b18));

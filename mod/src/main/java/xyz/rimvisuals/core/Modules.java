@@ -68,14 +68,20 @@ public final class Modules {
     public static final PulseGlow PULSE = new PulseGlow();
     public static final ParticleOverlay PARTICLES = new ParticleOverlay();
     public static final PerformanceHud PERFORMANCE_HUD = new PerformanceHud();
-    public static final List<Module> ALL = List.of(INFO, WATERMARK, PULSE, PARTICLES, UI, PERFORMANCE, VIEWMODEL, SWING, HAND_LIGHTING, CRYSTAL_SCALE, CRYSTAL_FADE, TOTEM_SCALE, HIT_COLOR, HIT_PARTICLES, CRIT_PARTICLES, DAMAGE_PARTICLES, PEARL_TRAILS, PROJECTILE_TRAILS, SWORD_TRAILS, SHARPNESS_PARTICLES, INVENTORY_HUD, HIT_MARKER, KILL_EFFECTS, DAMAGE_TINT, CPS_HUD, KEYSTROKES_HUD, POTION_HUD, SPEED_HUD, SESSION_HUD, HAND_COLOR, CUSTOM_FOG, HAND_GLOW, WATER_COLOR, LAVA_COLOR, WEATHER_COLOR, BIOME_COLORS, ENTITY_OUTLINE, TARGET_HIGHLIGHT, TOTEM_FADE, ANCHOR_FADE, EXPLOSION_EFFECTS, COOLDOWNS_HUD, NOTIFICATIONS, FULLBRIGHT, NIGHT_VISION_FADE, GOLDEN_APPLE_GLOW, CUSTOM_SKY, HURT_CAMERA, ARMOR_HUD, TARGET_HUD, PERFORMANCE_HUD);
+    public static final LocalMarksHud LOCAL_MARKS = new LocalMarksHud();
+    public static final PlayerStatusHud TOTEM_BAR = new PlayerStatusHud("totem_bar","Totem Bar",PlayerStatusHud.Kind.TOTEMS,145);
+    public static final PlayerStatusHud SATURATION_HUD = new PlayerStatusHud("saturation_hud","Saturation HUD",PlayerStatusHud.Kind.SATURATION,180);
+    public static final PlayerStatusHud LOW_HP_HUD = new PlayerStatusHud("low_hp_hud","Low HP",PlayerStatusHud.Kind.LOW_HP,220);
+    public static final PlayerStatusHud TNT_TIMER = new PlayerStatusHud("tnt_timer","TNT Timer",PlayerStatusHud.Kind.TNT,260);
+    public static final Zoom ZOOM = new Zoom();
+    public static final List<Module> ALL = List.of(INFO, WATERMARK, PULSE, PARTICLES, UI, PERFORMANCE, VIEWMODEL, SWING, HAND_LIGHTING, CRYSTAL_SCALE, CRYSTAL_FADE, TOTEM_SCALE, HIT_COLOR, HIT_PARTICLES, CRIT_PARTICLES, DAMAGE_PARTICLES, PEARL_TRAILS, PROJECTILE_TRAILS, SWORD_TRAILS, SHARPNESS_PARTICLES, INVENTORY_HUD, HIT_MARKER, KILL_EFFECTS, DAMAGE_TINT, CPS_HUD, KEYSTROKES_HUD, POTION_HUD, SPEED_HUD, SESSION_HUD, HAND_COLOR, CUSTOM_FOG, HAND_GLOW, WATER_COLOR, LAVA_COLOR, WEATHER_COLOR, BIOME_COLORS, ENTITY_OUTLINE, TARGET_HIGHLIGHT, TOTEM_FADE, ANCHOR_FADE, EXPLOSION_EFFECTS, COOLDOWNS_HUD, NOTIFICATIONS, FULLBRIGHT, NIGHT_VISION_FADE, GOLDEN_APPLE_GLOW, CUSTOM_SKY, HURT_CAMERA, ARMOR_HUD, TARGET_HUD, PERFORMANCE_HUD, LOCAL_MARKS, TOTEM_BAR, SATURATION_HUD, LOW_HP_HUD, TNT_TIMER, ZOOM);
     public static final List<HudModule> HUD = ALL.stream().filter(HudModule.class::isInstance).map(HudModule.class::cast).toList();
 
     private static final Properties DEFAULTS=snapshot();
     public static void reset(Module m){if(m.toggleable)m.enabled=Boolean.parseBoolean(DEFAULTS.getProperty(m.id+".enabled"));for(Setting st:m.settings)st.load(DEFAULTS.getProperty(m.id+"."+st.key()));PERFORMANCE.seedPreset();VIEWMODEL.seedPreset();}
     private Modules() {}
 
-    private static Path dir() { return FabricLoader.getInstance().getConfigDir().resolve("rimvisuals"); }
+    static Path dir() { return FabricLoader.getInstance().getConfigDir().resolve("rimvisuals"); }
     private static Path profileDir() { return dir().resolve("profiles"); }
 
     public static Properties snapshot() {
@@ -84,6 +90,7 @@ public final class Modules {
             if (m.toggleable) p.setProperty(m.id + ".enabled", String.valueOf(m.enabled));
             for (Setting s : m.settings) p.setProperty(m.id + "." + s.key(), s.save());
         }
+        Keybinds.snapshot(p);
         return p;
     }
 
@@ -99,6 +106,7 @@ public final class Modules {
             }
         }
         PERFORMANCE.seedPreset(); VIEWMODEL.seedPreset();
+        Keybinds.load(p);
     }
 
     private static boolean write(Path file, Properties p) {

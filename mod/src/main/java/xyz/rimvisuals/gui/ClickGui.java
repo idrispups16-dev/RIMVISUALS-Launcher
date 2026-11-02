@@ -30,8 +30,8 @@ import java.util.function.DoubleConsumer;
 
 /** RIMVISUALS menu: tabs, search, module cards with settings, color editor, profiles. */
 public class ClickGui extends Screen {
-    private static final String[] TABS = {"HUD", "Visuals", "Interface", "Optimization", "Viewmodel", "Swing", "Item Lighting", "Profiles"};
-    private static final Module.Category[] CATS = {Module.Category.HUD, Module.Category.VISUALS, Module.Category.INTERFACE, Module.Category.OPTIMIZATION, Module.Category.VIEWMODEL, Module.Category.SWING, Module.Category.SHADER_HANDS};
+    private final Screen parentScreen;
+    private static final String[] TABS = {"Visuals", "HUD", "Utilities", "Profiles", "Keybinds", "Friends", "Markers"};
     private static final int NONE = Integer.MIN_VALUE;
 
     private static final class Hit {
@@ -52,6 +52,13 @@ public class ClickGui extends Screen {
     private final Anim open = new Anim(0), tabPos = new Anim(0), scrollA = new Anim(0);
     private final TextInput search = new TextInput("Search...", 24);
     private final TextInput profileName = new TextInput("Profile name", 20);
+    private Module selected;
+    private List<Module> filtered=List.of();
+    private String filterKey="";
+    private float detailScroll, detailMax;
+    private final Anim detailA=new Anim(0);
+    private int detailX,detailW;
+    private boolean detailVisible;
     private String tooltip="";
     private TextInput focus;
     private Hit dragging;
@@ -65,14 +72,18 @@ public class ClickGui extends Screen {
     private float s, fade;
     private int vw, vh, wx, wy, ww, wh, cx, cw, ctop, cbot, cy;
 
-    public ClickGui() {
+    public ClickGui() { this(null); }
+    public ClickGui(Screen parent) {
         super(Text.literal("RIMVISUALS"));
+        parentScreen=parent;
         for (Module m : Modules.ALL) if (!m.toggleable) expanded.add(m);
-        search.onChange = () -> targetScroll = 0;
+        search.onChange = () -> {targetScroll = 0;filterKey="";};
         profileName.filter = ch -> ch < 128 && (Character.isLetterOrDigit(ch) || ch == '_' || ch == '-');
     }
 
-    public void showCategoryForTest(int index){tab=index;expanded.add(Modules.VIEWMODEL);}
+    public void editHud(xyz.rimvisuals.core.HudModule m){tab=1;selected=m;colorOpen.add(m.accentColor);detailScroll=0;}
+    @Override public void close(){client.setScreen(parentScreen);}
+    public void showCategoryForTest(int index){tab=0;selected=index==4?Modules.VIEWMODEL:null;}
     @Override public boolean shouldPause() { return false; }
     @Override public void removed() { Modules.save(); }
 
@@ -130,7 +141,7 @@ public class ClickGui extends Screen {
         if(Boolean.getBoolean("rimvisuals.smoke"))xyz.rimvisuals.SmokeTest.frames++;
         mob = RimPlatform.mobile();
         s = (float) Modules.UI.guiScale.value;
-        s = Math.max(0.3f, Math.min(s, Math.min(width / 500f, height / 310f)));
+        s = Math.max(0.45f, Math.min(s, Math.min(width / 640f, height / 400f)));
         vw = Math.round(width / s);
         vh = Math.round(height / s);
         double mx = mouseX / s, my = mouseY / s;
@@ -145,13 +156,13 @@ public class ClickGui extends Screen {
         ms.pushMatrix();
         ms.scale(s, s);
 
-        int hdr = mob ? 32 : 26, sideW = mob ? 132 : 120, pad = 6;
+        int hdr = mob ? 32 : 26, sideW = mob ? 112 : 94, pad = 6;
         ww = Math.min(vw - (mob ? 8 : 24), (int)Modules.UI.panelWidth.value);
         wh = Math.min(vh - (mob ? 8 : 24), (int)Modules.UI.panelHeight.value);
         wx = (vw - ww) / 2;
         wy = (vh - wh) / 2 + Math.round((1f - fade) * 12);
 
-        Gfx.glow(c, wx, wy, ww, wh, 8, f(acc), 3);
+        Gfx.glow(c, wx, wy, ww, wh, 8, f(acc), 1);
         Gfx.roundBorder(c, wx, wy, ww, wh, 8, f(Theme.panel()), f(Gfx.alpha(acc, 0.55f)));
         Gfx.round(c, wx + 3, wy + hdr, sideW - 3, wh - hdr - 3, 6, f(Theme.bg()));
 
@@ -177,7 +188,7 @@ public class ClickGui extends Screen {
             final int idx = i;
             int y = ty + i * (th + 3);
             txt(c, TABS[i], wx + 16, y + (th - 8) / 2, i == tab ? Theme.text() : Theme.muted());
-            hit(wx + 8, y, sideW - 14, th, () -> { tab = idx; targetScroll = 0; scrollA.value = 0; search.text = ""; }, null);
+            hit(wx + 8, y, sideW - 14, th, () -> selectTab(idx), null);
         }
 
         // content
@@ -190,22 +201,70 @@ public class ClickGui extends Screen {
         cy = ctop - scroll;
         c.enableScissor(cx,ctop,cx+cw,cbot);
 
-        String q = search.text.trim().toLowerCase(Locale.ROOT);
-        if (!q.isEmpty()) {
-            boolean any = false;
-            for (Module m : Modules.ALL) if (matches(m, q)) { moduleCard(c, m, mx, my); any = true; }
-            if (!any) infoRow(c, "No results");
-        } else if (tab < CATS.length) {
-            for (Module m : Modules.ALL) if (m.category == CATS[tab]) moduleCard(c, m, mx, my);
-        } else {
-            profilesTab(c, mx, my);
-        }
+        detailVisible=false;
+        if (tab == 3) profilesTab(c, mx, my);
+        else renderModuleBrowser(c,mx,my,scroll);
         int total = cy - (ctop - scroll);
         maxScroll = Math.max(0, total - (cbot - ctop));
 
         c.disableScissor();
+        if(detailVisible) renderDetails(c,mx,my);
         if(!tooltip.isEmpty()){var lines=textRenderer.wrapLines(Text.literal(tooltip),Math.max(120,ww-30));int tipY=wy+wh+3;if(tipY+lines.size()*10>vh)tipY=wy+wh-lines.size()*10-5;c.fill(wx+5,tipY-3,wx+ww-5,tipY+lines.size()*10+2,0xee080810);for(var line:lines){c.drawText(textRenderer,line,wx+10,tipY,Theme.text(),false);tipY+=10;}}
         ms.popMatrix();
+    }
+
+    private void selectTab(int index) {
+        if(index==4){client.setScreen(new KeybindManagerScreen(this));return;}
+        if(index==5||index==6){client.setScreen(new LocalDataScreen(this,index==6));return;}
+        tab=index;targetScroll=0;scrollA.value=0;selected=null;search.text="";filterKey="";
+    }
+
+    private boolean categoryMatches(Module m) {
+        if(tab==1)return m.category==Module.Category.HUD;
+        if(tab==2)return m.category==Module.Category.INTERFACE||m.category==Module.Category.OPTIMIZATION||m.category==Module.Category.UTILITIES;
+        return m.category==Module.Category.VISUALS||m.category==Module.Category.VIEWMODEL||m.category==Module.Category.SWING||m.category==Module.Category.SHADER_HANDS;
+    }
+
+    private void renderModuleBrowser(DrawContext c,double mx,double my,int scroll) {
+        String q=search.text.trim().toLowerCase(Locale.ROOT),key=tab+":"+q;
+        if(!filterKey.equals(key)) {
+            filtered=Modules.ALL.stream().filter(m->categoryMatches(m)&&(q.isEmpty()||matches(m,q))).toList();filterKey=key;
+        }
+        int originalW=cw;
+        boolean wide=ww>=780;
+        if(selected!=null&&!wide){detailVisible=true;detailX=cx;detailW=cw;cy=ctop;return;}
+        if(selected!=null){detailVisible=true;detailW=240;detailX=cx+cw-detailW;cw-=detailW+10;}
+        int gap=8,columns=2,cardW=(cw-gap)/2,cardH=48;
+        if(filtered.isEmpty())infoRow(c,"No modules match this search");
+        for(int i=0;i<filtered.size();i++) {
+            Module m=filtered.get(i);int x=cx+(i%columns)*(cardW+gap),y=ctop-scroll+(i/columns)*cardH;
+            if(y<ctop||y+cardH>cbot)continue;
+            boolean hover=in(mx,my,x,y,cardW,cardH-6);
+            Gfx.roundBorder(c,x,y,cardW,cardH-6,7,f(hover?Theme.cardHover():Theme.card()),f(selected==m?Theme.accent2():0xff252438));
+            if(hover)tooltip=m.name+": "+m.description;
+            int sw=25;
+            txt(c,textRenderer.trimToWidth(m.name,cardW-48),x+10,y+9,m.toggleable&&!m.enabled?Theme.muted():Theme.text());
+            txt(c,m.toggleable?(m.enabled?"ENABLED":"DISABLED"):"SETTINGS",x+10,y+25,m.toggleable&&m.enabled?Theme.accent2():Theme.muted());
+            hit(x,y,cardW-(m.toggleable?sw+12:0),cardH-6,()->{selected=m;detailScroll=0;detailA.value=0;focus=null;},null);
+            if(m.toggleable){drawSwitch(c,x+cardW-sw-9,y+14,sw,14,m,m.enabled);hit(x+cardW-sw-12,y,sw+12,cardH-6,()->m.enabled=!m.enabled,null);}
+        }
+        cy=ctop-scroll+((filtered.size()+1)/2)*cardH;
+        cw=originalW;
+    }
+
+    private void renderDetails(DrawContext c,double mx,double my) {
+        int oldX=cx,oldW=cw,oldTop=ctop,oldCy=cy;
+        cx=detailX;cw=detailW;
+        Gfx.round(c,cx,ctop,cw,cbot-ctop,7,f(0xff12101e));
+        button(c,cx+6,ctop+5,44,18,"Back",mx,my,()->{selected=null;detailScroll=0;},false);
+        txt(c,textRenderer.trimToWidth(selected.name,cw-65),cx+58,ctop+10,Theme.text());
+        ctop+=32;cy=ctop-Math.round(detailA.to(detailScroll,16));
+        c.enableScissor(cx,ctop,cx+cw,cbot);
+        int resetY=begin(rowH());if(resetY!=NONE)button(c,cx+8,resetY,cw-16,rowH()-3,"Reset module",mx,my,()->Modules.reset(selected),false);
+        for(Setting st:selected.settings)if(!st.hidden)settingRow(c,st,mx,my,1);
+        detailMax=Math.max(0,cy-(ctop-Math.round(detailA.value))-(cbot-ctop));
+        detailScroll=Math.max(0,Math.min(detailMax,detailScroll));
+        c.disableScissor();cx=oldX;cw=oldW;ctop=oldTop;cy=oldCy;
     }
 
     private static boolean matches(Module m, String q) {
@@ -256,35 +315,38 @@ public class ClickGui extends Screen {
     }
 
     private void settingRow(DrawContext c, Setting st, double mx, double my, float a) {
-        int x = cx + 8, w = cw - 8;
+        int x = cx + 8, w = cw - 16;
         if (st instanceof Setting.Bool b) {
             int h = rowH(), y = begin(h);
             if (y == NONE) return;
             boolean hov = in(mx, my, x, y, w, h - 2);
             Gfx.round(c, x, y, w, h - 2, 4, f(Gfx.alpha(hov ? Theme.cardHover() : Theme.bg(), a)));
-            txt(c, st.name, x + 8, y + (h - 2 - 8) / 2, Theme.text());
+            txt(c, textRenderer.trimToWidth(st.name,w-64), x + 8, y + (h - 2 - 8) / 2, Theme.text());
+            if(hov)tooltip=st.name;
             int sw = mob ? 30 : 24, swh = mob ? 16 : 12;
             drawSwitch(c, x + w - sw - 8, y + (h - 2 - swh) / 2, sw, swh, st, b.value);
             hit(x, y, w, h - 2, () -> b.value = !b.value, null);
         } else if (st instanceof Setting.Num n) {
             slider(c, st.name, n.display(), n.fraction(), x, w, a, px -> n.set(n.min + px * (n.max - n.min)));
         } else if (st instanceof Setting.Mode md) {
-            int h = rowH(), y = begin(h);
+            int h = rowH()+12, y = begin(h);
             if (y == NONE) return;
             boolean hov = in(mx, my, x, y, w, h - 2);
             Gfx.round(c, x, y, w, h - 2, 4, f(Gfx.alpha(hov ? Theme.cardHover() : Theme.bg(), a)));
-            txt(c, st.name, x + 8, y + (h - 2 - 8) / 2, Theme.text());
-            String label = md.get();
-            int bw = textRenderer.getWidth(label) + 14, bh = h - 8;
-            Gfx.roundBorder(c, x + w - bw - 6, y + 3, bw, bh, 4, f(Gfx.mix(Theme.card(), Theme.accent(), 0.3f)), f(Gfx.alpha(Theme.accent(), 0.6f)));
-            txtC(c, label, x + w - bw - 6, y + 3, bw, bh, Theme.text());
+            txt(c, textRenderer.trimToWidth(st.name,w-16), x + 8, y + 4, Theme.text());
+            if(hov)tooltip=st.name;
+            String label = textRenderer.trimToWidth(md.get(),Math.max(28,w/2-16));
+            int bw = textRenderer.getWidth(label) + 14, bh = 16;
+            Gfx.roundBorder(c, x + w - bw - 6, y + h - 19, bw, bh, 4, f(Gfx.mix(Theme.card(), Theme.accent(), 0.3f)), f(Gfx.alpha(Theme.accent(), 0.6f)));
+            txtC(c, label, x + w - bw - 6, y + h - 19, bw, bh, Theme.text());
             hit(x, y, w, h - 2, md::next, null);
         } else if (st instanceof Setting.Color col) {
             int h = rowH(), y = begin(h);
             if (y != NONE) {
                 boolean hov = in(mx, my, x, y, w, h - 2);
                 Gfx.round(c, x, y, w, h - 2, 4, f(Gfx.alpha(hov ? Theme.cardHover() : Theme.bg(), a)));
-                txt(c, st.name, x + 8, y + (h - 2 - 8) / 2, Theme.text());
+                txt(c, textRenderer.trimToWidth(st.name,w-64), x + 8, y + (h - 2 - 8) / 2, Theme.text());
+            if(hov)tooltip=st.name;
                 int sw = mob ? 30 : 24, swh = mob ? 16 : 12;
                 Gfx.roundBorder(c, x + w - sw - 8, y + (h - 2 - swh) / 2, sw, swh, 3, f(0xFF000000 | col.rgb), f(0xFFFFFFFF));
                 hit(x, y, w, h - 2, () -> { if (!colorOpen.remove(col)) colorOpen.add(col); }, null);
@@ -393,6 +455,7 @@ public class ClickGui extends Screen {
         if (profiles.isEmpty()) infoRow(c, "No profiles yet. Save your current setup above.");
         infoRow(c, "Name field: Save / Copy to / Rename to. Export writes config/rimvisuals/exports.");
         for (String name : profiles) {
+            if(!search.text.isBlank()&&!name.toLowerCase(Locale.ROOT).contains(search.text.toLowerCase(Locale.ROOT)))continue;
             int ph = mob ? 74 : 58;
             int py = begin(ph);
             if (py == NONE) continue;
@@ -487,7 +550,8 @@ public class ClickGui extends Screen {
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double horizontal, double vertical) {
-        targetScroll = Math.max(0, Math.min(maxScroll, targetScroll - (float) vertical * 24f));
+        if(detailVisible&&mouseX/s>=detailX&&mouseX/s<detailX+detailW)detailScroll=Math.max(0,Math.min(detailMax,detailScroll-(float)vertical*24f));
+        else targetScroll = Math.max(0, Math.min(maxScroll, targetScroll - (float) vertical * 24f));
         return true;
     }
 
@@ -501,6 +565,7 @@ public class ClickGui extends Screen {
     @Override
     public boolean keyPressed(KeyInput input) {
         int keyCode=input.key();
+        if (keyCode == GLFW.GLFW_KEY_ESCAPE) { close(); return true; }
         if (focus != null) {
             if (keyCode == GLFW.GLFW_KEY_BACKSPACE) { focus.backspace(); return true; }
             if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_ESCAPE) { focus = null; return true; }

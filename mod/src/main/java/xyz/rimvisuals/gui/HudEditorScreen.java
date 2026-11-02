@@ -21,6 +21,7 @@ public class HudEditorScreen extends Screen {
     private final Runnable afterClose;
     private double offX, offY;
 
+    private net.minecraft.client.gui.widget.ButtonWidget colorButton;
     private int toolbarY, columns, lastGrid=8;
     private int guideX = -1, guideY = -1;
 
@@ -35,7 +36,7 @@ public class HudEditorScreen extends Screen {
     }
 
     @Override protected void init() {
-        String[] labels = {"Done", "Menu", "Grid", "Monitor", "Reset one", "Reset all",
+        String[] labels = {"Done", "Color", "Grid", "Monitor", "Reset one", "Reset all",
                            "Left", "Center X", "Right", "Top", "Center Y", "Bottom"};
         columns=Math.max(1,Math.min(6,(width-8)/68));
         int rows=(labels.length+columns-1)/columns;
@@ -44,8 +45,8 @@ public class HudEditorScreen extends Screen {
         if(Modules.UI.gridSnap.value>0) lastGrid=(int)Modules.UI.gridSnap.value;
         for (int i = 0; i < labels.length; i++) {
             final int action = i;
-            addDrawableChild(net.minecraft.client.gui.widget.ButtonWidget.builder(Text.literal(labels[i]), b -> action(action))
-                .dimensions(4 + (i % columns) * (bw + 1), toolbarY + (i / columns) * 23, bw, 20).build());
+            var button=addDrawableChild(new RimButton(4+(i%columns)*(bw+1),toolbarY+(i/columns)*23,bw,20,Text.literal(labels[i]),b->action(action)));
+            if(i==1){colorButton=button;colorButton.active=selected!=null;}
         }
     }
 
@@ -56,7 +57,7 @@ public class HudEditorScreen extends Screen {
 
     private void action(int action) {
         if (action == 0) { close(); return; }
-        if (action == 1) { MinecraftClient.getInstance().setScreen(new ClickGui()); return; }
+        if (action == 1) { if(selected!=null){selected.customAccent.value=true;var gui=new ClickGui(this);gui.editHud(selected);MinecraftClient.getInstance().setScreen(gui);}return; }
         if (action == 2) { if(Modules.UI.gridSnap.value>0){lastGrid=(int)Modules.UI.gridSnap.value;Modules.UI.gridSnap.set(0);}else Modules.UI.gridSnap.set(lastGrid); return; }
         if (action == 3) { Modules.PERFORMANCE.monitor.value = !Modules.PERFORMANCE.monitor.value; return; }
         if (action == 4) { if (selected != null) resetElement(selected); return; }
@@ -106,6 +107,7 @@ public class HudEditorScreen extends Screen {
         c.drawText(textRenderer, textRenderer.trimToWidth(hint, width - 12), 6, 6, Theme.text(), false);
         String state = "Grid: " + (grid > 0 ? grid : "OFF") + " | Selected: " + (selected == null ? "none" : selected.name);
         c.drawText(textRenderer, textRenderer.trimToWidth(state, width - 12), 6, 18, Theme.text(), false);
+        if(colorButton!=null)colorButton.active=selected!=null;
         super.render(c, mouseX, mouseY, delta);
         if (grab != null) {
             int gc = Gfx.withAlpha(0x38BDF8, .8f);
