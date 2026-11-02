@@ -8,7 +8,7 @@ public final class UtilityHud extends HudModule {
  public UtilityHud(String id,String name,boolean keys,int y){super(id,name,keys?"Assigned RIM key bindings, up to eight rows; no input simulation":"Own heading and yaw",200,y);this.keys=keys;enabled=false;}
  private void refresh(MinecraftClient mc){long now=System.nanoTime();if(now<next)return;next=now+100_000_000;lines.clear();
   if(keys){for(var a:Keybinds.actions())if(!a.key().getBoundKeyTranslationKey().equals("key.keyboard.unknown")){lines.add(a.label()+": "+a.key().getBoundKeyLocalizedText().getString());if(lines.size()==8)break;}}
-  else if(mc.player!=null)lines.add(mc.player.getHorizontalFacing().asString().toUpperCase(Locale.ROOT)+"  "+Math.round(mc.player.getYaw())+" deg");
+  else if(mc.player!=null)lines.add(mc.player.getHorizontalFacing().asString().toUpperCase(Locale.ROOT)+"  "+Math.round(net.minecraft.util.math.MathHelper.wrapDegrees(mc.player.getYaw()))+" deg");
   if(lines.isEmpty()&&mc.currentScreen instanceof xyz.rimvisuals.gui.HudEditorScreen)lines.add(keys?"Open ClickGUI: Right Shift":"NORTH  180 deg");
  }
  @Override public int width(MinecraftClient mc){return 190;}

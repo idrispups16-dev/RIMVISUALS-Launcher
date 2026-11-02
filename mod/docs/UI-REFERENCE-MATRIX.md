@@ -1,5 +1,10 @@
 # RIMVISUALS 0.4 — reference comparison and acceptance
 
+Historical 0.4.0-ui.1 inventory. The 0.4.1 expansion adds real Crosshair, Aspect Ratio,
+Atmosphere palettes, China Hat, Block Overlay, cosmetic Item Physics, Shulker Preview,
+Sound Controller, manual Item Swap, Assigned Keys HUD and Compass HUD. See EXPANSION-0.4.1.md
+for current behavior, limits and acceptance; older Missing rows below describe the base build.
+
 ## Inputs and status rules
 
 Reviewed all 16 available attached files, named Screenshot 2026-11-02 182012 through 182318.

@@ -17,6 +17,7 @@ import java.util.Set;
 public final class CombatEvents {
     private static LivingEntity lastTarget;
     private static long lastHitNanos;
+    private static int worldIdentity;
     private static boolean killHandled = true;
     private static final Map<Integer, Float> health = new HashMap<>();
     private static final Set<Integer> seen = new HashSet<>();
@@ -94,6 +95,8 @@ public final class CombatEvents {
     }
 
     public static void tick(MinecraftClient mc) {
+        int world=System.identityHashCode(mc.world);
+        if(world!=worldIdentity||mc.world==null||mc.player==null){lastTarget=null;lastHitNanos=0;killHandled=true;health.clear();seen.clear();worldIdentity=world;if(mc.world==null||mc.player==null)return;}
         if(Modules.PERFORMANCE.safe.value){health.clear();return;}
         killCheck();
         var dp = Modules.DAMAGE_PARTICLES;
