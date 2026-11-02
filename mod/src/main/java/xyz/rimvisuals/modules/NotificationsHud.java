@@ -39,7 +39,7 @@ public final class NotificationsHud extends HudModule {
             float fadeIn = Math.min(1f, (now - n.fromNanos()) / 150e6f), fadeOut = Math.min(1f, (n.untilNanos() - now) / 300e6f);
             float k = Math.max(0f, Math.min(fadeIn, fadeOut));
             Gfx.round(c, x, ry, W, ROW - 2, 4, Gfx.withAlpha(0x08080F, (float) opacity.value * k));
-            Gfx.fill(c, x, ry + 2, x + 2, ry + ROW - 4, Gfx.withAlpha(n.rgb(), k));
+            Gfx.fill(c, x, ry + 2, x + 2, ry + ROW - 4, Gfx.withAlpha(customAccent.value ? accentColor.rgb : n.rgb(), k));
             Gfx.text(c, mc.textRenderer, mc.textRenderer.trimToWidth(n.text(), W - 14), x + 8, ry + 3, Gfx.withAlpha(0xFFFFFF, k));
             ry += ROW;
         }
