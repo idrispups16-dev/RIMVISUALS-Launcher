@@ -41,6 +41,11 @@ public final class Modules {
     public static final SessionHud SESSION_HUD=new SessionHud();
     public static final HandColor HAND_COLOR=new HandColor();
     public static final CustomFog CUSTOM_FOG=new CustomFog();
+    public static final WaterColor WATER_COLOR=new WaterColor();
+    public static final LavaColor LAVA_COLOR=new LavaColor();
+    public static final WeatherColor WEATHER_COLOR=new WeatherColor();
+    public static final BiomeColors BIOME_COLORS=new BiomeColors();
+    public static final EntityOutline ENTITY_OUTLINE=new EntityOutline();
     public static final Fullbright FULLBRIGHT=new Fullbright();
     public static final NightVisionFade NIGHT_VISION_FADE=new NightVisionFade();
     public static final GoldenAppleGlow GOLDEN_APPLE_GLOW=new GoldenAppleGlow();
@@ -55,7 +60,7 @@ public final class Modules {
     public static final Watermark WATERMARK = new Watermark();
     public static final PulseGlow PULSE = new PulseGlow();
     public static final ParticleOverlay PARTICLES = new ParticleOverlay();
-    public static final List<Module> ALL = List.of(INFO, WATERMARK, PULSE, PARTICLES, UI, PERFORMANCE, VIEWMODEL, SWING, HAND_LIGHTING, CRYSTAL_SCALE, CRYSTAL_FADE, TOTEM_SCALE, HIT_COLOR, HIT_PARTICLES, CRIT_PARTICLES, DAMAGE_PARTICLES, PEARL_TRAILS, PROJECTILE_TRAILS, SWORD_TRAILS, SHARPNESS_PARTICLES, INVENTORY_HUD, HIT_MARKER, KILL_EFFECTS, DAMAGE_TINT, CPS_HUD, KEYSTROKES_HUD, POTION_HUD, SPEED_HUD, SESSION_HUD, HAND_COLOR, CUSTOM_FOG, FULLBRIGHT, NIGHT_VISION_FADE, GOLDEN_APPLE_GLOW, CUSTOM_SKY, HURT_CAMERA, ARMOR_HUD, TARGET_HUD);
+    public static final List<Module> ALL = List.of(INFO, WATERMARK, PULSE, PARTICLES, UI, PERFORMANCE, VIEWMODEL, SWING, HAND_LIGHTING, CRYSTAL_SCALE, CRYSTAL_FADE, TOTEM_SCALE, HIT_COLOR, HIT_PARTICLES, CRIT_PARTICLES, DAMAGE_PARTICLES, PEARL_TRAILS, PROJECTILE_TRAILS, SWORD_TRAILS, SHARPNESS_PARTICLES, INVENTORY_HUD, HIT_MARKER, KILL_EFFECTS, DAMAGE_TINT, CPS_HUD, KEYSTROKES_HUD, POTION_HUD, SPEED_HUD, SESSION_HUD, HAND_COLOR, CUSTOM_FOG, WATER_COLOR, LAVA_COLOR, WEATHER_COLOR, BIOME_COLORS, ENTITY_OUTLINE, FULLBRIGHT, NIGHT_VISION_FADE, GOLDEN_APPLE_GLOW, CUSTOM_SKY, HURT_CAMERA, ARMOR_HUD, TARGET_HUD);
     public static final List<HudModule> HUD = List.of(INFO, WATERMARK, ARMOR_HUD, TARGET_HUD, CPS_HUD, KEYSTROKES_HUD, POTION_HUD, SPEED_HUD, SESSION_HUD, INVENTORY_HUD);
 
     private static final Properties DEFAULTS=snapshot();

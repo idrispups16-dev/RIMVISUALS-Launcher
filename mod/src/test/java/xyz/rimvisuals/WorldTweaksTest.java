@@ -26,4 +26,22 @@ class WorldTweaksTest {
         assertEquals(1f, GoldenAppleGlow.intensity(16f), 1e-6);
         assertEquals(1f, GoldenAppleGlow.intensity(100f), 1e-6);
     }
+
+    @Test void tintMixesAndKeepsAlpha() {
+        assertEquals(0xFF336699, xyz.rimvisuals.core.WorldColors.tint(0xFF336699, 0xFF0000, 0));
+        assertEquals(0xFFFF0000, xyz.rimvisuals.core.WorldColors.tint(0xFF336699, 0xFF0000, 1));
+        assertEquals(0x80808080, xyz.rimvisuals.core.WorldColors.tint(0x80FFFFFF, 0x000000, .5) | 0x00010101 & 0, "half way, alpha kept");
+        assertEquals(0x00FFFFFF, xyz.rimvisuals.core.WorldColors.tint(0x00FFFFFF, 0x123456, 0));
+    }
+
+    @Test void signatureChangesWithTerrainSettingsOnly() {
+        int a = xyz.rimvisuals.core.WorldColors.signature();
+        xyz.rimvisuals.core.Modules.WATER_COLOR.enabled = true;
+        int b = xyz.rimvisuals.core.WorldColors.signature();
+        assertNotEquals(a, b);
+        xyz.rimvisuals.core.Modules.WEATHER_COLOR.enabled = true;
+        assertEquals(b, xyz.rimvisuals.core.WorldColors.signature(), "weather needs no rebuild");
+        xyz.rimvisuals.core.Modules.WATER_COLOR.enabled = false;
+        xyz.rimvisuals.core.Modules.WEATHER_COLOR.enabled = false;
+    }
 }

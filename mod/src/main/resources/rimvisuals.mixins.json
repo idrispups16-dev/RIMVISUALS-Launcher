@@ -12,7 +12,12 @@
     "FogRendererMixin",
     "SkyRenderingMixin",
     "GameRendererMixin",
-    "LightmapTextureManagerMixin"
+    "LightmapTextureManagerMixin",
+    "MinecraftClientMixin",
+    "EntityRendererMixin",
+    "BiomeColorsMixin",
+    "FluidRendererMixin",
+    "WeatherRenderingMixin"
   ],
   "injectors": {
     "defaultRequire": 1
