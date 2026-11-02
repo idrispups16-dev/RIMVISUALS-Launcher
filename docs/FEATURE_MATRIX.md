@@ -186,3 +186,6 @@ CI: Gradle build + JUnit + Minecraft startup smoke test (mixin targets resolved 
 | Notifications HUD | Требует проверки в Minecraft | Totem used (setFloatingItem hook), low health, low armor durability with hysteresis | Take damage / pop totem |
 | Enchantment Glint Control, Scoreboard/Chat Fade, Hotbar, ESP, HW/FT Helper | **Отсутствует** | not started | — |
 | Hand Outline / Bloom / Blur | **Не реализовано** | Outline needs an inverted-hull pass with front-face culling around the arm pivot; Bloom/Blur need post-processing framebuffers. Neither can be made honest without in-game verification, so no toggle exists. Hand Glow is the implemented alternative. | — |
+
+## Следующий этап (не начат в коде)
+Enchantment Glint Control, Scoreboard Fade, Chat Fade, Custom Hotbar, Player/Item ESP, Hand Outline/Bloom/Blur: статус **Отсутствует** (только разбор исходников 1.21.11 `RenderPipelines`, `InGameHud`, `ChatHud` запущен на служебной ветке `claude-dev-tools`; кода в этой ветке нет).
