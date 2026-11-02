@@ -44,7 +44,8 @@ replace dimension sky geometry. These limits must not be described as Pulse feat
 
 Gradle/JUnit and bounded xvfb Minecraft startup run after each block. Startup audits mixins and
 preserves the existing config/GUI/keyboard/mouse tests. A real shulker container component with
-an empty interior slot verifies tooltip-data injection and Fabric component renderer registration.
+an empty interior slot verifies tooltip-data injection and Fabric component renderer registration. A startup fixture also
+renders this actual tooltip to a screenshot without a gameplay world.
 Unit tests cover projection scaling, geometry limits, sound multiplication and frame histogram.
 All new module settings participate in the existing full snapshot/CFG/JSON/backup tests; new HUDs
 participate in the all-HUD position/scale/opacity/accent test. These do not prove world appearance,
