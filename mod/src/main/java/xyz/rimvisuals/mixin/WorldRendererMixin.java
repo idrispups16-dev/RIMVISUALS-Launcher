@@ -14,6 +14,8 @@ import xyz.rimvisuals.core.Modules;
 public class WorldRendererMixin {
     @Inject(method = "pushEntityRenders(Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/state/WorldRenderState;Lnet/minecraft/client/render/command/OrderedRenderCommandQueue;)V", at = @At("TAIL"))
     private void rimGhosts(MatrixStack matrices, WorldRenderState renderStates, OrderedRenderCommandQueue queue, CallbackInfo ci) {
+        Modules.CHINA_HAT.draw(matrices,queue,renderStates.cameraRenderState.pos);
+        Modules.BLOCK_OVERLAY.draw(matrices,queue,renderStates.cameraRenderState.pos);
         Modules.ANCHOR_FADE.render(matrices, queue, renderStates.cameraRenderState.pos);
     }
 }

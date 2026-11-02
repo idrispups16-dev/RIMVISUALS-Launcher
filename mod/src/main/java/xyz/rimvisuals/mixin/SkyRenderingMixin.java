@@ -16,9 +16,9 @@ public class SkyRenderingMixin {
     @Inject(method = "updateRenderState(Lnet/minecraft/client/world/ClientWorld;FLnet/minecraft/client/render/Camera;Lnet/minecraft/client/render/state/SkyRenderState;)V", at = @At("RETURN"))
     private void rimSky(ClientWorld world, float tickProgress, Camera camera, SkyRenderState state, CallbackInfo ci) {
         var sky = Modules.CUSTOM_SKY;
-        if (!sky.enabled || sky.strength.value <= 0) return;
+        if ((!sky.enabled || sky.strength.value <= 0) && !Modules.ATMOSPHERE.enabled) return;
         String box = String.valueOf(state.skybox);
         if (box.equals("NONE") || box.equals("END")) return; // only the Overworld-style dome has a sky colour
-        state.skyColor = ColorMath.mixArgb(state.skyColor | 0xFF000000, sky.color.rgb, (float) sky.strength.value);
+        state.skyColor = ColorMath.mixArgb(state.skyColor | 0xFF000000, sky.enabled?sky.color.rgb:Modules.ATMOSPHERE.rgb(), (float)(sky.enabled?sky.strength.value:Modules.ATMOSPHERE.strength.value));
     }
 }
