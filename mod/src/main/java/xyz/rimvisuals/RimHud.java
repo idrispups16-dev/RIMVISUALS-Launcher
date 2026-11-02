@@ -24,8 +24,7 @@ public final class RimHud {
             ms.pushMatrix();
             ms.translate(x, y);
             ms.scale(s, s);
-            m.draw(c, mc, 0, 0);
-            ms.popMatrix();
+            try { m.draw(c, mc, 0, 0); } finally { ms.popMatrix(); }
         } finally { xyz.rimvisuals.core.Gfx.hudAlpha = 1f; }
     }
 
@@ -49,7 +48,7 @@ public final class RimHud {
         ms.pushMatrix();
         ms.scale(hs, hs);
         for (HudModule m : Modules.HUD) {
-            if (!m.enabled) continue;
+            if (!m.visible()) continue;
             long moduleStart=PerformanceMonitor.begin();
             int mw = sw(m, mc), mh = sh(m, mc);
             drawScaled(ctx, mc, m, clampX(m, vw, mw), clampY(m, vh, mh));
@@ -57,6 +56,5 @@ public final class RimHud {
         }
         ms.popMatrix();
         PerformanceMonitor.end("HUD total",total);
-        if(Modules.PERFORMANCE.monitor.value){int y=h-12;ctx.drawText(mc.textRenderer,"RIM CPU (top 5) | Safe: "+Modules.PERFORMANCE.safe.value,6,y,0xff88ccff,false);for(String line:PerformanceMonitor.top(5)){y-=10;ctx.drawText(mc.textRenderer,line,6,y,0xffccccdd,false);}}
     }
 }

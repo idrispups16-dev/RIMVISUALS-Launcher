@@ -47,7 +47,7 @@ public class HudEditorScreen extends Screen {
         ms.pushMatrix();
         ms.scale(hs, hs);
         for (HudModule m : Modules.HUD) {
-            if (!m.enabled) continue;
+            if (!m.visible()) continue;
             any = true;
             int w = RimHud.sw(m, mc), h = RimHud.sh(m, mc), x = RimHud.clampX(m, vw, w), y = RimHud.clampY(m, vh, h);
             RimHud.drawScaled(c, mc, m, x, y);
@@ -107,7 +107,7 @@ public class HudEditorScreen extends Screen {
         double x = mx / hs, y = my / hs;
         for (int i = Modules.HUD.size() - 1; i >= 0; i--) {
             HudModule m = Modules.HUD.get(i);
-            if (!m.enabled) continue;
+            if (!m.visible()) continue;
             int w = RimHud.sw(m, mc), h = RimHud.sh(m, mc), ex = RimHud.clampX(m, vw, w), ey = RimHud.clampY(m, vh, h);
             if (x >= ex - 4 && x < ex + w + 4 && y >= ey - 4 && y < ey + h + 4) {
                 grab = m; offX = x - ex; offY = y - ey;
@@ -150,7 +150,7 @@ public class HudEditorScreen extends Screen {
         int extent = horizontal ? vw : vh;
         out.add(0); out.add(extent / 2); out.add(extent);
         for (HudModule m : Modules.HUD) {
-            if (!m.enabled || m == grab) continue;
+            if (!m.visible() || m == grab) continue;
             int w = RimHud.sw(m, mc), h = RimHud.sh(m, mc);
             int pos = horizontal ? RimHud.clampX(m, vw, w) : RimHud.clampY(m, vh, h), size = horizontal ? w : h;
             out.add(pos); out.add(pos + size); out.add(pos + size / 2);
@@ -161,7 +161,7 @@ public class HudEditorScreen extends Screen {
     private HudModule hitTest(MinecraftClient mc, double x, double y, int vw, int vh) {
         for (int i = Modules.HUD.size() - 1; i >= 0; i--) {
             HudModule m = Modules.HUD.get(i);
-            if (!m.enabled) continue;
+            if (!m.visible()) continue;
             int w = RimHud.sw(m, mc), h = RimHud.sh(m, mc), ex = RimHud.clampX(m, vw, w), ey = RimHud.clampY(m, vh, h);
             if (x >= ex - 4 && x < ex + w + 4 && y >= ey - 4 && y < ey + h + 4) return m;
         }
