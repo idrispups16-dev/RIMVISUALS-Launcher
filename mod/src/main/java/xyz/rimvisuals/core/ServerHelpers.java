@@ -15,8 +15,9 @@ public final class ServerHelpers {
  private ServerHelpers(){}
  public static String address(){return address;}
  public static ServerHelper active(){return current!=null&&current.enabled?current:null;}
- public static void clear(){Notifier.clearPrefix("HW Helper:");Notifier.clearPrefix("FT Helper:");Modules.HW_HELPER.session.clear();Modules.FT_HELPER.session.clear();address="";current=null;display=List.of();low=false;Arrays.fill(warned,false);tick=0;actionUntil=0;sidebar=Set.of();budgetAt=0;budget=0;auctionMatches=0;}
+ public static void clear(){HelperRuntime.clear();Notifier.clearPrefix("HW Helper:");Notifier.clearPrefix("FT Helper:");Modules.HW_HELPER.session.clear();Modules.FT_HELPER.session.clear();address="";current=null;display=List.of();low=false;Arrays.fill(warned,false);tick=0;actionUntil=0;sidebar=Set.of();budgetAt=0;budget=0;auctionMatches=0;}
  public static void init(){
+  HelperRuntime.init();
   net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents.JOIN.register((handler,sender,mc)->clear());
   net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents.DISCONNECT.register((handler,mc)->clear());
   net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents.GAME.register((message,overlay)->receive(message.getString(),overlay?1:0));
@@ -26,6 +27,7 @@ public final class ServerHelpers {
   if(source==0&&!h.chat.value||source==1&&!h.action.value||source==2&&!h.scoreboard.value)return;
   long now=System.nanoTime();if(now-budgetAt>=1_000_000_000L){budgetAt=now;budget=0;}if(++budget>64)return;String s=HelperData.clean(message);
   if(source==1){boolean same=s.equals(h.session.action);h.session.action=s;actionUntil=now+5_000_000_000L;if(same)return;}
+  HelperRuntime.received(s);
   if(h.session.accept(s,h.eventPrefix.value,h.timerPrefix.value,h.ft?h.regionPrefix.value:"",now)&&h.notifications.value)Notifier.push(h.name+": "+s,0x8B8BFF);
  }
  public static List<String> lines(ServerHelper h){return active()==h?display:List.of(h.name+" — inactive");}
@@ -39,6 +41,7 @@ public final class ServerHelpers {
   if(mc.player==null||mc.world==null){if(current!=null||!address.isEmpty())clear();return;}
   var entry=mc.getCurrentServerEntry();String connected=entry==null?"":entry.address;
   updateConnection(connected);
+  HelperRuntime.tick();
   if(current==null||++tick%10!=0)return;
   ServerHelper h=current;long started=PerformanceMonitor.begin();long now=System.nanoTime();Set<String> fresh=new HashSet<>();List<String> lines=new ArrayList<>(12);lines.add(h.name+" • "+HelperData.host(address));
   if(h.scoreboard.value){var board=mc.world.getScoreboard();var objective=board.getObjectiveForSlot(ScoreboardDisplaySlot.SIDEBAR);

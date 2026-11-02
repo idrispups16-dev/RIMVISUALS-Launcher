@@ -24,8 +24,18 @@ public final class Keybinds {
   }
   var swap=KeyBindingHelper.registerKeyBinding(new KeyBinding("key.rimvisuals.swap",InputUtil.Type.KEYSYM,GLFW.GLFW_KEY_UNKNOWN,KeyBinding.Category.MISC));
   actions.add(new Action("item_swap_action","Item Swap to offhand",swap,()->Modules.ITEM_SWAP.run()));
+  helperAction("helper_events","Toggle Events HUD",()->toggleHelperHud(0));
+  helperAction("helper_cooldowns","Toggle Cooldowns HUD",()->toggleHelperHud(1));
+  helperAction("helper_regions","Toggle Regions HUD",()->toggleHelperHud(2));
+  helperAction("helper_notifications","Show/Hide Helper Notifications",()->forHelpers(h->h.notifications.value=!h.notifications.value));
+  helperAction("helper_settings","Open HW/FT Settings",()->MinecraftClient.getInstance().setScreen(new xyz.rimvisuals.gui.HelperSettingsScreen(null,ServerHelpers.active()==Modules.FT_HELPER)));
+  helperAction("helper_refresh","Manual Refresh Events",HelperRuntime::refresh);
+  helperAction("helper_trap_plast","Toggle Trapka/Plast Timer Visibility",()->forHelpers(h->{boolean show=!(h.trapVisible.value||h.plastVisible.value);h.trapVisible.value=show;h.plastVisible.value=show;}));
   load(pending);
  }
+ private static void helperAction(String id,String label,Runnable run){var key=KeyBindingHelper.registerKeyBinding(new KeyBinding("key.rimvisuals."+id,InputUtil.Type.KEYSYM,GLFW.GLFW_KEY_UNKNOWN,KeyBinding.Category.MISC));actions.add(new Action(id,label,key,run));}
+ private static void forHelpers(java.util.function.Consumer<xyz.rimvisuals.modules.ServerHelper> action){var h=ServerHelpers.active();if(h!=null)action.accept(h);else{action.accept(Modules.HW_HELPER);action.accept(Modules.FT_HELPER);}}
+ private static void toggleHelperHud(int kind){forHelpers(h->{var hud=kind==0?(h.ft?Modules.FT_EVENTS:Modules.HW_EVENTS):kind==1?(h.ft?Modules.FT_COOLDOWNS:Modules.HW_COOLDOWNS):(h.ft?Modules.FT_REGIONS:Modules.HW_REGIONS);hud.enabled=!hud.enabled;});}
  public static void tick(MinecraftClient mc){for(var a:actions)while(a.key.wasPressed())if(mc.currentScreen==null)a.run.run();}
  public static void snapshot(Properties p){p.putAll(pending);for(var a:actions)p.setProperty("keybind."+a.id,a.key.getBoundKeyTranslationKey());}
  public static void load(Properties p){

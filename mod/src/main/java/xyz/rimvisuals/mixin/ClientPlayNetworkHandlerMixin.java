@@ -11,6 +11,9 @@ import xyz.rimvisuals.core.Modules;
 
 @Mixin(ClientPlayNetworkHandler.class)
 public class ClientPlayNetworkHandlerMixin {
+    @Inject(method="onCooldownUpdate(Lnet/minecraft/network/packet/s2c/play/CooldownUpdateS2CPacket;)V",at=@At("TAIL"))
+    private void rimHelperCooldown(net.minecraft.network.packet.s2c.play.CooldownUpdateS2CPacket packet,CallbackInfo ci){var mc=MinecraftClient.getInstance();if(mc.isOnThread()&&mc.player!=null)xyz.rimvisuals.core.HelperRuntime.serverCooldown(packet.cooldownGroup(),packet.cooldown());}
+
     @Inject(method="onEntityAnimation(Lnet/minecraft/network/packet/s2c/play/EntityAnimationS2CPacket;)V",at=@At("HEAD"))
     private void rimAnimation(net.minecraft.network.packet.s2c.play.EntityAnimationS2CPacket packet,CallbackInfo ci){var mc=MinecraftClient.getInstance();if(mc.isOnThread()&&mc.world!=null)xyz.rimvisuals.core.CombatEvents.onAnimation(packet.getEntityId(),packet.getAnimationId());}
     @Inject(method="onEntityDamage(Lnet/minecraft/network/packet/s2c/play/EntityDamageS2CPacket;)V",at=@At("HEAD"))
