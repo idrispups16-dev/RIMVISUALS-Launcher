@@ -13,6 +13,9 @@ public final class ServerHelper extends Module {
  public final Setting.Text eventPrefix=add(new Setting.Text("Event prefix",""));
  public final Setting.Text timerPrefix=add(new Setting.Text("Timer prefix",""));
  public final Setting.Text regionPrefix=add(new Setting.Text("Region prefix",""));
+ public final Setting.Text auctionTitle=add(new Setting.Text("Auction title prefix",""));
+ public final Setting.Text auctionFilter=add(new Setting.Text("Auction item name contains",""));
+ public final Setting.Bool auctionNotify=add(new Setting.Bool("Auction match notification",false));
  public final Setting.Bool health=add(new Setting.Bool("Low HP warning",true));
  public final Setting.Num hp=add(new Setting.Num("HP threshold",8,1,20,1));
  public final Setting.Bool armor=add(new Setting.Bool("Armor warning",true));

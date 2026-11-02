@@ -10,7 +10,7 @@ public final class SmokeTest {
  public static void tick(MinecraftClient client){if(!Boolean.getBoolean("rimvisuals.smoke"))return;
   if(!audited){audited=true;MixinEnvironment.getCurrentEnvironment().audit();}
   ++ticks;
-  if(ticks==41){IntegrationChecks.run();PvpRenderChecks.run();
+  if(ticks==41){IntegrationChecks.run();PvpRenderChecks.run();HelperChecks.run();
    RimVisualsClient.openMenu(client);
    if(!(client.currentScreen instanceof ClickGui))throw new IllegalStateException("Menu entry did not open ClickGUI");
    if(!RimVisualsClient.menuKey.getDefaultKey().getTranslationKey().equals("key.keyboard.right.shift"))throw new IllegalStateException("Unexpected default menu bind");
@@ -55,14 +55,16 @@ public final class SmokeTest {
    LoggerFactory.getLogger("rimvisuals").info("RIM_TRANSFORM_TEST_OK: nine styles, both hands, viewmodel matrices changed; not a world visual test");
   }finally{xyz.rimvisuals.core.Modules.apply(saved);}}
   if(ticks>40 && stage==0 && client.getOverlay()==null && !(client.currentScreen instanceof ClickGui)){var gui=new ClickGui();gui.showCategoryForTest(0);client.setScreen(gui);LoggerFactory.getLogger("rimvisuals").info("SMOKE: opening GUI after loading overlay");}
-  if(ticks>nextShotAt&&frames>5&&!shotRequested){shotRequested=true;String[] shots={"rimvisuals-ui.png","rimvisuals-settings.png","rimvisuals-keybinds.png","rimvisuals-friends.png","rimvisuals-markers.png","rimvisuals-shulker-preview.png"};net.minecraft.client.util.ScreenshotRecorder.saveScreenshot(client.runDirectory,shots[stage],client.getFramebuffer(),1,message->{shotDone=true;});}
+  if(ticks>nextShotAt&&frames>5&&!shotRequested){shotRequested=true;String[] shots={"rimvisuals-ui.png","rimvisuals-settings.png","rimvisuals-keybinds.png","rimvisuals-friends.png","rimvisuals-markers.png","rimvisuals-shulker-preview.png","rimvisuals-helper-settings.png","rimvisuals-helper-connect.png"};net.minecraft.client.util.ScreenshotRecorder.saveScreenshot(client.runDirectory,shots[stage],client.getFramebuffer(),1,message->{shotDone=true;});}
   if(shotDone){
-   if(stage==5){LoggerFactory.getLogger("rimvisuals").info("RIMVISUALS_SMOKE_OK: startup, mixin audit, ClickGUI, keyboard/mouse manager and local screens; no world test");client.scheduleStop();return;}
+   if(stage==7){LoggerFactory.getLogger("rimvisuals").info("RIMVISUALS_SMOKE_OK: startup, mixin audit, ClickGUI, keyboard/mouse manager and local screens; no world test");client.scheduleStop();return;}
    stage++;shotDone=shotRequested=false;nextShotAt=ticks+12;
    if(stage==1){var gui=new ClickGui();gui.showCategoryForTest(4);client.setScreen(gui);}
    else if(stage==2)client.setScreen(new xyz.rimvisuals.gui.KeybindManagerScreen(new ClickGui()));
    else if(stage<5)client.setScreen(new xyz.rimvisuals.gui.LocalDataScreen(new ClickGui(),stage==4));
-   else client.setScreen(new PreviewScreen());
+   else if(stage==5)client.setScreen(new PreviewScreen());
+   else if(stage==6){var gui=new ClickGui();gui.showHelperForTest();client.setScreen(gui);}
+   else client.setScreen(new xyz.rimvisuals.gui.HelperConnectScreen(new ClickGui(),false));
   }
  }
  private static int stage,nextShotAt=100;

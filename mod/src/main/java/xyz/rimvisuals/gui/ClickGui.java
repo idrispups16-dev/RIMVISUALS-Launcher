@@ -84,6 +84,7 @@ public class ClickGui extends Screen {
 
     public void editHud(xyz.rimvisuals.core.HudModule m){tab=1;selected=m;colorOpen.add(m.accentColor);detailScroll=0;}
     @Override public void close(){client.setScreen(parentScreen);}
+    public void showHelperForTest(){tab=2;selected=Modules.FT_HELPER;}
     public void showCategoryForTest(int index){tab=0;selected=index==4?Modules.VIEWMODEL:null;}
     @Override public boolean shouldPause() { return false; }
     @Override public void removed() { Modules.save(); }
@@ -265,7 +266,7 @@ public class ClickGui extends Screen {
         int resetY=begin(rowH());if(resetY!=NONE)button(c,cx+8,resetY,cw-16,rowH()-3,"Reset module",mx,my,()->Modules.reset(selected),false);
         if(selected instanceof xyz.rimvisuals.modules.ServerHelper helper){
             int joinY=begin(rowH());if(joinY!=NONE)button(c,cx+8,joinY,cw-16,rowH()-3,"Manual server connection",mx,my,()->client.setScreen(new HelperConnectScreen(this,helper.ft)),false);
-            int cfgY=begin(rowH());if(cfgY!=NONE)button(c,cx+8,cfgY,cw-16,rowH()-3,"Save separate server CFG",mx,my,()->{String name=(helper.ft?"FunTime":"HolyWorld")+"_"+System.currentTimeMillis();Modules.createProfile(name);Modules.save();},false);
+            int cfgY=begin(rowH());if(cfgY!=NONE)button(c,cx+8,cfgY,cw-16,rowH()-3,"Save separate server CFG",mx,my,()->{String name=(helper.ft?"FunTime":"HolyWorld")+"_"+System.currentTimeMillis();if(Modules.createProfile(name)){Modules.save();status="Saved CFG: "+name;xyz.rimvisuals.core.Notifier.push("Saved CFG: "+name,0x8B8BFF);}else status="Could not save server CFG";},false);
         }
         for(Setting st:selected.settings)if(!st.hidden)settingRow(c,st,mx,my,1);
         detailMax=Math.max(0,cy-(ctop-Math.round(detailA.value))-(cbot-ctop));
