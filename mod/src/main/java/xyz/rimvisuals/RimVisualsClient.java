@@ -32,6 +32,8 @@ public class RimVisualsClient implements ClientModInitializer {
                 "key.rimvisuals.menu", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_RIGHT_SHIFT, KeyBinding.Category.MISC));
         monitorKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
                 "key.rimvisuals.monitor", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_UNKNOWN, KeyBinding.Category.MISC));
+        xyz.rimvisuals.core.Keybinds.init();
+        xyz.rimvisuals.core.LocalData.init();
         net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> client.execute(() -> {
             var entry = client.getCurrentServerEntry();
             if (entry != null) Modules.applyServerProfile(entry.address).ifPresent(n -> org.slf4j.LoggerFactory.getLogger("rimvisuals").info("Loaded server configuration {}", n));
@@ -42,7 +44,7 @@ public class RimVisualsClient implements ClientModInitializer {
             Modules.autosaveTick();
             xyz.rimvisuals.core.WorldColors.tick(client);
             xyz.rimvisuals.core.Notifier.tick(client);
-            while (monitorKey.wasPressed()) Modules.PERFORMANCE.monitor.value = !Modules.PERFORMANCE.monitor.value;
+            xyz.rimvisuals.core.Keybinds.tick(client);
             SmokeTest.tick(client);
             xyz.rimvisuals.core.CombatEvents.tick(client);
             xyz.rimvisuals.core.RimOverlays.tick();
@@ -52,9 +54,7 @@ public class RimVisualsClient implements ClientModInitializer {
             LauncherSettings.tick();
             if (Modules.PERFORMANCE.diagnostics.value && ++diagnosticTicks % 200 == 0)
                 org.slf4j.LoggerFactory.getLogger("rimvisuals").info("RIM_CPU_DIAGNOSTICS (CPU submission only): {}", xyz.rimvisuals.core.PerformanceMonitor.report());
-            while (menuKey.wasPressed()) {
-                if (client.currentScreen == null) openMenu(client);
-            }
+
         });
         HudRenderCallback.EVENT.register(RimHud::render);
         // Touch-friendly entry point: a RIMVISUALS button on the title and pause screens.

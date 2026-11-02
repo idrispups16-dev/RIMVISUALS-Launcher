@@ -31,8 +31,14 @@ public final class SmokeTest {
    var view=xyz.rimvisuals.core.Modules.VIEWMODEL;view.enabled=true;view.smooth.value=false;view.main.x.value=.2;view.off.x.value=-.2;for(boolean main:new boolean[]{true,false}){var matrix=new net.minecraft.client.util.math.MatrixStack();view.apply(matrix,main,net.minecraft.item.ItemStack.EMPTY);if(matrix.peek().getPositionMatrix().equals(new org.joml.Matrix4f(),.000001f))throw new IllegalStateException("Viewmodel unchanged");}
    LoggerFactory.getLogger("rimvisuals").info("RIM_TRANSFORM_TEST_OK: nine styles, both hands, viewmodel matrices changed; not a world visual test");
   }finally{xyz.rimvisuals.core.Modules.apply(saved);}}
-  if(ticks>40 && client.getOverlay()==null && !(client.currentScreen instanceof ClickGui)){var gui=new ClickGui();gui.showCategoryForTest(4);client.setScreen(gui);LoggerFactory.getLogger("rimvisuals").info("SMOKE: opening GUI after loading overlay");}
-  if(ticks>100&&frames>5&&!shotRequested){shotRequested=true;net.minecraft.client.util.ScreenshotRecorder.saveScreenshot(client.runDirectory,"rimvisuals-viewmodel-gui.png",client.getFramebuffer(),1,message->{shotDone=true;});}
-  if(ticks>100&&frames>5&&shotDone){LoggerFactory.getLogger("rimvisuals").info("RIMVISUALS_SMOKE_OK: startup, mixin audit, ClickGUI rendering; no world test");client.scheduleStop();}
+  if(ticks>40 && stage==0 && client.getOverlay()==null && !(client.currentScreen instanceof ClickGui)){var gui=new ClickGui();gui.showCategoryForTest(4);client.setScreen(gui);LoggerFactory.getLogger("rimvisuals").info("SMOKE: opening GUI after loading overlay");}
+  if(ticks>nextShotAt&&frames>5&&!shotRequested){shotRequested=true;String[] shots={"rimvisuals-ui.png","rimvisuals-keybinds.png","rimvisuals-friends.png","rimvisuals-markers.png"};net.minecraft.client.util.ScreenshotRecorder.saveScreenshot(client.runDirectory,shots[stage],client.getFramebuffer(),1,message->{shotDone=true;});}
+  if(shotDone){
+   if(stage==3){LoggerFactory.getLogger("rimvisuals").info("RIMVISUALS_SMOKE_OK: startup, mixin audit, ClickGUI, keyboard/mouse manager and local screens; no world test");client.scheduleStop();return;}
+   stage++;shotDone=shotRequested=false;nextShotAt=ticks+12;
+   if(stage==1)client.setScreen(new xyz.rimvisuals.gui.KeybindManagerScreen(new ClickGui()));
+   else client.setScreen(new xyz.rimvisuals.gui.LocalDataScreen(new ClickGui(),stage==3));
+  }
  }
+ private static int stage,nextShotAt=100;
 }
