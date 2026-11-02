@@ -1,5 +1,8 @@
 # RIMVISUALS 0.4.1-expansion.1 — scope and Windows acceptance
 
+Historical PR14 baseline. The newer PvP quality branch changes Safe Mode combat particles
+to explicit Limited/Disabled and adds Visual Hitbox; see PVP-QUALITY-0.4.1.md.
+
 Based on PR13 / 8aa4a0e. This branch retains ClickGUI, HUD Editor, local CFG, keybinds and PR12
 budgets. It does not change the launcher/site/main/source PRs. No Pulse code or assets are used.
 New optional modules are off by default; Item Swap is an explicit unbound action with settings.

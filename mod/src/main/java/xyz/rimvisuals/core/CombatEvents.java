@@ -81,9 +81,8 @@ public final class CombatEvents {
             PerformanceMonitor.end("Sharpness Particles", t);
         }
         if (critical) {
-            critSerial=attackSerial;
             long t = PerformanceMonitor.begin();
-            Fx.burst(x, y, z, cp.color.rgb, ParticleMath.fairShare((int)cp.count.value,active,cap), (float) cp.size.value, .25,cp.opacity.value);
+            if(Fx.burst(x,y,z,cp.color.rgb,ParticleMath.fairShare((int)cp.count.value,active,cap),(float)cp.size.value,.25,cp.opacity.value)>0)critSerial=attackSerial;
             PerformanceMonitor.end("Critical Particles", t);
         }
     }
