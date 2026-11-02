@@ -32,7 +32,7 @@ public final class Presets {
         return true;
     }
     private static void clean(){
-        Modules.PERFORMANCE.preset.index=0;Modules.PERFORMANCE.applyPreset();Modules.PERFORMANCE.safe.value=true;Modules.PERFORMANCE.safeParticles.index=0;
+        Modules.PERFORMANCE.preset.index=0;Modules.PERFORMANCE.applyPreset();Modules.PERFORMANCE.safe.value=true;Modules.PERFORMANCE.safeParticles.index=0;Modules.PERFORMANCE.particleLimit.set(8);Modules.HAND_GLOW.enabled=false;Modules.HAND_COLOR.enabled=false;Modules.HAND_LIGHTING.enabled=false;
         Modules.HIT_PARTICLES.count.set(6);Modules.HIT_PARTICLES.size.set(.6);Modules.HIT_PARTICLES.opacity.set(.7);Modules.HIT_PARTICLES.speed.set(.08);Modules.HIT_PARTICLES.color.rgb=0x7dd3fc;
         Modules.CRIT_PARTICLES.count.set(6);Modules.CRIT_PARTICLES.size.set(.65);Modules.CRIT_PARTICLES.opacity.set(.75);Modules.CRIT_PARTICLES.color.rgb=0xfde68a;
         Modules.SHARPNESS_PARTICLES.perLevel.set(2);Modules.SHARPNESS_PARTICLES.size.set(.55);Modules.SHARPNESS_PARTICLES.opacity.set(.65);Modules.SHARPNESS_PARTICLES.color.rgb=0xc4b5fd;
@@ -43,6 +43,6 @@ public final class Presets {
         Modules.VISUAL_HITBOX.targetOnly.value=true;Modules.VISUAL_HITBOX.distance.set(24);Modules.VISUAL_HITBOX.thickness.set(.01);Modules.VISUAL_HITBOX.opacity.set(.5);
         Modules.reset(Modules.SWING);Modules.SWING.enabled=true;Modules.SWING.style.index=1;Modules.SWING.angle.set(25);Modules.SWING.offset.set(.08);Modules.SWING.intensity.set(.45);Modules.SWING.easing.index=1;
         Modules.reset(Modules.VIEWMODEL);Modules.VIEWMODEL.enabled=true;Modules.VIEWMODEL.main.y.set(-.08);Modules.VIEWMODEL.main.z.set(-.1);Modules.VIEWMODEL.main.scale.set(.95);Modules.VIEWMODEL.off.y.set(-.08);Modules.VIEWMODEL.off.scale.set(.95);Modules.VIEWMODEL.preset.index=4;Modules.VIEWMODEL.seedPreset();
-        Modules.CRYSTAL_SCALE.scale.set(1);Modules.CRYSTAL_FADE.opacity.set(.9);Modules.CRYSTAL_FADE.fadeIn.set(4);
+        Modules.TOTEM_SCALE.scale.set(.85);Modules.TOTEM_FADE.start.set(.7);Modules.TOTEM_FADE.endOpacity.set(.15);Modules.CRYSTAL_SCALE.scale.set(1);Modules.CRYSTAL_FADE.opacity.set(.9);Modules.CRYSTAL_FADE.fadeIn.set(4);
     }
 }

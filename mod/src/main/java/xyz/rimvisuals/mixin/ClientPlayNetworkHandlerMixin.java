@@ -20,6 +20,7 @@ public class ClientPlayNetworkHandlerMixin {
     private void rimExplosion(ExplosionS2CPacket packet, CallbackInfo ci) {
         MinecraftClient mc = MinecraftClient.getInstance();
         if (!mc.isOnThread() || mc.world == null) return;
+        xyz.rimvisuals.core.CombatEvents.explosionObserved();
         Modules.ANCHOR_FADE.onExplosion(mc.world, packet.center(), packet.radius());
         Modules.EXPLOSION_EFFECTS.onExplosion(packet.center(), packet.radius());
     }

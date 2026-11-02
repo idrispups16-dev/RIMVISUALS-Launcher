@@ -19,7 +19,7 @@ public final class VisualHitbox extends xyz.rimvisuals.core.Module {
  private static final int[][] FACES={{0,2,3,1},{4,5,7,6},{0,1,5,4},{2,6,7,3},{0,4,6,2},{1,3,7,5}};
  public VisualHitbox(){super("visual_hitbox","Visual Hitbox","Depth-tested visual outlines of existing player/mob bounds; width is in world units. No hitbox, reach or server changes",Category.VISUALS);enabled=false;}
  public static int cap(boolean safe,boolean ultra){return safe?2:ultra?8:4;}
- private boolean valid(LivingEntity e,MinecraftClient mc){return e!=null&&e!=mc.player&&e.isAlive()&&!e.isRemoved()&&(e instanceof PlayerEntity?players.value:mobs.value)&&e.squaredDistanceTo(mc.player)<=distance.value*distance.value;}
+ private boolean valid(LivingEntity e,MinecraftClient mc){return e!=null&&e!=mc.player&&e.isAlive()&&!e.isRemoved()&&(e instanceof PlayerEntity?players.value:mobs.value&&e instanceof net.minecraft.entity.mob.MobEntity)&&e.squaredDistanceTo(mc.player)<=distance.value*distance.value;}
  public void tick(MinecraftClient mc){if(!enabled||mc.player==null||mc.world==null){candidates.clear();return;}if(++ticks%2!=0)return;candidates.clear();
   if(targetOnly.value){LivingEntity e=mc.targetedEntity instanceof LivingEntity l?l:CombatEvents.recentTarget(2);if(valid(e,mc))candidates.add(new WeakReference<>(e));return;}
   int cap=cap(Modules.PERFORMANCE.safe.value,Modules.PERFORMANCE.preset.index==2);

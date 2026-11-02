@@ -16,6 +16,7 @@ public final class DamageParticles extends Module {
 
     public final Setting.Num opacity = add(new Setting.Num("Opacity", .8, .1, 1, .05));
 
+    public void refresh(){perHeart.hidden=source.index==0;hurtCount.hidden=source.index!=0;}
     public DamageParticles() {
         super("damage_particles", "Damage Particles", "Spawns particles on entities that lose health, scaled by damage taken. Server hurt packets by default; optional synced-health delta mode. Hurt packets do not reveal damage amount.", Category.VISUALS);
         enabled = false;

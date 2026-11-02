@@ -33,8 +33,9 @@ public final class ExplosionEffects extends Module {
         long t0 = PerformanceMonitor.begin();
         int n = count(amount.value, radius);
         float size = Math.min(2.5f, .8f + radius / 6f);
-        if (ring.value) Fx.ring(c.x, c.y + .1, c.z, color.rgb, n, size, .18 + radius * .05,opacity.value);
-        if (sparks.value) Fx.burst(c.x, c.y, c.z, color.rgb, n / 2, Math.max(.6f, size * .6f), .25,opacity.value);
+        int parts=(ring.value?1:0)+(sparks.value?1:0),cap=Fx.remaining();
+        if (ring.value) Fx.ring(c.x, c.y + .1, c.z, color.rgb, xyz.rimvisuals.core.ParticleMath.fairShare(n,parts,cap), size, .18 + radius * .05,opacity.value);
+        if (sparks.value) Fx.burst(c.x, c.y, c.z, color.rgb, xyz.rimvisuals.core.ParticleMath.fairShare(n/2,parts,cap), Math.max(.6f, size * .6f), .25,opacity.value);
         PerformanceMonitor.end("Explosion Effects", t0);
     }
 }

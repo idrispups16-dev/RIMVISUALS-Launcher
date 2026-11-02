@@ -46,6 +46,7 @@ public class RimVisualsClient implements ClientModInitializer {
             Modules.autosaveTick();
             Modules.SOUND_CONTROLLER.refresh(client);
             Modules.VISUAL_HITBOX.tick(client);
+            Modules.CUSTOM_FOG.refresh();Modules.DAMAGE_PARTICLES.refresh();
             xyz.rimvisuals.core.WorldColors.tick(client);
             xyz.rimvisuals.core.Notifier.tick(client);
             xyz.rimvisuals.core.Keybinds.tick(client);
@@ -57,7 +58,7 @@ public class RimVisualsClient implements ClientModInitializer {
             Modules.VIEWMODEL.presets();
             LauncherSettings.tick();
             if (Modules.PERFORMANCE.diagnostics.value && ++diagnosticTicks % 200 == 0)
-                org.slf4j.LoggerFactory.getLogger("rimvisuals").info("RIM_CPU_DIAGNOSTICS (CPU submission only): {} | {}", xyz.rimvisuals.core.PerformanceMonitor.report(), xyz.rimvisuals.core.FrameTimes.report()+" | "+xyz.rimvisuals.core.Fx.report());
+                org.slf4j.LoggerFactory.getLogger("rimvisuals").info("RIM_CPU_DIAGNOSTICS (CPU submission only): {} | {}", xyz.rimvisuals.core.PerformanceMonitor.report(), xyz.rimvisuals.core.FrameTimes.report()+" | "+xyz.rimvisuals.core.Fx.report()+" | "+xyz.rimvisuals.core.CombatEvents.report());
 
         });
         HudRenderCallback.EVENT.register(RimHud::render);

@@ -18,7 +18,9 @@ public final class CombatEvents {
     private static LivingEntity lastTarget;
     private static long lastHitNanos;
     private static int worldIdentity;
-    private static long attackSerial,critSerial=-1;
+    private static long attackSerial,critSerial=-1,critPackets,damagePackets,explosions;
+    public static String report(){return "combat attacks="+attackSerial+" crit-packets="+critPackets+" hurt-packets="+damagePackets+" explosions="+explosions;}
+    public static void explosionObserved(){explosions++;}
     private static boolean killHandled = true;
     private static final Map<Integer, Float> health = new HashMap<>();
     private static final Set<Integer> seen = new HashSet<>();
@@ -88,15 +90,16 @@ public final class CombatEvents {
 
     /** Packet 4 confirms a critical animation for our recent target; never duplicate our estimate. */
     public static void onAnimation(int entityId,int animation){
+        if(animation==4)critPackets++;
         if(animation!=4||lastTarget==null||lastTarget.getId()!=entityId||msSinceLastHit()<0||msSinceLastHit()>700||critSerial==attackSerial||!Modules.CRIT_PARTICLES.enabled)return;
         critSerial=attackSerial;var c=Modules.CRIT_PARTICLES;
         Fx.burst(lastTarget.getX(),lastTarget.getY()+lastTarget.getHeight()*.6,lastTarget.getZ(),c.color.rgb,(int)c.count.value,(float)c.size.value,.2,c.opacity.value);
     }
 
-    public static void onDamage(int id){var mc=MinecraftClient.getInstance();var d=Modules.DAMAGE_PARTICLES;if(!d.enabled||d.source.index!=0||mc.world==null||mc.player==null)return;
+    public static void onDamage(int id){damagePackets++;var mc=MinecraftClient.getInstance();var d=Modules.DAMAGE_PARTICLES;if(!d.enabled||d.source.index!=0||mc.world==null||mc.player==null)return;
         var entity=mc.world.getEntityById(id);if(!(entity instanceof LivingEntity e))return;
         boolean self=e==mc.player;if((d.targets.index==0&&self)||(d.targets.index==1&&!self)||e.squaredDistanceTo(mc.player)>d.range.value*d.range.value)return;
-        Fx.burstAmbient(e.getX(),e.getY()+e.getHeight()*.6,e.getZ(),d.color.rgb,(int)d.hurtCount.value,(float)d.size.value,.1,d.opacity.value);
+        Fx.burstAmbient(e.getX(),e.getY()+e.getHeight()*.6,e.getZ(),d.color.rgb,Math.min((int)d.hurtCount.value,(int)d.cap.value),(float)d.size.value,.1,d.opacity.value);
     }
 
     private static void killCheck() {

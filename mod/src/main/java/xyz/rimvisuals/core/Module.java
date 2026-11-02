@@ -20,6 +20,7 @@ public class Module {
     private static final java.util.Set<String> COMBAT_PARTICLES=java.util.Set.of("damage_particles","hit_particles","crit_particles","sharpness_particles","kill_effects","pearl_trails","projectile_trails","sword_trails","explosion_effects");
     public String suppressionReason(){
         if(!enabled)return "";
+        if(id.equals("swing")&&Modules.PERFORMANCE.reducedMotion.value)return "REDUCED MOTION";
         boolean combat=COMBAT_PARTICLES.contains(id);
         if(combat)return Modules.PERFORMANCE.effectLimit()==0?"PARTICLES OFF":Modules.PERFORMANCE.safe.value?"LIMITED: "+Modules.PERFORMANCE.effectLimit()+"/TICK":"";
         return Modules.PERFORMANCE.safe.value&&SAFE_SUPPRESSED.contains(id)?"SAFE MODE":"";
