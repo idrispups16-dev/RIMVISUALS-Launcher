@@ -1,1 +1,1 @@
-TexturedRenderLayers.java SpriteAtlasTexture.java BasicItemModel.java ItemModelManager.java ClientWorld.java LightmapTextureManager.java ClientPlayerEntity.java
+RenderPipelines.java RenderPipeline.java InGameHud.java ChatHud.java ItemCommandRenderer.java RenderSetup.java DepthTestFunction.java ScoreboardObjective.java Hotbar.java
