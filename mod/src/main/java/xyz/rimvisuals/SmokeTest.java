@@ -10,7 +10,7 @@ public final class SmokeTest {
  public static void tick(MinecraftClient client){if(!Boolean.getBoolean("rimvisuals.smoke"))return;
   if(!audited){audited=true;MixinEnvironment.getCurrentEnvironment().audit();}
   ++ticks;
-  if(ticks==41){IntegrationChecks.run();
+  if(ticks==41){IntegrationChecks.run();PvpRenderChecks.run();
    RimVisualsClient.openMenu(client);
    if(!(client.currentScreen instanceof ClickGui))throw new IllegalStateException("Menu entry did not open ClickGUI");
    if(!RimVisualsClient.menuKey.getDefaultKey().getTranslationKey().equals("key.keyboard.right.shift"))throw new IllegalStateException("Unexpected default menu bind");

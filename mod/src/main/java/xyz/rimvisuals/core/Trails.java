@@ -22,14 +22,14 @@ public final class Trails {
     private Trails() {}
 
     private static void dust(MinecraftClient mc, DustParticleEffect fx, double x, double y, double z) {
-        mc.particleManager.addParticle(fx, x, y, z, 0, 0, 0);
+        Fx.opacity(mc.particleManager.addParticle(fx,x,y,z,0,0,0),1);
     }
 
     public static void tick(MinecraftClient mc) {
         var pearl = Modules.PEARL_TRAILS; var proj = Modules.PROJECTILE_TRAILS; var sword = Modules.SWORD_TRAILS;
         if ((!pearl.enabled && !proj.enabled && !sword.enabled) || mc.world == null || mc.player == null) { swing.clear(); return; }
         long t0 = PerformanceMonitor.begin();
-        int budget = Fx.budget(24); // hard ceiling of particles for ALL trails this tick
+        int budget = Fx.ambientBudget(24); // hard ceiling of particles for ALL trails this tick
         if (budget <= 0) { swing.clear();PerformanceMonitor.end("Trails", t0); return; }
         seen.clear();
         for (Entity e : mc.world.getOtherEntities(mc.player,mc.player.getBoundingBox().expand(48),e -> e instanceof ProjectileEntity || (sword.enabled && e instanceof PlayerEntity))) {

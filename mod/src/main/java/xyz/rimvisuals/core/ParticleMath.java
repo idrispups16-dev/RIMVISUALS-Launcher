@@ -11,6 +11,8 @@ public final class ParticleMath {
         return Math.max(1, Math.min(cap, n));
     }
 
+    public static int fairShare(int requested,int active,int cap){return requested<=0||active<=0||cap<=0?0:Math.min(requested,Math.max(1,cap/active));}
+
     /** Applies the shared effect budget: limit, optional safe-mode cap, adaptive scaling when FPS is below target. */
     public static int budget(int requested, int limit, boolean safe, int safeCap, boolean adaptive, int fps, int targetFps) {
         int n = Math.min(requested, limit);

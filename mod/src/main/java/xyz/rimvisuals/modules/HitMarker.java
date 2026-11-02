@@ -24,7 +24,7 @@ public final class HitMarker extends Module {
     public void draw(DrawContext c, int w, int h) {
         double ageMs = CombatEvents.msSinceLastHit();
         if (ageMs < 0 || ageMs > duration.value) return;
-        float f = Modules.PERFORMANCE.reducedMotion.value ? 1f : HudMath.fadeOut(ageMs, duration.value);
+        float f = Modules.PERFORMANCE.reducedMotion.value ? 1f : 1f-xyz.rimvisuals.core.Easing.apply(1,(float)(ageMs/duration.value));
         int col = Gfx.withAlpha(color.rgb, f);
         int cx = w / 2, cy = h / 2, t = (int) thickness.value, g = (int) gap.value, len = (int) size.value;
         for (int i = g; i < g + len; i++) {

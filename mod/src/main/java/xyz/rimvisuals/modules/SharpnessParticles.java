@@ -9,6 +9,8 @@ public final class SharpnessParticles extends Module {
     public final Setting.Num perLevel = add(new Setting.Num("Particles per level", 3, 1, 10, 1));
     public final Setting.Num size = add(new Setting.Num("Size", .9, .3, 2, .1));
 
+    public final Setting.Num opacity = add(new Setting.Num("Opacity", .8, .1, 1, .05));
+
     public SharpnessParticles() {
         super("sharpness_particles", "Sharpness Particles", "Adds a coloured burst on hits made with a Sharpness-enchanted held item (level read from the item you hold). Obeys the performance budget.", Category.VISUALS);
         enabled = false;

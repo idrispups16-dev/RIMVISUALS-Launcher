@@ -18,6 +18,9 @@ public final class CombatEvents {
     private static LivingEntity lastTarget;
     private static long lastHitNanos;
     private static int worldIdentity;
+    private static long attackSerial,critSerial=-1,critPackets,damagePackets,explosions;
+    public static String report(){return "combat attacks="+attackSerial+" crit-packets="+critPackets+" hurt-packets="+damagePackets+" explosions="+explosions;}
+    public static void explosionObserved(){explosions++;}
     private static boolean killHandled = true;
     private static final Map<Integer, Float> health = new HashMap<>();
     private static final Set<Integer> seen = new HashSet<>();
@@ -59,27 +62,43 @@ public final class CombatEvents {
     private static void onAttack(MinecraftClient mc, PlayerEntity player, LivingEntity target) {
         lastTarget = target;
         lastHitNanos = System.nanoTime();
-        killHandled = false;
+        killHandled = false;attackSerial++;
         double x = target.getX(), y = target.getY() + target.getHeight() * .6, z = target.getZ();
         var hp = Modules.HIT_PARTICLES;
+        var sp = Modules.SHARPNESS_PARTICLES;var cp=Modules.CRIT_PARTICLES;
+        int level=sp.enabled?sharpnessLevel(mc,player):0;
+        boolean critical=cp.enabled&&looksCritical(player);
+        int active=(hp.enabled?1:0)+(sp.enabled&&level>0?1:0)+(critical?1:0);
+        int cap=Fx.remaining();
         if (hp.enabled) {
             long t = PerformanceMonitor.begin();
-            Fx.burst(x, y, z, hp.color.rgb, (int) hp.count.value, (float) hp.size.value, hp.speed.value);
+            Fx.burst(x, y, z, hp.color.rgb, ParticleMath.fairShare((int)hp.count.value,active,cap), (float) hp.size.value, hp.speed.value,hp.opacity.value);
             PerformanceMonitor.end("Hit Particles", t);
         }
-        var sp = Modules.SHARPNESS_PARTICLES;
         if (sp.enabled) {
             long t = PerformanceMonitor.begin();
-            int level = sharpnessLevel(mc, player);
-            if (level > 0) Fx.burst(x, y, z, sp.color.rgb, level * (int) sp.perLevel.value, (float) sp.size.value, .2);
+            if (level > 0) Fx.burst(x, y, z, sp.color.rgb, ParticleMath.fairShare(level*(int)sp.perLevel.value,active,cap), (float) sp.size.value, .2,sp.opacity.value);
             PerformanceMonitor.end("Sharpness Particles", t);
         }
-        var cp = Modules.CRIT_PARTICLES;
-        if (cp.enabled && looksCritical(player)) {
+        if (critical) {
             long t = PerformanceMonitor.begin();
-            Fx.burst(x, y, z, cp.color.rgb, (int) cp.count.value, (float) cp.size.value, .25);
+            if(Fx.burst(x,y,z,cp.color.rgb,ParticleMath.fairShare((int)cp.count.value,active,cap),(float)cp.size.value,.25,cp.opacity.value)>0)critSerial=attackSerial;
             PerformanceMonitor.end("Critical Particles", t);
         }
+    }
+
+    /** Packet 4 confirms a critical animation for our recent target; never duplicate our estimate. */
+    public static void onAnimation(int entityId,int animation){
+        if(animation==4)critPackets++;
+        if(animation!=4||lastTarget==null||lastTarget.getId()!=entityId||msSinceLastHit()<0||msSinceLastHit()>700||critSerial==attackSerial||!Modules.CRIT_PARTICLES.enabled)return;
+        critSerial=attackSerial;var c=Modules.CRIT_PARTICLES;
+        Fx.burst(lastTarget.getX(),lastTarget.getY()+lastTarget.getHeight()*.6,lastTarget.getZ(),c.color.rgb,(int)c.count.value,(float)c.size.value,.2,c.opacity.value);
+    }
+
+    public static void onDamage(int id){damagePackets++;var mc=MinecraftClient.getInstance();var d=Modules.DAMAGE_PARTICLES;if(!d.enabled||d.source.index!=0||mc.world==null||mc.player==null)return;
+        var entity=mc.world.getEntityById(id);if(!(entity instanceof LivingEntity e))return;
+        boolean self=e==mc.player;if((d.targets.index==0&&self)||(d.targets.index==1&&!self)||e.squaredDistanceTo(mc.player)>d.range.value*d.range.value)return;
+        Fx.burstAmbient(e.getX(),e.getY()+e.getHeight()*.6,e.getZ(),d.color.rgb,Math.min((int)d.hurtCount.value,(int)d.cap.value),(float)d.size.value,.1,d.opacity.value);
     }
 
     private static void killCheck() {
@@ -97,10 +116,10 @@ public final class CombatEvents {
     public static void tick(MinecraftClient mc) {
         int world=System.identityHashCode(mc.world);
         if(world!=worldIdentity||mc.world==null||mc.player==null){lastTarget=null;lastHitNanos=0;killHandled=true;health.clear();seen.clear();worldIdentity=world;if(mc.world==null||mc.player==null)return;}
-        if(Modules.PERFORMANCE.safe.value){health.clear();return;}
+        if(Modules.PERFORMANCE.effectLimit()==0){health.clear();return;}
         killCheck();
         var dp = Modules.DAMAGE_PARTICLES;
-        if (!dp.enabled || mc.world == null || mc.player == null) { health.clear(); return; }
+        if (!dp.enabled || dp.source.index!=1 || mc.world == null || mc.player == null) { health.clear(); return; }
         long t = PerformanceMonitor.begin();
         double r2 = dp.range.value * dp.range.value;
         seen.clear();
@@ -116,7 +135,7 @@ public final class CombatEvents {
             Float prev = health.put(id, now);
             if (prev != null && now < prev - .01f) {
                 int n = ParticleMath.damageCount(prev - now, (int) dp.perHeart.value, (int) dp.cap.value);
-                Fx.burst(le.getX(), le.getY() + le.getHeight() * .6, le.getZ(), dp.color.rgb, n, (float) dp.size.value, .12);
+                Fx.burstAmbient(le.getX(), le.getY() + le.getHeight() * .6, le.getZ(), dp.color.rgb, n, (float) dp.size.value, .12,dp.opacity.value);
             }
         }
         health.keySet().retainAll(seen);

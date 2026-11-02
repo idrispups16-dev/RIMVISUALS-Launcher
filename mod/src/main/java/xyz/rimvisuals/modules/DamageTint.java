@@ -29,6 +29,7 @@ public final class DamageTint extends Module {
         float k = intensity(mc.player.hurtTime, mc.player.maxHurtTime);
         if (k <= 0f) return;
         if (Modules.PERFORMANCE.reducedMotion.value) k = 1f;
+        else k=k*k*(3-2*k);
         int band = Math.max(4, Math.round(Math.min(w, h) * (float) edge.value / 100f));
         int steps = Math.min(12, band);
         int per = Math.max(1, band / steps);

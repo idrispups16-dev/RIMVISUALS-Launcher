@@ -71,5 +71,6 @@
   "key.rimvisuals.toggle.block_overlay": "RIMVISUALS: Toggle Block Overlay",
   "key.rimvisuals.toggle.hotkeys_hud": "RIMVISUALS: Toggle Assigned Keys HUD",
   "key.rimvisuals.toggle.compass_hud": "RIMVISUALS: Toggle Compass HUD",
-  "key.rimvisuals.swap": "RIMVISUALS: Item Swap to offhand"
+  "key.rimvisuals.swap": "RIMVISUALS: Item Swap to offhand",
+  "key.rimvisuals.toggle.visual_hitbox": "RIMVISUALS: Toggle Visual Hitbox"
 }
