@@ -25,6 +25,7 @@ public final class ServerHelper extends Module {
  public final Setting.Num interval=add(new Setting.Num("API interval seconds",20,20,300,5));
  public final Setting.Text apiServer=add(new Setting.Text("API server filter",""));
  public final Setting.Text eventNames=add(new Setting.Text("Message event names","Вулкан,Гейзер,Маяк убийца,Метеорит,Горящий череп,Адская резня,Бикини Боттом,Дракон,Сундук смерти,Куб,Посылка,Шахта"));
+ public final Setting.Text eventMenu=add(new Setting.Text("Events menu title contains","ивент"));
  public final Setting.Text interests=add(new Setting.Text("Interested events contains",""));
  public final Setting.Bool cooldowns=add(new Setting.Bool("Track PvP cooldowns",true));
  public final Setting.Text trapName=add(new Setting.Text("Trapka item name contains","трапка"));

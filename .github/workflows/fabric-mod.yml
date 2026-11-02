@@ -17,6 +17,8 @@ jobs:
       - uses: gradle/actions/setup-gradle@ed408507eac070d1f99cc633dbcf757c94c7933a
         with:
           gradle-version: '9.2.1'
+      - name: Probe public HolyWorld API (record availability)
+        run: python mod/tools/probe_hw_api.py
       - run: gradle -p mod build --stacktrace
       - name: Minecraft startup and GUI smoke test
         run: |
@@ -34,6 +36,7 @@ jobs:
         with:
           name: RIMVISUALS-Test-Logs
           path: |
+            hw-api-*.json
             smoke.log
             mod/build/test-results/test/*.xml
             mod/run/logs/latest.log

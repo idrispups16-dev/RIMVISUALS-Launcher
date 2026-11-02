@@ -11,16 +11,17 @@ public final class HelperRuntime {
  public record CdRow(String text,double progress,int rgb){}
  private record Attempt(String type,long at){}
  private static final Map<Identifier,Attempt> attempts=new HashMap<>();
- private static CompletableFuture<HolyEventsApi.Result> request;private static long generation,nextPoll,lastRefresh;private static int ticks;
+ private static CompletableFuture<HolyEventsApi.Result> request;private static Set<String> apiSeen=Set.of();private static String notice="";private static long noticeUntil;private static long generation,nextPoll,lastRefresh;private static int ticks;
  private static String apiStatus="API not requested";private static List<String> eventRows=List.of("No received events"),regionRows=List.of("Region unknown");private static List<CdRow> cdRows=List.of();
  public static List<String> eventRows(){return eventRows;}public static List<CdRow> cooldownRows(){return cdRows;}public static List<String> regionRows(){return regionRows;}
  public static String status(){return apiStatus;}
- public static void clear(){generation++;if(request!=null)request.cancel(false);request=null;nextPoll=lastRefresh=0;ticks=0;attempts.clear();eventRows=List.of("No received events");cdRows=List.of();regionRows=List.of("Region unknown");apiStatus="API not requested";Modules.HW_HELPER.tracker.clear();Modules.FT_HELPER.tracker.clear();}
+ public static String notice(){return System.currentTimeMillis()<noticeUntil?notice:"";}
+ public static void clear(){generation++;apiSeen=Set.of();notice="";noticeUntil=0;if(request!=null)request.cancel(false);request=null;nextPoll=lastRefresh=0;ticks=0;attempts.clear();eventRows=List.of("No received events");cdRows=List.of();regionRows=List.of("Region unknown");apiStatus="API not requested";Modules.HW_HELPER.tracker.clear();Modules.FT_HELPER.tracker.clear();}
  public static void init(){
   net.fabricmc.fabric.api.event.player.UseItemCallback.EVENT.register((player,world,hand)->{if(world.isClient())attempt(player.getStackInHand(hand));return net.minecraft.util.ActionResult.PASS;});
   net.fabricmc.fabric.api.event.player.UseBlockCallback.EVENT.register((player,world,hand,hit)->{if(world.isClient())attempt(player.getStackInHand(hand));return net.minecraft.util.ActionResult.PASS;});
  }
- public static void notify(ServerHelper h,String text){if(!h.notifications.value)return;Notifier.push(h.name+": "+HelperData.clean(text),0x8B8BFF);var mc=MinecraftClient.getInstance();if(h.sounds.value&&mc.player!=null)mc.player.playSound(net.minecraft.sound.SoundEvents.BLOCK_NOTE_BLOCK_PLING.value(),(float)h.soundVolume.value,1.2f);}
+ public static void notify(ServerHelper h,String text){if(!h.notifications.value)return;notice=HelperData.clean(text);noticeUntil=System.currentTimeMillis()+5000;Notifier.push(h.name+": "+HelperData.clean(text),0x8B8BFF);var mc=MinecraftClient.getInstance();if(h.sounds.value&&mc.player!=null)mc.player.playSound(net.minecraft.sound.SoundEvents.BLOCK_NOTE_BLOCK_PLING.value(),(float)h.soundVolume.value,1.2f);}
  public static void received(String s){var h=ServerHelpers.active();if(h==null)return;long now=System.currentTimeMillis();
   if(h.events.value&&h.tracker.message(s,h.eventNames.value,HelperData.host(ServerHelpers.address()),now))notify(h,"Event update received");
   if(h.cooldowns.value){int trap=HelperData.seconds(s,h.trapPrefix.value),plast=HelperData.seconds(s,h.plastPrefix.value);if(trap>=0)h.tracker.cooldown("Trapka",trap,false,"server message",now);if(plast>=0)h.tracker.cooldown("Plast",plast,false,"server message",now);}
@@ -39,17 +40,22 @@ public final class HelperRuntime {
   if(!type.isEmpty()&&ticks>=0&&ticks<=1728000)h.tracker.cooldown(type,ticks/20.0,false,"server cooldown packet",now);
  }
  public static void refresh(){var h=ServerHelpers.active();if(h==null){apiStatus="Join matching server and enable helper";return;}long now=System.currentTimeMillis();if(now-lastRefresh<5000)return;lastRefresh=now;
-  if(h.ft){var mc=MinecraftClient.getInstance();mc.setScreen(new net.minecraft.client.gui.screen.ChatScreen("/event delay",false));apiStatus="Press Enter to request /event delay; no automatic command";}else poll(h,true);
+  if(h.ft){var mc=MinecraftClient.getInstance();mc.setScreen(new net.minecraft.client.gui.screen.ChatScreen("/event delay",false));apiStatus="Press Enter to request /event delay; no automatic command";}else if(!h.publicApi.value)apiStatus="Enable HolyWorld public API in Events settings";else poll(h,true);
  }
  private static void poll(ServerHelper h,boolean manual){if(h.ft||!h.events.value||!h.publicApi.value||request!=null)return;long now=System.currentTimeMillis();if(!manual&&now<nextPoll)return;
   nextPoll=now+(long)(h.interval.value*1000);long token=generation;apiStatus="API loading";request=HolyEventsApi.fetch(h.apiServer.value);
-  request.thenAccept(result->MinecraftClient.getInstance().execute(()->{if(token!=generation||ServerHelpers.active()!=h)return;request=null;apiStatus=result.status();if(!result.status().equals("API OK"))return;
-   Set<String> previous=new HashSet<>(h.tracker.events.keySet());h.tracker.replaceApi(result.events(),System.currentTimeMillis());int added=0;for(var e:result.events())if(!previous.contains(e.id())&&HelperTracker.interested(e.name(),h.interests.value))added++;
+  request.thenAccept(result->MinecraftClient.getInstance().execute(()->{if(token!=generation||ServerHelpers.active()!=h)return;request=null;if(!h.events.value||!h.publicApi.value)return;apiStatus=result.status();if(!result.status().equals("API OK"))return;
+   Set<String> previous=apiSeen;Set<String> incoming=new HashSet<>();for(var e:result.events())incoming.add(e.id());apiSeen=Set.copyOf(incoming);h.tracker.replaceApi(result.events(),System.currentTimeMillis());int added=0;for(var e:result.events())if(!previous.contains(e.id())&&HelperTracker.interested(e.name(),h.interests.value))added++;
    if(added>0)notify(h,added+" new API event(s)");
   }));
  }
  public static void tick(){var h=ServerHelpers.active();if(h==null)return;if(++ticks%5!=0)return;long start=PerformanceMonitor.begin(),now=System.currentTimeMillis();
-  poll(h,false);attempts.values().removeIf(a->now-a.at>10000);
+  poll(h,false);
+  var mc=MinecraftClient.getInstance();
+  if(h.events.value&&!h.eventMenu.value.isBlank()&&mc.currentScreen instanceof net.minecraft.client.gui.screen.ingame.HandledScreen<?> menu&&HelperData.clean(menu.getTitle().getString()).toLowerCase(Locale.ROOT).contains(h.eventMenu.value.toLowerCase(Locale.ROOT))){
+   int scanned=0;for(var slot:menu.getScreenHandler().slots){if(scanned++>=54)break;if(mc.player!=null&&slot.inventory==mc.player.getInventory())continue;var stack=slot.getStack();if(stack.isEmpty())continue;StringBuilder text=new StringBuilder(stack.getName().getString());var lore=stack.get(net.minecraft.component.DataComponentTypes.LORE);if(lore!=null)for(var line:lore.lines()){if(text.length()>192)break;text.append(' ').append(line.getString());}received(HelperData.clean(text.toString()));}
+  }
+  attempts.values().removeIf(a->now-a.at>10000);
   if(h.cooldowns.value&&h.readyNotify.value)for(String ready:h.tracker.ready(now))notify(h,ready);
   h.tracker.trim(now);List<String> events=new ArrayList<>();
   if(h.events.value){for(var e:h.tracker.events.values())if(HelperTracker.interested(e.name(),h.interests.value)&&(h.apiServer.value.isBlank()||h.ft||e.server().equals(h.apiServer.value))){

@@ -21,6 +21,8 @@ public final class HelperSettingsScreen extends Screen {
   int y=90;button(12,y,width-24,h.name+": "+(h.enabled?"ON":"OFF"),()->{h.enabled=!h.enabled;Modules.save();rebuild();});y+=24;
   if(tab==4){button(12,y,width-24,"Open Keybind Manager (helper actions are unbound by default)",()->client.setScreen(new KeybindManagerScreen(this)));y+=26;}
   if(tab==5){button(12,y,width-24,"Open existing HUD Editor",()->client.setScreen(new HudEditorScreen(this)));y+=24;}
+  if(tab==2||tab==5){var hud=ft?Modules.FT_NOTICES:Modules.HW_NOTICES;button(12,y,width-24,"Helper notification HUD: "+(hud.enabled?"ON":"OFF"),()->{hud.enabled=!hud.enabled;Modules.save();rebuild();});y+=24;}
+  if(tab==5){var huds=ft?java.util.List.of(Modules.FT_EVENTS,Modules.FT_COOLDOWNS,Modules.FT_REGIONS):java.util.List.of(Modules.HW_EVENTS,Modules.HW_COOLDOWNS,Modules.HW_REGIONS);for(var hud:huds){button(12,y,width-24,hud.name+": "+(hud.enabled?"ON":"OFF"),()->{hud.enabled=!hud.enabled;Modules.save();rebuild();});y+=24;}}
   if(tab==0){button(12,y,half,"Refresh events (manual)",()->{HelperRuntime.refresh();status=HelperRuntime.status();});button(20+half,y,half,ft?"Prepare /events in chat":"Manual server connection",()->{if(ft)client.setScreen(new net.minecraft.client.gui.screen.ChatScreen("/events",false));else client.setScreen(new HelperConnectScreen(this,false));});y+=26;}
   List<Setting> fields=fields(h);int count=Math.max(1,(height-y-75)/36);int pages=Math.max(1,(fields.size()+count-1)/count);page=Math.min(page,pages-1);
   for(int i=page*count;i<Math.min(fields.size(),(page+1)*count);i++){Setting s=fields.get(i);int yy=y+(i-page*count)*36;
@@ -36,7 +38,7 @@ public final class HelperSettingsScreen extends Screen {
  private record Label(String text,int y){}private final List<Label> fieldLabels=new ArrayList<>();
  @Override public void clearChildren(){super.clearChildren();fieldLabels.clear();}
  private List<Setting> fields(ServerHelper h){return switch(tab){
-  case 0->h.ft?List.of(h.events,h.eventNames,h.interests,h.eventPrefix,h.timerPrefix,h.chat,h.action,h.scoreboard,h.aliases):List.of(h.events,h.publicApi,h.interval,h.apiServer,h.interests,h.eventNames,h.eventPrefix,h.timerPrefix,h.chat,h.action,h.scoreboard,h.aliases);
+  case 0->h.ft?List.of(h.events,h.eventNames,h.eventMenu,h.interests,h.eventPrefix,h.timerPrefix,h.chat,h.action,h.scoreboard,h.aliases):List.of(h.events,h.publicApi,h.interval,h.apiServer,h.interests,h.eventNames,h.eventMenu,h.eventPrefix,h.timerPrefix,h.chat,h.action,h.scoreboard,h.aliases);
   case 1->List.of(h.cooldowns,h.trapName,h.plastName,h.trapPrefix,h.plastPrefix,h.estimates,h.trapSeconds,h.plastSeconds,h.trapVisible,h.plastVisible,h.trapColor,h.plastColor);
   case 2->List.of(h.notifications,h.sounds,h.soundVolume,h.readyNotify,h.health,h.hp,h.armor,h.durability);
   case 3->List.of(h.regionPrefix,h.scoreboard,h.action,h.chat);

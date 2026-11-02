@@ -33,24 +33,24 @@ public final class HelperTracker {
   if(json==null||json.length()>262144)throw new IllegalArgumentException("API body limit");
   JsonElement root=JsonParser.parseString(json);if(!root.isJsonObject())throw new IllegalArgumentException("Unknown API shape");JsonObject map=root.getAsJsonObject();
   if(map.has("events")&&map.get("events").isJsonObject())map=map.getAsJsonObject("events");
-  List<Event> out=new ArrayList<>();int servers=0;
+  List<Event> out=new ArrayList<>();int servers=0;boolean recognized=map.isEmpty();
   for(var group:map.entrySet()){
-   if(++servers>256)break;if(!group.getValue().isJsonArray())continue;
+   if(++servers>256)break;if(!group.getValue().isJsonArray())continue;recognized=true;
    for(var raw:group.getValue().getAsJsonArray()){
     if(out.size()>=256)return List.copyOf(out);if(!raw.isJsonObject())continue;var o=raw.getAsJsonObject();
     String name="";if(o.has("metadata")&&o.get("metadata").isJsonObject())name=str(o.getAsJsonObject("metadata"),"displayName");
     String id=str(o,"instanceId");if(name.isBlank()||id.isBlank())continue;
     out.add(new Event(group.getKey()+":"+id,name,HelperData.clean(group.getKey()),"",State.ACTIVE,0,0,now,"HolyWorld API"));
    }
-  }return List.copyOf(out);
+  }if(!recognized)throw new IllegalArgumentException("Unknown API schema");return List.copyOf(out);
  }
  public void replaceApi(List<Event> snapshot,long now){
   Set<String> ids=new HashSet<>();for(var e:snapshot){ids.add(e.id);events.put(e.id,e);}
   events.replaceAll((id,e)->e.source.equals("HolyWorld API")&&!ids.contains(id)?new Event(e.id,e.name,e.server,e.coordinates,State.UNKNOWN,0,0,e.seen,"API: no longer listed"):e);trim(now);
  }
- private static final Pattern CLOCK=Pattern.compile("(?<![0-9])([0-9]{1,3}):([0-9]{2})(?::([0-9]{2}))?(?![0-9])");
- private static final Pattern UNITS=Pattern.compile("([0-9]{1,4})\\s*(час(?:а|ов)?|ч\\b|мин(?:ут(?:а|ы)?)?|м\\b|сек(?:унд(?:а|ы)?)?|с\\b|seconds?|minutes?)",Pattern.CASE_INSENSITIVE|Pattern.UNICODE_CASE);
- private static final Pattern COORDS=Pattern.compile("(?i)(?:xyz|координаты|коорд)[ :]+(-?[0-9]{1,7})[ ,;]+(-?[0-9]{1,3})[ ,;]+(-?[0-9]{1,7})");
+ private static final Pattern CLOCK=Pattern.compile("(?<![0-9-])([0-9]{1,3}):([0-9]{2})(?::([0-9]{2}))?(?![0-9])");
+ private static final Pattern UNITS=Pattern.compile("(?<![0-9-])([0-9]{1,4})\\s*(час(?:а|ов)?|ч\\b|мин(?:ут(?:а|ы)?)?|м\\b|сек(?:унд(?:а|ы)?)?|с\\b|seconds?|minutes?)",Pattern.CASE_INSENSITIVE|Pattern.UNICODE_CASE);
+ private static final Pattern COORDS=Pattern.compile("(?iu)(?:xyz|координаты|коорд)[ :]+(-?[0-9]{1,7})[ ,;]+(-?[0-9]{1,3})[ ,;]+(-?[0-9]{1,7})");
  private static final Pattern ANARCHY=Pattern.compile("(?iu)(?:анархия|анархии|анархию|сервер|анка)[ #№:]*([0-9]{1,4})");
  public static int duration(String raw){
   String s=HelperData.clean(raw).toLowerCase(Locale.ROOT);Matcher c=CLOCK.matcher(s);
@@ -61,10 +61,10 @@ public final class HelperTracker {
  public boolean message(String raw,String names,String server,long now){
   String s=HelperData.clean(raw),l=s.toLowerCase(Locale.ROOT);String found="";
   for(String name:names.split(",",-1))if(!name.isBlank()&&l.contains(name.strip().toLowerCase(Locale.ROOT))){found=name.strip();break;}
-  boolean delay=l.contains("до следующего ивента")||l.contains("до начала ивента")||l.contains("до следующего события");
+  boolean delay=l.contains("до следующего ивента")||l.contains("до начала ивента")||l.contains("до следующего события")||l.contains("ивент появится")||l.contains("до ивента");
   if(found.isBlank()&&!delay)return false;
   Long last=recent.get(s);if(last!=null&&now-last<2000)return false;recent.put(s,now);while(recent.size()>32)recent.remove(recent.keySet().iterator().next());
-  State state=delay||l.contains("начнётся")||l.contains("начнется")||l.contains("появится")||l.contains("до начала")?State.UPCOMING:l.contains("завершён")||l.contains("завершен")||l.contains("закончился")?State.FINISHED:l.contains("начался")||l.contains("активен")||l.contains("появился")?State.ACTIVE:State.UNKNOWN;
+  State state=delay||l.contains("начнётся")||l.contains("начнется")||l.contains("появится")||l.contains("до начала")?State.UPCOMING:l.contains("завершён")||l.contains("завершен")||l.contains("закончился")?State.FINISHED:l.contains("начался")||l.contains("активен")&&!l.contains("неактивен")||l.contains("появился")?State.ACTIVE:State.UNKNOWN;
   if(found.isBlank())found="Next event (server response)";String coords="";var c=COORDS.matcher(s);if(c.find())coords=c.group(1)+" "+c.group(2)+" "+c.group(3);
   var a=ANARCHY.matcher(s);if(a.find())server="Anarchy #"+a.group(1);
   int sec=duration(s);long start=state==State.UPCOMING&&sec>=0?now+sec*1000L:0;
