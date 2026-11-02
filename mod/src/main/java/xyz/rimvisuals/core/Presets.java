@@ -39,8 +39,8 @@ public final class Presets {
         Modules.DAMAGE_PARTICLES.opacity.set(.5);Modules.DAMAGE_PARTICLES.cap.set(6);Modules.EXPLOSION_EFFECTS.amount.set(12);Modules.EXPLOSION_EFFECTS.opacity.set(.55);
         Modules.HIT_COLOR.color.rgb=0xfda4af;Modules.HIT_COLOR.alpha.set(.35);Modules.DAMAGE_TINT.strength.set(.18);Modules.DAMAGE_TINT.edge.set(9);
         Modules.HIT_MARKER.color.rgb=0xe0f2fe;Modules.HIT_MARKER.duration.set(200);Modules.HIT_MARKER.size.set(3);Modules.HIT_MARKER.gap.set(5);
-        Modules.CROSSHAIR.color.rgb=0x7dd3fc;Modules.CROSSHAIR.size.set(4);Modules.CROSSHAIR.gap.set(2);Modules.CROSSHAIR.thickness.set(1);
-        Modules.VISUAL_HITBOX.targetOnly.value=true;Modules.VISUAL_HITBOX.distance.set(24);Modules.VISUAL_HITBOX.thickness.set(.01);Modules.VISUAL_HITBOX.opacity.set(.5);
+        Modules.CROSSHAIR.color.rgb=0x7dd3fc;Modules.CROSSHAIR.size.set(4);Modules.CROSSHAIR.gap.set(2);Modules.CROSSHAIR.thickness.set(1);Modules.CROSSHAIR.opacity.set(.95);Modules.CROSSHAIR.dot.value=true;Modules.CROSSHAIR.indicator.value=true;
+        Modules.VISUAL_HITBOX.players.value=true;Modules.VISUAL_HITBOX.mobs.value=true;Modules.VISUAL_HITBOX.color.rgb=0x7dd3fc;Modules.VISUAL_HITBOX.targetOnly.value=true;Modules.VISUAL_HITBOX.distance.set(24);Modules.VISUAL_HITBOX.thickness.set(.01);Modules.VISUAL_HITBOX.opacity.set(.5);
         Modules.reset(Modules.SWING);Modules.SWING.enabled=true;Modules.SWING.style.index=1;Modules.SWING.angle.set(25);Modules.SWING.offset.set(.08);Modules.SWING.intensity.set(.45);Modules.SWING.easing.index=1;
         Modules.reset(Modules.VIEWMODEL);Modules.VIEWMODEL.enabled=true;Modules.VIEWMODEL.main.y.set(-.08);Modules.VIEWMODEL.main.z.set(-.1);Modules.VIEWMODEL.main.scale.set(.95);Modules.VIEWMODEL.off.y.set(-.08);Modules.VIEWMODEL.off.scale.set(.95);Modules.VIEWMODEL.preset.index=4;Modules.VIEWMODEL.seedPreset();
         Modules.TOTEM_SCALE.scale.set(.85);Modules.TOTEM_FADE.start.set(.7);Modules.TOTEM_FADE.endOpacity.set(.15);Modules.CRYSTAL_SCALE.scale.set(1);Modules.CRYSTAL_FADE.opacity.set(.9);Modules.CRYSTAL_FADE.fadeIn.set(4);
