@@ -12,7 +12,9 @@ import xyz.rimvisuals.core.Modules;
 public class MinecraftClientMixin {
     @Inject(method = "hasOutline(Lnet/minecraft/entity/Entity;)Z", at = @At("RETURN"), cancellable = true)
     private void rimOutline(Entity entity, CallbackInfoReturnable<Boolean> cir) {
-        if (!cir.getReturnValueZ() && Modules.ENTITY_OUTLINE.enabled && Modules.ENTITY_OUTLINE.selects(entity, ((MinecraftClient) (Object) this).player))
+        if (cir.getReturnValueZ()) return;
+        MinecraftClient mc = (MinecraftClient) (Object) this;
+        if ((Modules.ENTITY_OUTLINE.enabled && Modules.ENTITY_OUTLINE.selects(entity, mc.player)) || Modules.TARGET_HIGHLIGHT.colorFor(entity, mc) != -1)
             cir.setReturnValue(true);
     }
 }

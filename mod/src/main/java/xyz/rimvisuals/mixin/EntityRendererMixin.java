@@ -15,7 +15,12 @@ public class EntityRendererMixin {
             at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;getTeamColorValue()I"))
     private int rimOutlineColor(Entity entity) {
         var o = Modules.ENTITY_OUTLINE;
-        if (o.enabled && !entity.isGlowing() && o.selects(entity, MinecraftClient.getInstance().player)) return o.color.rgb;
+        MinecraftClient mc = MinecraftClient.getInstance();
+        if (!entity.isGlowing()) {
+            int t = Modules.TARGET_HIGHLIGHT.colorFor(entity, mc);
+            if (t != -1) return t;
+            if (o.enabled && o.selects(entity, mc.player)) return o.color.rgb;
+        }
         return entity.getTeamColorValue();
     }
 }
