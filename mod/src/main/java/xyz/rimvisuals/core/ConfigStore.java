@@ -27,7 +27,7 @@ public final class ConfigStore {
     public static final int MAX_BACKUPS = 10;
     static final long MAX_IMPORT_BYTES = 512 * 1024;
     static final int MAX_ENTRIES = 4000;
-    private static final DateTimeFormatter STAMP = DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss-SSS");
+    private static final DateTimeFormatter STAMP = DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss-SSSSSSSSS");
 
     private final Path root;
 
@@ -48,6 +48,17 @@ public final class ConfigStore {
     private Path file(String name) { return profiles().resolve(clean(name) + ".properties"); }
 
     public boolean exists(String name) { return !clean(name).isEmpty() && Files.isRegularFile(file(name)); }
+
+    /** Creates a new CFG; unlike Save this never overwrites a named profile. */
+    public boolean create(String name, Properties p) {
+        if (clean(name).isEmpty()) return false;
+        Path tmp=null;
+        try {Files.createDirectories(profiles());tmp=Files.createTempFile(profiles(),"new-cfg-",".tmp");
+            write(tmp,p);Files.move(tmp,file(name));return true;
+        }catch(IOException e){return false;}
+        finally{if(tmp!=null)try{Files.deleteIfExists(tmp);}catch(IOException ignored){}}
+
+    }
 
     public boolean save(String name, Properties p) {
         if (clean(name).isEmpty()) return false;
@@ -72,7 +83,15 @@ public final class ConfigStore {
 
     public boolean rename(String from, String to) {
         if (!exists(from) || clean(to).isEmpty() || exists(to) || clean(from).equals(clean(to))) return false;
-        try { Files.move(file(from), file(to)); return true; } catch (IOException e) { return false; }
+        try {
+            Properties bindings=Files.isRegularFile(servers())?read(servers()):new Properties();
+            Properties changed=new Properties();changed.putAll(bindings);
+            changed.replaceAll((k,v)->clean(from).equals(v)?clean(to):v);
+            Files.move(file(from),file(to));
+            try { if(!bindings.equals(changed))write(servers(),changed); }
+            catch(IOException e){Files.move(file(to),file(from));throw e;}
+            return true;
+        }catch(IOException e){return false;}
     }
 
     public List<String> list() {
@@ -107,6 +126,7 @@ public final class ConfigStore {
         try {
             if (!Files.isRegularFile(file) || Files.size(file) > MAX_IMPORT_BYTES) return Optional.empty();
             JsonObject root = JsonParser.parseString(Files.readString(file, StandardCharsets.UTF_8)).getAsJsonObject();
+            if (root.has("schema") && (!root.get("schema").isJsonPrimitive() || !root.get("schema").getAsString().equals("1"))) return Optional.empty();
             if (!root.has("settings") || !root.get("settings").isJsonObject()) return Optional.empty();
             JsonObject settings = root.getAsJsonObject("settings");
             if (settings.size() == 0 || settings.size() > MAX_ENTRIES) return Optional.empty();
@@ -124,7 +144,7 @@ public final class ConfigStore {
             String unique = name;
             for (int i = 2; exists(unique) && i < 100; i++) unique = clean(name.length() > 20 ? name.substring(0, 20) : name) + "_" + i;
             if (exists(unique)) return Optional.empty();
-            return save(unique, p) ? Optional.of(unique) : Optional.empty();
+            return create(unique, p) ? Optional.of(unique) : Optional.empty();
         } catch (IOException | RuntimeException e) {
             return Optional.empty(); // malformed JSON, wrong types, unreadable file
         }
@@ -204,11 +224,14 @@ public final class ConfigStore {
 
     // ---------- io ----------
 
-    private static void write(Path file, Properties p) throws IOException {
+    public static void write(Path file, Properties p) throws IOException {
         Files.createDirectories(file.getParent());
-        Path tmp = file.resolveSibling(file.getFileName() + ".tmp");
-        try (var out = Files.newOutputStream(tmp)) { p.store(out, "RIMVISUALS"); }
-        Files.move(tmp, file, StandardCopyOption.REPLACE_EXISTING);
+        Path tmp=Files.createTempFile(file.getParent(),"rim-config-",".tmp");
+        try {
+            try (var out=Files.newOutputStream(tmp)) {p.store(out,"RIMVISUALS");}
+            try {Files.move(tmp,file,StandardCopyOption.REPLACE_EXISTING,StandardCopyOption.ATOMIC_MOVE);}
+            catch(java.nio.file.AtomicMoveNotSupportedException e){Files.move(tmp,file,StandardCopyOption.REPLACE_EXISTING);}
+        }finally {Files.deleteIfExists(tmp);}
     }
 
     private static Properties read(Path file) throws IOException {

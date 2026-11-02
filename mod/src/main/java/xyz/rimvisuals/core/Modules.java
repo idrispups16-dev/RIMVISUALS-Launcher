@@ -101,11 +101,9 @@ public final class Modules {
         PERFORMANCE.seedPreset(); VIEWMODEL.seedPreset();
     }
 
-    private static void write(Path file, Properties p) {
-        try {
-            Files.createDirectories(file.getParent());
-            try (var out = Files.newOutputStream(file)) { p.store(out, "RIMVISUALS"); }
-        } catch (IOException e) { LOG.warn("Could not write {}", file, e); }
+    private static boolean write(Path file, Properties p) {
+        try {ConfigStore.write(file,p);return true;}
+        catch(IOException e){LOG.warn("Could not write {}",file,e);return false;}
     }
 
     private static Properties read(Path file) {
@@ -116,7 +114,7 @@ public final class Modules {
         return p;
     }
 
-    public static void save() { Properties s = snapshot(); write(dir().resolve("config.properties"), s); lastSaved = s; }
+    public static void save() { Properties s = snapshot(); if(write(dir().resolve("config.properties"), s)) lastSaved = s; }
     public static void load() {
         boolean existed = Files.exists(dir().resolve("config.properties"));
         apply(read(dir().resolve("config.properties")));
@@ -128,15 +126,17 @@ public final class Modules {
     public static ConfigStore store() { return new ConfigStore(dir()); }
     public static String cleanName(String n) { return ConfigStore.clean(n); }
 
+    public static boolean createProfile(String name) {return store().create(cleanName(name),snapshot());}
     public static boolean saveProfile(String name) { String n = cleanName(name); return !n.isEmpty() && store().save(n, snapshot()); }
     public static boolean loadProfile(String name) {
         var p = store().load(cleanName(name));
         if (p.isEmpty()) return false;
+        if (!backupNow()) return false;
         apply(p.get());
         save();
         return true;
     }
-    public static void deleteProfile(String name) { store().delete(cleanName(name)); }
+    public static boolean deleteProfile(String name) { return store().delete(cleanName(name)); }
     public static List<String> listProfiles() { return store().list(); }
     public static boolean renameProfile(String from, String to) { return store().rename(cleanName(from), cleanName(to)); }
     public static boolean duplicateProfile(String from, String to) { return store().duplicate(cleanName(from), cleanName(to)); }
@@ -153,6 +153,7 @@ public final class Modules {
     public static boolean restoreLatestBackup() {
         var p = store().latestBackup();
         if (p.isEmpty()) return false;
+        if (!backupNow()) return false;
         apply(p.get());
         save();
         return true;
@@ -160,7 +161,6 @@ public final class Modules {
 
     public static boolean applyPreset(String name) {
         if (!Presets.apply(name)) return false;
-        saveProfile(name);
         save();
         return true;
     }
@@ -179,7 +179,7 @@ public final class Modules {
     private static int autosaveTicks;
     /** Called every client tick; every 30 s writes config.properties if any setting changed. */
     public static void autosaveTick() {
-        if (++autosaveTicks % 600 != 0) return;
+        if (!UI.autoSave.value || ++autosaveTicks % 600 != 0) return;
         if (lastSaved != null && lastSaved.equals(snapshot())) return;
         save();
     }

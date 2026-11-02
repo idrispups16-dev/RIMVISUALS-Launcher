@@ -63,6 +63,25 @@ class HudPersistenceTest {
         }
     }
 
+    @Test void allModuleSettingsAndHudSurviveDiskJsonAndBackup(@org.junit.jupiter.api.io.TempDir java.nio.file.Path dir) throws Exception {
+        var store=new xyz.rimvisuals.core.ConfigStore(dir);
+        int i=0;
+        for(var m:Modules.HUD){m.posX.set(31+i++);m.posY.set(53+i);m.scale.set(1.25);m.elementOpacity.set(.35);m.customAccent.value=true;m.accentColor.rgb=0x1234ab;}
+        Modules.VIEWMODEL.main.x.set(.2);Modules.SWING.intensity.set(.7);
+        Modules.PERFORMANCE.preset.index=2;
+        Properties expected=Modules.snapshot();
+        assertTrue(store.create("PvP",expected));store.backup(expected);
+        var json=store.exportJson("PvP");String imported=store.importJson(json).orElseThrow();
+        var disk=store.load(imported).orElseThrow();
+        assertEquals(expected,disk);assertEquals(expected,store.latestBackup().orElseThrow());
+        Modules.apply(before);Modules.apply(disk);
+        Properties actual=Modules.snapshot();
+        for(String key:expected.stringPropertyNames()) {
+            String a=expected.getProperty(key),b=actual.getProperty(key);
+            if(!a.equals(b)) assertEquals(Double.parseDouble(a),Double.parseDouble(b),1e-8,key);
+        }
+    }
+
     @Test void alignmentKeepsOversizedAndNormalElementsInBounds() {
         assertEquals(0, xyz.rimvisuals.core.HudMath.align(100, 120, 2));
         assertEquals(40, xyz.rimvisuals.core.HudMath.align(100, 20, 1));

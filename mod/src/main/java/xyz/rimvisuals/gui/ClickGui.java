@@ -356,10 +356,11 @@ public class ClickGui extends Screen {
             button(c, cx + cw - bw, y, bw, h - 4, "Save", mx, my, () -> {
                 String n = Modules.cleanName(profileName.text);
                 if (n.isEmpty()) { status = "Type a profile name first"; return; }
-                Modules.saveProfile(n);
-                profiles = Modules.listProfiles();
-                profileName.text = "";
-                status = "Saved: " + n;
+                Runnable save = () -> {
+                    boolean ok=Modules.store().exists(n)?Modules.saveProfile(n):Modules.createProfile(n);
+                    profiles=Modules.listProfiles();profileName.text="";status=ok?"Saved: "+n:"Save failed: "+n;
+                };
+                if(Modules.store().exists(n)) confirm("Replace CFG "+n+"?",save); else save.run();
             }, true);
         }
         // toolbar: presets and file actions
@@ -380,7 +381,7 @@ public class ClickGui extends Screen {
             int bw = (cw - 4 * (labels.length - 1)) / labels.length;
             Runnable[] actions = {
                     () -> status = Modules.backupNow() ? "Backup saved (last " + ConfigStore.MAX_BACKUPS + " kept)" : "Backup failed",
-                    () -> { status = Modules.restoreLatestBackup() ? "Restored latest backup" : "No backup found"; profiles = Modules.listProfiles(); },
+                    () -> confirm("Restore latest backup? Current settings will be backed up.", () -> { status = Modules.restoreLatestBackup() ? "Restored latest backup" : "Restore failed / no backup"; profiles = Modules.listProfiles(); }),
                     () -> { var got = Modules.importProfiles(); profiles = Modules.listProfiles();
                             status = got.isEmpty() ? "Nothing to import: put .json files into config/rimvisuals/imports" : "Imported: " + String.join(", ", got); },
                     () -> { String a = serverAddress();
@@ -413,6 +414,13 @@ public class ClickGui extends Screen {
         return e == null ? null : e.address;
     }
 
+    private void confirm(String question, Runnable action) {
+        client.setScreen(new net.minecraft.client.gui.screen.ConfirmScreen(yes -> {
+            client.setScreen(this);
+            if(yes) action.run();
+        }, Text.literal("RIMVISUALS CFG"), Text.literal(question)));
+    }
+
     private void profileAction(String action, String name) {
         String target = Modules.cleanName(profileName.text);
         switch (action) {
@@ -423,7 +431,7 @@ public class ClickGui extends Screen {
             }
             case "Rename" -> {
                 if (target.isEmpty()) status = "Type the new name in the field first";
-                else status = Modules.renameProfile(name, target) ? "Renamed to: " + target : "Could not rename (name taken?)";
+                else confirm("Rename "+name+" to "+target+"?", () -> {status = Modules.renameProfile(name, target) ? "Renamed to: " + target : "Could not rename (name taken?)";profiles=Modules.listProfiles();});
             }
             case "Export" -> { String p = Modules.exportProfile(name); status = p == null ? "Export failed" : "Exported: " + p; }
             case "Server" -> {
@@ -432,7 +440,7 @@ public class ClickGui extends Screen {
                 else if (Modules.serverProfile(a).filter(name::equals).isPresent()) status = Modules.unbindServer(a) ? "Unbound " + a : "Could not unbind";
                 else status = Modules.bindServer(a, name) ? name + " will load on " + a : "Could not bind";
             }
-            case "Delete" -> { Modules.deleteProfile(name); status = "Deleted: " + name; }
+            case "Delete" -> confirm("Delete CFG "+name+"?", () -> {status=Modules.deleteProfile(name)?"Deleted: "+name:"Delete failed";profiles=Modules.listProfiles();});
             default -> { }
         }
         profiles = Modules.listProfiles();
