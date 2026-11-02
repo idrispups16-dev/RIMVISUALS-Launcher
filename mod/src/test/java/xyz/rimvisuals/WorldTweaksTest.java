@@ -44,4 +44,17 @@ class WorldTweaksTest {
         xyz.rimvisuals.core.Modules.WATER_COLOR.enabled = false;
         xyz.rimvisuals.core.Modules.WEATHER_COLOR.enabled = false;
     }
+
+    @Test void handGlowShellsGrowOutwardAndFade() {
+        int n = 3;
+        float prevScale = 1f, prevAlpha = 2f;
+        float sum = 0;
+        for (int i = 0; i < n; i++) {
+            float sc = HandGlow.shellScale(i, n, .09), a = HandGlow.shellAlpha(i, n, .36);
+            assertTrue(sc > prevScale); assertTrue(a < prevAlpha);
+            prevScale = sc; prevAlpha = a; sum += a;
+        }
+        assertEquals(1.09f, prevScale, 1e-6);
+        assertEquals(.36f, sum, 1e-5);
+    }
 }
