@@ -20,7 +20,8 @@
     "WeatherRenderingMixin",
     "ClientPlayNetworkHandlerMixin",
     "ClientWorldMixin",
-    "WorldRendererMixin"
+    "WorldRendererMixin",
+    "ChatScreenAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

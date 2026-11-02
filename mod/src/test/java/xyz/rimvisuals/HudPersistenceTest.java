@@ -63,6 +63,12 @@ class HudPersistenceTest {
         }
     }
 
+    @Test void alignmentKeepsOversizedAndNormalElementsInBounds() {
+        assertEquals(0, xyz.rimvisuals.core.HudMath.align(100, 120, 2));
+        assertEquals(40, xyz.rimvisuals.core.HudMath.align(100, 20, 1));
+        assertEquals(80, xyz.rimvisuals.core.HudMath.align(100, 20, 2));
+    }
+
     @Test void opacityMultipliesAlphaAndNeverTouchesOpaqueDefault() {
         int c = 0xFF336699;
         assertEquals(c, Gfx.ha(c));

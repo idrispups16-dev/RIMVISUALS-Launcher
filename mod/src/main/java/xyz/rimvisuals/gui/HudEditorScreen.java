@@ -17,14 +17,51 @@ import xyz.rimvisuals.core.Theme;
 /** Drag HUD elements with the mouse or a finger. Positions are saved when you leave. */
 public class HudEditorScreen extends Screen {
     private final Screen parent;
-    private HudModule grab;
+    private HudModule grab, selected;
+    private final Runnable afterClose;
     private double offX, offY;
-    private int bh, doneX, resetX, monX, btnY, btnW;
+
     private int guideX = -1, guideY = -1;
 
     public HudEditorScreen(Screen parent) {
+        this(parent, () -> {});
+    }
+
+    public HudEditorScreen(Screen parent, Runnable afterClose) {
         super(Text.literal("RIMVISUALS HUD"));
         this.parent = parent;
+        this.afterClose = afterClose;
+    }
+
+    @Override protected void init() {
+        String[] labels = {"Done", "Menu", "Grid", "Monitor", "Reset one", "Reset all",
+                           "Left", "Center X", "Right", "Top", "Center Y", "Bottom"};
+        int bw = Math.max(1, (width - 14) / 6);
+        for (int i = 0; i < labels.length; i++) {
+            final int action = i;
+            addDrawableChild(net.minecraft.client.gui.widget.ButtonWidget.builder(Text.literal(labels[i]), b -> action(action))
+                .dimensions(4 + (i % 6) * (bw + 1), height - 48 + (i / 6) * 23, bw, 20).build());
+        }
+    }
+
+    private void resetElement(HudModule m) {
+        m.posX.set(m.defX); m.posY.set(m.defY); m.scale.set(1); m.elementOpacity.set(1);
+        m.customAccent.value = false; m.accentColor.rgb = 0xA855F7;
+    }
+
+    private void action(int action) {
+        if (action == 0) { close(); return; }
+        if (action == 1) { MinecraftClient.getInstance().setScreen(new ClickGui()); return; }
+        if (action == 2) { Modules.UI.gridSnap.set(Modules.UI.gridSnap.value > 0 ? 0 : 8); return; }
+        if (action == 3) { Modules.PERFORMANCE.monitor.value = !Modules.PERFORMANCE.monitor.value; return; }
+        if (action == 4) { if (selected != null) resetElement(selected); return; }
+        if (action == 5) { for (HudModule m : Modules.HUD) resetElement(m); return; }
+        if (selected == null) return;
+        MinecraftClient mc = MinecraftClient.getInstance();
+        double hs = Modules.UI.hudScale.value;
+        int vw = (int) Math.round(width / hs), vh = (int) Math.round(height / hs);
+        if (action <= 8) selected.posX.set(xyz.rimvisuals.core.HudMath.align(vw, RimHud.sw(selected, mc), action - 6));
+        else selected.posY.set(xyz.rimvisuals.core.HudMath.align(vh, RimHud.sh(selected, mc), action - 9));
     }
 
     @Override public boolean shouldPause() { return false; }
@@ -51,7 +88,7 @@ public class HudEditorScreen extends Screen {
             any = true;
             int w = RimHud.sw(m, mc), h = RimHud.sh(m, mc), x = RimHud.clampX(m, vw, w), y = RimHud.clampY(m, vh, h);
             RimHud.drawScaled(c, mc, m, x, y);
-            int col = m == grab ? acc : Gfx.alpha(acc, 0.7f);
+            int col = m == selected ? acc : Gfx.alpha(acc, 0.7f);
             c.fill(x - 2, y - 2, x + w + 2, y - 1, col);
             c.fill(x - 2, y + h + 1, x + w + 2, y + h + 2, col);
             c.fill(x - 2, y - 2, x - 1, y + h + 2, col);
@@ -60,15 +97,11 @@ public class HudEditorScreen extends Screen {
         }
         ms.popMatrix();
 
-        boolean mob = RimPlatform.mobile();
-        String hint = any ? "Drag to move (snaps to guides and grid)  |  wheel: size  |  Shift+wheel: opacity  |  right-click: reset element  |  accent colour: menu > HUD" : "No HUD element is enabled. Turn one on in the menu.";
-        c.drawText(textRenderer, hint, (width - textRenderer.getWidth(hint)) / 2, 10, Theme.text(), false);
-        bh = mob ? 32 : 22; btnW = mob ? 110 : 90; btnY = height - bh - 12;
-        int total = btnW * 3 + 24, start = (width - total) / 2;
-        doneX = start; resetX = start + btnW + 12; monX = start + (btnW + 12) * 2;
-        button(c, doneX, "Done", acc);
-        button(c, resetX, "Reset", Theme.card());
-        button(c, monX, "Monitor: " + (Modules.PERFORMANCE.monitor.value ? "On" : "Off"), Theme.card());
+        String hint = "Drag | Wheel: scale | Shift+wheel: opacity | Right-click: reset";
+        c.drawText(textRenderer, textRenderer.trimToWidth(hint, width - 12), 6, 6, Theme.text(), false);
+        String state = "Grid: " + (grid > 0 ? grid : "OFF") + " | Selected: " + (selected == null ? "none" : selected.name);
+        c.drawText(textRenderer, textRenderer.trimToWidth(state, width - 12), 6, 18, Theme.text(), false);
+        super.render(c, mouseX, mouseY, delta);
         if (grab != null) {
             int gc = Gfx.withAlpha(0x38BDF8, .8f);
             if (guideX >= 0) c.fill(Math.round(guideX * hs), 0, Math.round(guideX * hs) + 1, height, gc);
@@ -76,31 +109,19 @@ public class HudEditorScreen extends Screen {
         }
     }
 
-    private void button(DrawContext c, int x, String label, int bg) {
-        Gfx.roundBorder(c, x, btnY, btnW, bh, 5, Gfx.mix(Theme.card(), bg, 0.45f), Gfx.alpha(Theme.accent(), 0.8f));
-        c.drawText(textRenderer, label, x + (btnW - textRenderer.getWidth(label)) / 2, btnY + (bh - 8) / 2, Theme.text(), false);
-    }
-
-    private boolean inBtn(double mx, double my, int x) { return mx >= x && mx < x + btnW && my >= btnY && my < btnY + bh; }
-
     @Override
     public boolean mouseClicked(Click click, boolean doubled) {
         double mx=click.x(), my=click.y(); int button=click.button();
+        if (my >= height - 48) return super.mouseClicked(click, doubled);
         if (button == 1) {
             MinecraftClient mcr = MinecraftClient.getInstance();
             float hr = (float) Modules.UI.hudScale.value;
             int vwr = Math.round(width / hr), vhr = Math.round(height / hr);
             HudModule hit = hitTest(mcr, mx / hr, my / hr, vwr, vhr);
-            if (hit != null) { hit.posX.set(hit.defX); hit.posY.set(hit.defY); hit.scale.set(1); hit.elementOpacity.set(1); return true; }
+            if (hit != null) { selected = hit; resetElement(hit); return true; }
             return super.mouseClicked(click, doubled);
         }
         if (button != 0) return super.mouseClicked(click, doubled);
-        if (inBtn(mx, my, doneX)) { close(); return true; }
-        if (inBtn(mx, my, monX)) { Modules.PERFORMANCE.monitor.value = !Modules.PERFORMANCE.monitor.value; return true; }
-        if (inBtn(mx, my, resetX)) {
-            for (HudModule m : Modules.HUD) { m.posX.set(m.defX); m.posY.set(m.defY); m.scale.set(1); m.elementOpacity.set(1); }
-            return true;
-        }
         MinecraftClient mc = MinecraftClient.getInstance();
         float hs = (float) Modules.UI.hudScale.value;
         int vw = Math.round(width / hs), vh = Math.round(height / hs);
@@ -110,7 +131,7 @@ public class HudEditorScreen extends Screen {
             if (!m.visible()) continue;
             int w = RimHud.sw(m, mc), h = RimHud.sh(m, mc), ex = RimHud.clampX(m, vw, w), ey = RimHud.clampY(m, vh, h);
             if (x >= ex - 4 && x < ex + w + 4 && y >= ey - 4 && y < ey + h + 4) {
-                grab = m; offX = x - ex; offY = y - ey;
+                grab = selected = m; offX = x - ex; offY = y - ey;
                 return true;
             }
         }
@@ -178,9 +199,13 @@ public class HudEditorScreen extends Screen {
                 || org.lwjgl.glfw.GLFW.glfwGetKey(mc.getWindow().getHandle(), org.lwjgl.glfw.GLFW.GLFW_KEY_RIGHT_SHIFT) == org.lwjgl.glfw.GLFW.GLFW_PRESS;
         if (shift) m.elementOpacity.set(m.elementOpacity.value + Math.signum(verticalAmount) * .05);
         else m.scale.set(m.scale.value + Math.signum(verticalAmount) * .05);
+        selected = m;
+        int vw = Math.round(width / hs), vh = Math.round(height / hs);
+        m.posX.set(RimHud.clampX(m, vw, RimHud.sw(m, mc)));
+        m.posY.set(RimHud.clampY(m, vh, RimHud.sh(m, mc)));
         return true;
     }
 
-    @Override public void close() { MinecraftClient.getInstance().setScreen(parent); }
+    @Override public void close() { MinecraftClient.getInstance().setScreen(parent); afterClose.run(); }
     @Override public void removed() { Modules.save(); }
 }

@@ -12,11 +12,18 @@ public final class RimHud {
     private RimHud() {}
 
     /** Element size in HUD units after the per-element scale. */
-    public static int sw(HudModule m, MinecraftClient mc) { return xyz.rimvisuals.core.HudMath.scaled(m.width(mc), m.scale.value); }
-    public static int sh(HudModule m, MinecraftClient mc) { return xyz.rimvisuals.core.HudMath.scaled(m.height(mc), m.scale.value); }
+    public static int sw(HudModule m, MinecraftClient mc) { return xyz.rimvisuals.core.HudMath.scaled(m.width(mc), fittedScale(m, mc)); }
+    public static int sh(HudModule m, MinecraftClient mc) { return xyz.rimvisuals.core.HudMath.scaled(m.height(mc), fittedScale(m, mc)); }
+
+    public static double fittedScale(HudModule m, MinecraftClient mc) {
+        double hs = Modules.UI.hudScale.value;
+        return Math.min(m.scale.value, Math.min(
+            mc.getWindow().getScaledWidth() / hs / Math.max(1, m.width(mc)),
+            mc.getWindow().getScaledHeight() / hs / Math.max(1, m.height(mc))));
+    }
 
     public static void drawScaled(DrawContext c, MinecraftClient mc, HudModule m, int x, int y) {
-        float s = (float) m.scale.value;
+        float s = (float) fittedScale(m, mc);
         xyz.rimvisuals.core.Gfx.hudAlpha = (float) m.elementOpacity.value;
         try {
             if (s == 1f) { m.draw(c, mc, x, y); return; }

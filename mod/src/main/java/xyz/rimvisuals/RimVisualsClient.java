@@ -48,7 +48,7 @@ public class RimVisualsClient implements ClientModInitializer {
             Modules.VIEWMODEL.presets();
             LauncherSettings.tick();
             while (menuKey.wasPressed()) {
-                if (client.currentScreen == null) client.setScreen(new ClickGui());
+                if (client.currentScreen == null) client.setScreen(new xyz.rimvisuals.gui.HudEditorScreen(null));
             }
         });
         HudRenderCallback.EVENT.register(RimHud::render);
@@ -62,7 +62,16 @@ public class RimVisualsClient implements ClientModInitializer {
         if (screen instanceof net.minecraft.client.gui.screen.ChatScreen) {
             // Top-right corner, away from the input line; a button never takes keyboard focus from the chat field.
             int bw = mob ? 96 : 76, bh = mob ? 26 : 18;
-            var edit = ButtonWidget.builder(Text.literal("HUD Editor"), b -> client.setScreen(new xyz.rimvisuals.gui.HudEditorScreen(null)))
+            var edit = ButtonWidget.builder(Text.literal("HUD Editor"), b -> {
+                        var field = ((xyz.rimvisuals.mixin.ChatScreenAccessor) screen).rimChatField();
+                        String draft = field.getText();
+                        client.setScreen(new xyz.rimvisuals.gui.HudEditorScreen(screen, () -> {
+                            var restored = ((xyz.rimvisuals.mixin.ChatScreenAccessor) screen).rimChatField();
+                            restored.setText(draft);
+                            screen.setFocused(restored);
+                            restored.setFocused(true);
+                        }));
+                    })
                     .dimensions(w - bw - 6, 6, bw, bh).build();
             edit.setFocused(false);
             Screens.getButtons(screen).add(edit);

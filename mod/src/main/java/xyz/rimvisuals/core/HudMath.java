@@ -50,6 +50,11 @@ public final class HudMath {
     /** Size of an element after scaling, never below one unit. */
     public static int scaled(int size, double scale) { return Math.max(1, (int) Math.round(size * scale)); }
 
+    /** Edge/center alignment, including elements larger than the viewport. */
+    public static double align(int extent, int size, int alignment) {
+        return Math.max(0, (extent - size) * Math.max(0, Math.min(2, alignment)) / 2.0);
+    }
+
     /** Horizontal speed in blocks per second from a position delta. */
     public static double bps(double dx, double dz, double seconds) {
         if (seconds <= 0) return 0;

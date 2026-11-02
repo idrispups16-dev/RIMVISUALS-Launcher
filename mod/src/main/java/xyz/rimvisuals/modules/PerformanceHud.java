@@ -17,7 +17,7 @@ public final class PerformanceHud extends HudModule {
         Gfx.text(c, mc.textRenderer, "RIM CPU | Safe: " + Modules.PERFORMANCE.safe.value, x, y, accent());
         for (String line : PerformanceMonitor.top(5)) {
             y += 10;
-            Gfx.text(c, mc.textRenderer, line, x, y, Gfx.ha(0xffccccdd));
+            Gfx.text(c, mc.textRenderer, line, x, y, 0xffccccdd);
         }
     }
 }
