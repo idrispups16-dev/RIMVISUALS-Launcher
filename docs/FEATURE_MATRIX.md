@@ -171,3 +171,18 @@ CI evidence: Gradle build + JUnit + Minecraft startup smoke test green (mixin ta
 | Weather Color | Требует проверки в Minecraft | `WeatherRendering.renderPieces` colour/alpha | Rain/snow |
 | Hand Glow | Требует проверки в Minecraft | 1–4 enlarged translucent arm copies, fully lit; slight offset from arm pivot possible | First-person with empty hand |
 | Hand Outline / Bloom / Blur | **Не реализовано** | need front-face-culled hull pass / post-processing framebuffers; no honest implementation without in-game verification | — |
+
+## Update 0.4.0 (second batch): Anchor Fade/Scale, Totem Fade, Explosion Effects, Target Highlight, Cooldowns, Notifications
+
+CI: Gradle build + JUnit + Minecraft startup smoke test (mixin targets resolved against real 1.21.11 sources). **Not verified visually in a world.**
+
+| Feature | Status | How it works / limits | Manual check |
+|---|---|---|---|
+| Anchor Fade / Scale | Требует проверки в Minecraft | Client-only ghost of the anchor model (quads drawn through `translucentMovingBlock`), created **only** when an explosion packet with radius exactly 5 and centre exactly at an anchor block's centre arrives and the anchor was seen in the client world (before or just after the block update). Mining/other removal never creates a ghost. Duration 200–500 ms, opacity, scale, tint, easing configurable. No world/hitbox/server changes. | Charge an anchor in the Overworld, click it with a block/glowstone-less hand, watch the spot |
+| Totem Fade | Требует проверки в Minecraft | Floating totem quads are re-submitted through the items-atlas translucent layer with alpha (queue proxy matched by call shape). Works with Totem Scale. | Pop a totem |
+| Explosion Effects | Требует проверки в Minecraft | Extra dust ring + sparks on every explosion packet within range; uses shared particle budget; Safe Mode suppresses | Crystal / TNT |
+| Target Highlight | Требует проверки в Minecraft | Vanilla glow-outline pass for crosshair target and last-hit target | Aim at a mob/player |
+| Cooldowns HUD | Требует проверки в Minecraft | `ItemCooldownManager.getCooldownProgress` for stacks in inventory | Throw an ender pearl |
+| Notifications HUD | Требует проверки в Minecraft | Totem used (setFloatingItem hook), low health, low armor durability with hysteresis | Take damage / pop totem |
+| Enchantment Glint Control, Scoreboard/Chat Fade, Hotbar, ESP, HW/FT Helper | **Отсутствует** | not started | — |
+| Hand Outline / Bloom / Blur | **Не реализовано** | Outline needs an inverted-hull pass with front-face culling around the arm pivot; Bloom/Blur need post-processing framebuffers. Neither can be made honest without in-game verification, so no toggle exists. Hand Glow is the implemented alternative. | — |
