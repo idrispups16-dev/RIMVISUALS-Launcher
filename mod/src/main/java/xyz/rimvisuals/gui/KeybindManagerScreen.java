@@ -72,7 +72,7 @@ public final class KeybindManagerScreen extends Screen {
   var a=selected;capture=false;var conflicts=Keybinds.conflicts(a,key);
   Runnable apply=()->{Keybinds.bind(a,key);conflictLabels=Keybinds.conflicts(a,key);status="Saved: "+a.label()+" = "+key.getLocalizedText().getString();};
   if(conflicts.isEmpty())apply.run();
-  else client.setScreen(new ConfirmScreen(yes->{client.setScreen(this);if(yes)apply.run();},Text.literal("Key conflict"),Text.literal("Already used by "+String.join(", ",conflicts)+". Bind anyway?")));
+  else client.setScreen(new ConfirmScreen(yes->{client.setScreen(this);if(yes)apply.run();},Text.literal("Key conflict"),Text.literal("Already used by "+String.join(", ",conflicts)+". Conflicting actions may not both trigger. Bind anyway?")));
  }
  @Override public boolean mouseClicked(Click click,boolean doubled){
   if(capture){assign(InputUtil.Type.MOUSE.createFromCode(click.button()));return true;}

@@ -11,6 +11,6 @@ public final class LocalData {
  public static LocalDataStore store(){return store;}
  public static void refresh(){if(store!=null)marks=store.marks();}
  public static List<LocalDataStore.Mark> marks(){return marks;}
- public static String world(MinecraftClient mc){var server=mc.getCurrentServerEntry();if(server!=null)return server.address.toLowerCase(java.util.Locale.ROOT);return mc.getServer()!=null?"local:"+mc.getServer().getSaveProperties().getLevelName():"";}
+ public static String world(MinecraftClient mc){var server=mc.getCurrentServerEntry();if(server!=null)return server.address.toLowerCase(java.util.Locale.ROOT);return mc.getServer()!=null?"local-folder:"+mc.getServer().getSavePath(net.minecraft.util.WorldSavePath.ROOT).toAbsolutePath().normalize().getFileName().toString():"";}
  public static String dimension(MinecraftClient mc){return mc.world==null?"":mc.world.getRegistryKey().getValue().toString();}
 }
