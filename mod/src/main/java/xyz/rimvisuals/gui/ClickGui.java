@@ -501,6 +501,7 @@ public class ClickGui extends Screen {
     @Override
     public boolean keyPressed(KeyInput input) {
         int keyCode=input.key();
+        if (keyCode == GLFW.GLFW_KEY_ESCAPE) { close(); return true; }
         if (focus != null) {
             if (keyCode == GLFW.GLFW_KEY_BACKSPACE) { focus.backspace(); return true; }
             if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_ESCAPE) { focus = null; return true; }

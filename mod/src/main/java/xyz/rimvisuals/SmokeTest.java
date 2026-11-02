@@ -10,6 +10,9 @@ public final class SmokeTest {
   if(!audited){audited=true;MixinEnvironment.getCurrentEnvironment().audit();}
   ++ticks;
   if(ticks==41){IntegrationChecks.run();
+   RimVisualsClient.openMenu(client);
+   if(!(client.currentScreen instanceof ClickGui))throw new IllegalStateException("Menu entry did not open ClickGUI");
+   if(!RimVisualsClient.menuKey.getDefaultKey().getTranslationKey().equals("key.keyboard.right.shift"))throw new IllegalStateException("Unexpected default menu bind");
    var hudParent=new net.minecraft.client.gui.screen.TitleScreen();
    var editor=new xyz.rimvisuals.gui.HudEditorScreen(hudParent);
    client.setScreen(editor);

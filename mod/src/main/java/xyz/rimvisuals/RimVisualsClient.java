@@ -53,7 +53,7 @@ public class RimVisualsClient implements ClientModInitializer {
             if (Modules.PERFORMANCE.diagnostics.value && ++diagnosticTicks % 200 == 0)
                 org.slf4j.LoggerFactory.getLogger("rimvisuals").info("RIM_CPU_DIAGNOSTICS (CPU submission only): {}", xyz.rimvisuals.core.PerformanceMonitor.report());
             while (menuKey.wasPressed()) {
-                if (client.currentScreen == null) client.setScreen(new xyz.rimvisuals.gui.HudEditorScreen(null));
+                if (client.currentScreen == null) openMenu(client);
             }
         });
         HudRenderCallback.EVENT.register(RimHud::render);
@@ -61,6 +61,8 @@ public class RimVisualsClient implements ClientModInitializer {
         ScreenEvents.AFTER_INIT.register(RimVisualsClient::addMenuButton);
         ClientLifecycleEvents.CLIENT_STOPPING.register(client -> Modules.save());
     }
+
+    public static void openMenu(MinecraftClient client) { client.setScreen(new ClickGui()); }
 
     public static void openHudFromChat(MinecraftClient client, Screen screen) {
         var field = ((xyz.rimvisuals.mixin.ChatScreenAccessor) screen).rimChatField();
@@ -76,7 +78,7 @@ public class RimVisualsClient implements ClientModInitializer {
         if (screen instanceof net.minecraft.client.gui.screen.ChatScreen) {
             // Away from the input line; restore the draft and input focus on return.
             int bw = mob ? 96 : 76, bh = mob ? 26 : 18;
-            var edit = ButtonWidget.builder(Text.literal("HUD Editor"), b -> openHudFromChat(client, screen))
+            var edit = ButtonWidget.builder(Text.literal("Edit HUD"), b -> openHudFromChat(client, screen))
                     .dimensions(w - bw - 6, 6, bw, bh).build();
             edit.setFocused(false);
             Screens.getButtons(screen).add(edit);
