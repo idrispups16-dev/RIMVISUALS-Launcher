@@ -35,6 +35,7 @@ public class RimVisualsClient implements ClientModInitializer {
                 "key.rimvisuals.monitor", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_UNKNOWN, KeyBinding.Category.MISC));
         xyz.rimvisuals.core.Keybinds.init();
         xyz.rimvisuals.core.LocalData.init();
+        xyz.rimvisuals.core.ServerHelpers.init();
         net.fabricmc.fabric.api.client.rendering.v1.TooltipComponentCallback.EVENT.register(data -> data instanceof xyz.rimvisuals.modules.ShulkerPreview.Data preview ? new xyz.rimvisuals.gui.ShulkerTooltip(preview) : null);
         net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> client.execute(() -> {
             var entry = client.getCurrentServerEntry();
@@ -44,6 +45,7 @@ public class RimVisualsClient implements ClientModInitializer {
             xyz.rimvisuals.core.PerformanceMonitor.setEnabled(Modules.PERFORMANCE.monitor.value || Modules.PERFORMANCE.diagnostics.value);
             xyz.rimvisuals.core.Fx.beginTick();
             Modules.autosaveTick();
+            xyz.rimvisuals.core.ServerHelpers.tick(client);
             Modules.SOUND_CONTROLLER.refresh(client);
             Modules.VISUAL_HITBOX.tick(client);
             Modules.CUSTOM_FOG.refresh();Modules.DAMAGE_PARTICLES.refresh();

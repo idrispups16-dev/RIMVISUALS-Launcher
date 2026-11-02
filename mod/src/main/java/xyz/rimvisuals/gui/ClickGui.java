@@ -48,6 +48,7 @@ public class ClickGui extends Screen {
     private final Map<Object, Anim> anims = new HashMap<>();
     private final Set<Module> expanded = Collections.newSetFromMap(new IdentityHashMap<>());
     private final Set<Setting> colorOpen = Collections.newSetFromMap(new IdentityHashMap<>());
+    private final Map<Setting.Text, TextInput> ruleInputs = new IdentityHashMap<>();
     private final Map<Setting.Color, TextInput> hexInputs = new IdentityHashMap<>();
     private final Anim open = new Anim(0), tabPos = new Anim(0), scrollA = new Anim(0);
     private final TextInput search = new TextInput("Search...", 24);
@@ -83,6 +84,7 @@ public class ClickGui extends Screen {
 
     public void editHud(xyz.rimvisuals.core.HudModule m){tab=1;selected=m;colorOpen.add(m.accentColor);detailScroll=0;}
     @Override public void close(){client.setScreen(parentScreen);}
+    public void showHelperForTest(){tab=2;selected=Modules.FT_HELPER;}
     public void showCategoryForTest(int index){tab=0;selected=index==4?Modules.VIEWMODEL:null;}
     @Override public boolean shouldPause() { return false; }
     @Override public void removed() { Modules.save(); }
@@ -262,6 +264,10 @@ public class ClickGui extends Screen {
         c.enableScissor(cx,ctop,cx+cw,cbot);
         if(!selected.statusNote().isEmpty())infoRow(c,textRenderer.trimToWidth(selected.statusNote(),cw-16));
         int resetY=begin(rowH());if(resetY!=NONE)button(c,cx+8,resetY,cw-16,rowH()-3,"Reset module",mx,my,()->Modules.reset(selected),false);
+        if(selected instanceof xyz.rimvisuals.modules.ServerHelper helper){
+            int joinY=begin(rowH());if(joinY!=NONE)button(c,cx+8,joinY,cw-16,rowH()-3,"Manual server connection",mx,my,()->client.setScreen(new HelperConnectScreen(this,helper.ft)),false);
+            int cfgY=begin(rowH());if(cfgY!=NONE)button(c,cx+8,cfgY,cw-16,rowH()-3,"Save separate server CFG",mx,my,()->{String name=(helper.ft?"FunTime":"HolyWorld")+"_"+System.currentTimeMillis();if(Modules.createProfile(name)){Modules.save();status="Saved CFG: "+name;xyz.rimvisuals.core.Notifier.push("Saved CFG: "+name,0x8B8BFF);}else status="Could not save server CFG";},false);
+        }
         for(Setting st:selected.settings)if(!st.hidden)settingRow(c,st,mx,my,1);
         detailMax=Math.max(0,cy-(ctop-Math.round(detailA.value))-(cbot-ctop));
         detailScroll=Math.max(0,Math.min(detailMax,detailScroll));
@@ -318,7 +324,14 @@ public class ClickGui extends Screen {
 
     private void settingRow(DrawContext c, Setting st, double mx, double my, float a) {
         int x = cx + 8, w = cw - 16;
-        if (st instanceof Setting.Bool b) {
+        if(st instanceof Setting.Text rule){
+            int h=rowH()+18,y=begin(h);if(y==NONE)return;
+            txt(c,textRenderer.trimToWidth(st.name,w-12),x+4,y+2,Theme.text());
+            TextInput input=ruleInputs.computeIfAbsent(rule,k->{TextInput t=new TextInput("Not configured",192);t.text=k.value;t.onChange=()->k.value=t.text;return t;});
+            if(focus!=input)input.text=rule.value;
+            drawInput(c,input,x,y+13,w,h-16);
+            if(in(mx,my,x,y,w,h))tooltip=st.name+": "+rule.value;
+        } else if (st instanceof Setting.Bool b) {
             int h = rowH(), y = begin(h);
             if (y == NONE) return;
             boolean hov = in(mx, my, x, y, w, h - 2);

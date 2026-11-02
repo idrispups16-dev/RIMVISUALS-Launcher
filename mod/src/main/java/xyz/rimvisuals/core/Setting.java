@@ -13,6 +13,13 @@ public abstract class Setting {
     public abstract String save();
     public abstract void load(String s);
 
+    public static final class Text extends Setting {
+        public String value;
+        public Text(String name,String value){super(name);this.value=HelperData.clean(value);}
+        @Override public String save(){return value;}
+        @Override public void load(String s){value=HelperData.clean(s);}
+    }
+
     public static final class Bool extends Setting {
         public boolean value;
         public Bool(String name, boolean value) { super(name); this.value = value; }
