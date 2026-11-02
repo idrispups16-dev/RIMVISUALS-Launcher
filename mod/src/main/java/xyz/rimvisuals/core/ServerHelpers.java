@@ -29,11 +29,16 @@ public final class ServerHelpers {
   if(h.session.accept(s,h.eventPrefix.value,h.timerPrefix.value,h.ft?h.regionPrefix.value:"",now)&&h.notifications.value)Notifier.push(h.name+": "+s,0x8B8BFF);
  }
  public static List<String> lines(ServerHelper h){return active()==h?display:List.of(h.name+" — inactive");}
+ /** Selects only the matching enabled helper; never initiates a connection. */
+ public static void updateConnection(String connected){
+  if(connected==null)connected="";
+  ServerHelper next=Modules.HW_HELPER.enabled&&HelperData.matches(connected,false,Modules.HW_HELPER.aliases.value)?Modules.HW_HELPER:Modules.FT_HELPER.enabled&&HelperData.matches(connected,true,Modules.FT_HELPER.aliases.value)?Modules.FT_HELPER:null;
+  if(!connected.equals(address)||next!=current){clear();address=connected;current=next;}
+ }
  public static void tick(MinecraftClient mc){
   if(mc.player==null||mc.world==null){if(current!=null||!address.isEmpty())clear();return;}
   var entry=mc.getCurrentServerEntry();String connected=entry==null?"":entry.address;
-  ServerHelper next=Modules.HW_HELPER.enabled&&HelperData.matches(connected,false,Modules.HW_HELPER.aliases.value)?Modules.HW_HELPER:Modules.FT_HELPER.enabled&&HelperData.matches(connected,true,Modules.FT_HELPER.aliases.value)?Modules.FT_HELPER:null;
-  if(!connected.equals(address)||next!=current){clear();address=connected;current=next;}
+  updateConnection(connected);
   if(current==null||++tick%10!=0)return;
   ServerHelper h=current;long started=PerformanceMonitor.begin();long now=System.nanoTime();Set<String> fresh=new HashSet<>();List<String> lines=new ArrayList<>(12);lines.add(h.name+" • "+HelperData.host(address));
   if(h.scoreboard.value){var board=mc.world.getScoreboard();var objective=board.getObjectiveForSlot(ScoreboardDisplaySlot.SIDEBAR);
