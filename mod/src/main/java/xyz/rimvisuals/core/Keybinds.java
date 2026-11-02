@@ -22,6 +22,8 @@ public final class Keybinds {
    var key=KeyBindingHelper.registerKeyBinding(new KeyBinding("key.rimvisuals.toggle."+m.id,InputUtil.Type.KEYSYM,GLFW.GLFW_KEY_UNKNOWN,KeyBinding.Category.MISC));
    actions.add(new Action(m.id,"Toggle "+m.name,key,()->m.enabled=!m.enabled));
   }
+  var swap=KeyBindingHelper.registerKeyBinding(new KeyBinding("key.rimvisuals.swap",InputUtil.Type.KEYSYM,GLFW.GLFW_KEY_UNKNOWN,KeyBinding.Category.MISC));
+  actions.add(new Action("item_swap_action","Item Swap to offhand",swap,()->Modules.ITEM_SWAP.run()));
   load(pending);
  }
  public static void tick(MinecraftClient mc){for(var a:actions)while(a.key.wasPressed())if(mc.currentScreen==null)a.run.run();}

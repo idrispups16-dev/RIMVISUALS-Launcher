@@ -34,6 +34,7 @@ public class RimVisualsClient implements ClientModInitializer {
                 "key.rimvisuals.monitor", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_UNKNOWN, KeyBinding.Category.MISC));
         xyz.rimvisuals.core.Keybinds.init();
         xyz.rimvisuals.core.LocalData.init();
+        net.fabricmc.fabric.api.client.rendering.v1.TooltipComponentCallback.EVENT.register(data -> data instanceof xyz.rimvisuals.modules.ShulkerPreview.Data preview ? new xyz.rimvisuals.gui.ShulkerTooltip(preview) : null);
         net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> client.execute(() -> {
             var entry = client.getCurrentServerEntry();
             if (entry != null) Modules.applyServerProfile(entry.address).ifPresent(n -> org.slf4j.LoggerFactory.getLogger("rimvisuals").info("Loaded server configuration {}", n));
