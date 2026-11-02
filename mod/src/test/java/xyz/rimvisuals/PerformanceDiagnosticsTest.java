@@ -20,7 +20,7 @@ class PerformanceDiagnosticsTest {
   b.refund(4);assertEquals(4,b.take(10,24));b.reset();assertEquals(24,b.take(40,24));
  }
  @Test void safeModeSuppressesExpensivePassesWithoutChangingModuleSwitches(){
-  var p=new PerformanceOptions();assertEquals(0,p.glowLayers(4));assertFalse(p.outlineAllowed(0));assertEquals(0,p.effectParticles(100,200));
+  var p=new PerformanceOptions();assertEquals(0,p.glowLayers(4));assertFalse(p.outlineAllowed(0));assertEquals(6,p.effectParticles(100,200));p.safeParticles.index=1;assertEquals(0,p.effectParticles(100,200));
   p.preset.index=1;p.applyPreset();assertEquals(1,p.glowLayers(4));assertTrue(p.outlineAllowed(1024));assertFalse(p.outlineAllowed(1025));
   p.preset.index=2;p.applyPreset();assertEquals(4,p.glowLayers(4));assertTrue(p.outlineAllowed(4096));
  }

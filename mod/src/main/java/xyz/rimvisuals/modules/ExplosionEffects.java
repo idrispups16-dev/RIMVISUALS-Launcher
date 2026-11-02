@@ -16,6 +16,8 @@ public final class ExplosionEffects extends Module {
     public final Setting.Num minRadius = add(new Setting.Num("Minimum radius", 2, 0, 10, .5));
     public final Setting.Num maxDistance = add(new Setting.Num("Max distance (blocks)", 48, 8, 128, 4));
 
+    public final Setting.Num opacity = add(new Setting.Num("Opacity", .8, .1, 1, .05));
+
     public ExplosionEffects() {
         super("explosion_effects", "Explosion Effects", "Extra shockwave ring and sparks for explosions near you (crystals, TNT, anchors, beds). Uses the shared particle budget; Safe Mode suppresses it.", Category.VISUALS);
         enabled = false;
@@ -31,8 +33,8 @@ public final class ExplosionEffects extends Module {
         long t0 = PerformanceMonitor.begin();
         int n = count(amount.value, radius);
         float size = Math.min(2.5f, .8f + radius / 6f);
-        if (ring.value) Fx.ring(c.x, c.y + .1, c.z, color.rgb, n, size, .18 + radius * .05);
-        if (sparks.value) Fx.burst(c.x, c.y, c.z, color.rgb, n / 2, Math.max(.6f, size * .6f), .25);
+        if (ring.value) Fx.ring(c.x, c.y + .1, c.z, color.rgb, n, size, .18 + radius * .05,opacity.value);
+        if (sparks.value) Fx.burst(c.x, c.y, c.z, color.rgb, n / 2, Math.max(.6f, size * .6f), .25,opacity.value);
         PerformanceMonitor.end("Explosion Effects", t0);
     }
 }

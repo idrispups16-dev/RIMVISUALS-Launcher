@@ -10,6 +10,8 @@ public final class HitParticles extends Module {
     public final Setting.Num size = add(new Setting.Num("Size", 1, .3, 2, .1));
     public final Setting.Num speed = add(new Setting.Num("Spread", .15, .03, .4, .01));
 
+    public final Setting.Num opacity = add(new Setting.Num("Opacity", .8, .1, 1, .05));
+
     public HitParticles() {
         super("hit_particles", "Hit Particles", "Spawns coloured particles when you attack a living entity. Count obeys the performance budget and Safe Mode cap.", Category.VISUALS);
         enabled = false;

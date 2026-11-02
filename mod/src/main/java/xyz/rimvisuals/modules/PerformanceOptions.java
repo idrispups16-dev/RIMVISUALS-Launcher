@@ -3,6 +3,7 @@ import xyz.rimvisuals.core.Module;
 import xyz.rimvisuals.core.Setting;
 public final class PerformanceOptions extends Module {
  public final Setting.Bool safe=add(new Setting.Bool("Performance Safe Mode",true));
+ public final Setting.Mode safeParticles=add(new Setting.Mode("Safe combat particles",0,"Limited","Disabled"));
  public final Setting.Bool reducedMotion=add(new Setting.Bool("Reduced motion",false));
  public final Setting.Bool adaptive=add(new Setting.Bool("Adaptive particles",true));
  public final Setting.Bool monitor=add(new Setting.Bool("Performance monitor",false));
@@ -18,5 +19,7 @@ public final class PerformanceOptions extends Module {
  public boolean outlineAllowed(double distanceSquared){return !safe.value&&distanceSquared <= (preset.index==2?4096:1024);}
  public int particles(int requested,int fps){if(safe.value)return 0;int n=Math.min(requested,(int)particleLimit.value);if(adaptive.value&&fps>0&&fps<targetFps.value)n=(int)(n*Math.max(.15,fps/targetFps.value));return Math.max(0,n);}
  /** Budget for optional combat/trail particles: limit, Safe Mode suppresses optional particles, adaptive scaling below target FPS. */
- public int effectParticles(int requested,int fps){return xyz.rimvisuals.core.ParticleMath.budget(requested,(int)particleLimit.value,safe.value,0,adaptive.value,fps,(int)targetFps.value);}
+ public int effectLimit(){return Math.max(0,Math.min((int)particleLimit.value,safe.value?(safeParticles.index==0?6:0):80));}
+ public int effectParticles(int requested,int fps){int cap=effectLimit();if(requested<=0||cap<=0)return 0;int n=xyz.rimvisuals.core.ParticleMath.budget(requested,cap,false,0,adaptive.value,fps,(int)targetFps.value);return Math.max(1,n);}
+
 }

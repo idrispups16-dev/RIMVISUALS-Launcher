@@ -28,7 +28,8 @@
     "ItemEntityStateMixin",
     "ItemEntityRendererMixin",
     "SoundSystemMixin",
-    "ItemStackTooltipMixin"
+    "ItemStackTooltipMixin",
+    "ParticleOpacityAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

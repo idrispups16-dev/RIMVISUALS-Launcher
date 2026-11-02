@@ -12,6 +12,8 @@ public final class DamageParticles extends Module {
     public final Setting.Num range = add(new Setting.Num("Range", 24, 4, 48, 1));
     public final Setting.Num size = add(new Setting.Num("Size", 1, .3, 2, .1));
 
+    public final Setting.Num opacity = add(new Setting.Num("Opacity", .8, .1, 1, .05));
+
     public DamageParticles() {
         super("damage_particles", "Damage Particles", "Spawns particles on entities that lose health, scaled by damage taken. Works from synced health only; obeys the performance budget.", Category.VISUALS);
         enabled = false;
