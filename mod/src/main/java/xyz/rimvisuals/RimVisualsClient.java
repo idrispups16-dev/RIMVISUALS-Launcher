@@ -58,8 +58,17 @@ public class RimVisualsClient implements ClientModInitializer {
     }
 
     private static void addMenuButton(MinecraftClient client, Screen screen, int w, int h) {
-        if (!(screen instanceof TitleScreen) && !(screen instanceof GameMenuScreen)) return;
         boolean mob = RimPlatform.mobile();
+        if (screen instanceof net.minecraft.client.gui.screen.ChatScreen) {
+            // Top-right corner, away from the input line; a button never takes keyboard focus from the chat field.
+            int bw = mob ? 96 : 76, bh = mob ? 26 : 18;
+            var edit = ButtonWidget.builder(Text.literal("HUD Editor"), b -> client.setScreen(new xyz.rimvisuals.gui.HudEditorScreen(null)))
+                    .dimensions(w - bw - 6, 6, bw, bh).build();
+            edit.setFocused(false);
+            Screens.getButtons(screen).add(edit);
+            return;
+        }
+        if (!(screen instanceof TitleScreen) && !(screen instanceof GameMenuScreen)) return;
         Screens.getButtons(screen).add(ButtonWidget.builder(Text.literal("RIMVISUALS"), b -> client.setScreen(new ClickGui()))
                 .dimensions(6, 6, mob ? 110 : 84, mob ? 26 : 20).build());
     }
