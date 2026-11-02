@@ -43,6 +43,7 @@ public class RimVisualsClient implements ClientModInitializer {
             xyz.rimvisuals.core.PerformanceMonitor.setEnabled(Modules.PERFORMANCE.monitor.value || Modules.PERFORMANCE.diagnostics.value);
             xyz.rimvisuals.core.Fx.beginTick();
             Modules.autosaveTick();
+            Modules.SOUND_CONTROLLER.refresh(client);
             xyz.rimvisuals.core.WorldColors.tick(client);
             xyz.rimvisuals.core.Notifier.tick(client);
             xyz.rimvisuals.core.Keybinds.tick(client);

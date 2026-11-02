@@ -16,5 +16,7 @@ public class Module {
         this.id = id; this.name = name; this.description = description; this.category = category;
     }
 
+    private static final java.util.Set<String> SAFE_SUPPRESSED=java.util.Set.of("china_hat","block_overlay","anchor_fade","hand_glow","entity_outline","target_highlight","damage_particles","hit_particles","critical_particles","crit_particles","sharpness_particles","kill_effects","pearl_trails","projectile_trails","sword_trails","explosion_effects","particles","pulse_glow");
+    public String suppressionReason(){return enabled&&Modules.PERFORMANCE.safe.value&&SAFE_SUPPRESSED.contains(id)?"SAFE MODE":"";}
     public <T extends Setting> T add(T setting) { settings.add(setting); return setting; }
 }

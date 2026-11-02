@@ -25,6 +25,15 @@ public final class SmokeTest {
     if(!client.options.sneakKey.getBoundKeyTranslationKey().equals("key.keyboard.left.shift")||!client.options.chatKey.getBoundKeyTranslationKey().equals("key.keyboard.t"))throw new IllegalStateException("Vanilla control defaults changed");
     LoggerFactory.getLogger("rimvisuals").info("RIM_KEYBINDS_OK: keyboard/mouse round-trip; vanilla Left Shift/T defaults unchanged");
    }finally{xyz.rimvisuals.core.Modules.apply(bindSnapshot);client.options.write();}
+   var previewSaved=xyz.rimvisuals.core.Modules.snapshot();
+   try{xyz.rimvisuals.core.Modules.SHULKER_PREVIEW.enabled=true;
+    var box=new net.minecraft.item.ItemStack(net.minecraft.item.Items.SHULKER_BOX);
+    box.set(net.minecraft.component.DataComponentTypes.CONTAINER,net.minecraft.component.type.ContainerComponent.fromStacks(java.util.List.of(new net.minecraft.item.ItemStack(net.minecraft.item.Items.DIAMOND,3),net.minecraft.item.ItemStack.EMPTY,new net.minecraft.item.ItemStack(net.minecraft.item.Items.GOLD_INGOT,4))));
+    var tooltip=box.getTooltipData().orElseThrow();
+    if(!(tooltip instanceof xyz.rimvisuals.modules.ShulkerPreview.Data data)||data.stacks().size()!=3||!data.stacks().get(1).isEmpty()||data.stacks().get(2).getCount()!=4)throw new IllegalStateException("Shulker slots changed");
+    if(!(net.minecraft.client.gui.tooltip.TooltipComponent.of(tooltip) instanceof xyz.rimvisuals.gui.ShulkerTooltip))throw new IllegalStateException("Shulker tooltip renderer missing");
+    org.slf4j.LoggerFactory.getLogger("rimvisuals").info("RIM_SHULKER_OK: real container component slots, tooltip mixin and callback; no server inventory request");
+   }finally{xyz.rimvisuals.core.Modules.apply(previewSaved);}
    var hudParent=new net.minecraft.client.gui.screen.TitleScreen();
    var editor=new xyz.rimvisuals.gui.HudEditorScreen(hudParent);
    client.setScreen(editor);
