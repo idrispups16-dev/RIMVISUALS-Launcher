@@ -23,7 +23,7 @@ public final class Fx {
     }
 
     public static void burst(double x,double y,double z,int rgb,int requested,float size,double speed){burst(x,y,z,rgb,requested,size,speed,1);}
-    public static void opacity(net.minecraft.client.particle.Particle particle,float alpha){if(particle!=null)created++;if(particle instanceof net.minecraft.client.particle.BillboardParticle)((xyz.rimvisuals.mixin.ParticleOpacityAccessor)(Object)particle).rimAlpha(Math.max(0,Math.min(1,alpha)));}
+    public static void opacity(net.minecraft.client.particle.Particle particle,float alpha){if(particle!=null)created++;if(particle instanceof ManagedParticleAlpha p)p.rimOpacity(alpha);}
     public static int burst(double x, double y, double z, int rgb, int requested, float size, double speed,double alpha) {
         MinecraftClient mc = MinecraftClient.getInstance();
         if (mc.world == null || !near(mc,x,y,z)) return 0;

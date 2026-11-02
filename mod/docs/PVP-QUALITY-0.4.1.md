@@ -15,7 +15,9 @@ Original PRs, main, launcher, site and user Minecraft folders are unchanged.
   effects can still be dropped; this is an intentional cap, not guaranteed emission per effect.
 - Adaptive quality no longer rounds a positive allowed combat request to zero. Limits remain
   shared across all sources. Cards show LIMITED or PARTICLES OFF instead of generic enabled.
-- Per-effect Opacity reaches the actual BillboardParticle alpha field. RGB/size still use vanilla
+- Per-effect Opacity reaches the actual BillboardParticle alpha field; owned dust particles with
+  alpha below one use PARTICLE_ATLAS_TRANSLUCENT rather than relying on an opaque material.
+  Vanilla/other mods' particles are not marked or rerouted. RGB/size still use vanilla
   DustParticleEffect; vanilla lighting, natural dust variation and shaders affect final appearance.
   Opacity changes apply to newly emitted particles, not every particle already alive.
 - Criticals retain an immediate client estimate and add a deduplicated server animation fallback
