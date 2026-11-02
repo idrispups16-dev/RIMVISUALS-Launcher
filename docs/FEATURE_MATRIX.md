@@ -153,3 +153,21 @@ Baseline: 0.3.0-alpha.2, commit 2142161915d9e755dff396b5f12e450193492449. This r
 | Launcher | Java Auto-install | Реализовано, проверено в CI | electron/java-runtime.cjs: Temurin JRE 21 x64, SHA-256, проверка redirect-хостов; tests/java-runtime-smoke.js скачивает и запускает Java в CI. |
 | Helpers | FT Helper | Требует уточнения | User will provide exact functions; no empty menu entry. |
 | Helpers | HV Helper | Требует уточнения | User will provide exact functions; no empty menu entry. |
+
+## Update 0.4.0 (commit after 862f33d): HUD Editor, CFG Manager, World Tweaks, Hand Glow
+
+CI evidence: Gradle build + JUnit + Minecraft startup smoke test green (mixin targets resolve against 1.21.11). **None of these has been verified visually in a world** — see manual scenarios.
+
+| Feature | Status | How it works | Manual check |
+|---|---|---|---|
+| HUD per-element opacity | Требует проверки в Minecraft | `Gfx.hudAlpha` multiplies panel/text/fill alpha; item icons (Armor/Inventory HUD) stay opaque | Shift+wheel on an element in HUD Editor |
+| HUD guides / accent / monitor toggle | Требует проверки в Minecraft | `HudMath.guideSnap` (tested) | Drag near centre/other element |
+| CFG Manager | Реализовано, тесты ConfigStore | profiles, JSON import/export, backups, autosave, server binding, presets | Profiles tab |
+| Fullbright | Требует проверки в Minecraft | `LightmapTextureManager.update` gamma arg | Dark cave, toggle |
+| Night Vision Fade | Требует проверки в Minecraft | lightmap night-vision arg, linear last 10 s | Short potion |
+| Golden Apple Glow | Требует проверки в Minecraft | HUD edge overlay while absorption > 0 | Eat golden apple |
+| Entity Outline | Требует проверки в Minecraft | `MinecraftClient.hasOutline` + outline colour redirect (vanilla glow pass) | Other player / mob behind wall |
+| Water / Lava / Biome colours | Требует проверки в Minecraft | `BiomeColors` + `FluidRenderer` lava constant; terrain reload after settings settle | Ocean, lava lake, grass |
+| Weather Color | Требует проверки в Minecraft | `WeatherRendering.renderPieces` colour/alpha | Rain/snow |
+| Hand Glow | Требует проверки в Minecraft | 1–4 enlarged translucent arm copies, fully lit; slight offset from arm pivot possible | First-person with empty hand |
+| Hand Outline / Bloom / Blur | **Не реализовано** | need front-face-culled hull pass / post-processing framebuffers; no honest implementation without in-game verification | — |
