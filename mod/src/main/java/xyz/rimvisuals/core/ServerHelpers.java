@@ -28,7 +28,7 @@ public final class ServerHelpers {
   long now=System.nanoTime();if(now-budgetAt>=1_000_000_000L){budgetAt=now;budget=0;}if(++budget>64)return;String s=HelperData.clean(message);
   if(source==1){boolean same=s.equals(h.session.action);h.session.action=s;actionUntil=now+5_000_000_000L;if(same)return;}
   HelperRuntime.received(s);
-  if(h.session.accept(s,h.eventPrefix.value,h.timerPrefix.value,h.ft?h.regionPrefix.value:"",now)&&h.notifications.value)Notifier.push(h.name+": "+s,0x8B8BFF);
+  if(h.session.accept(s,h.eventPrefix.value,h.timerPrefix.value,h.regionPrefix.value,now)&&h.notifications.value)Notifier.push(h.name+": "+s,0x8B8BFF);
  }
  public static List<String> lines(ServerHelper h){return active()==h?display:List.of(h.name+" — inactive");}
  /** Selects only the matching enabled helper; never initiates a connection. */
