@@ -22,7 +22,7 @@ public final class KeybindManagerScreen extends Screen {
  private float scale=1;
  private String status="Select an action, then click a key or Capture";
  public KeybindManagerScreen(Screen parent){super(Text.literal("RIMVISUALS Keybind Manager"));this.parent=parent;}
- @Override protected void init(){search=addDrawableChild(new TextFieldWidget(textRenderer,8,8,Math.max(80,width-100),20,Text.literal("Search actions")));search.setPlaceholder(Text.literal("Search actions"));search.setChangedListener(q->filter());filter();addDrawableChild(ButtonWidget.builder(Text.literal("Back"),b->close()).dimensions(width-84,8,76,20).build());}
+ @Override protected void init(){search=addDrawableChild(new TextFieldWidget(textRenderer,8,8,Math.max(80,width-100),20,Text.literal("Search actions")));search.setPlaceholder(Text.literal("Search actions"));search.setChangedListener(q->filter());filter();if(selected==null&&!Keybinds.actions().isEmpty())selected=Keybinds.actions().getFirst();if(selected!=null)conflictLabels=Keybinds.conflicts(selected,InputUtil.fromTranslationKey(selected.key().getBoundKeyTranslationKey()));addDrawableChild(ButtonWidget.builder(Text.literal("Back"),b->close()).dimensions(width-84,8,76,20).build());}
  @Override public boolean shouldPause(){return false;}
  private void box(DrawContext c,int x,int y,int w,int h,String label,boolean active,Runnable action){
   Gfx.roundBorder(c,x,y,w,h,5,active?0xff4e3f99:0xff171520,active?0xff818cf8:0xff302b42);
@@ -58,7 +58,7 @@ public final class KeybindManagerScreen extends Screen {
   int[][] codes={{256,290,291,292,293,294,295,296,297,298,299,300,301},{96,49,50,51,52,53,54,55,56,57,48,45,61,259},{258,81,87,69,82,84,89,85,73,79,80,91,93,92},{280,65,83,68,70,71,72,74,75,76,59,39,257},{340,90,88,67,86,66,78,77,44,46,47,344},{341,343,342,32,346,347,345}};
   String[][] labels={{"Esc","F1","F2","F3","F4","F5","F6","F7","F8","F9","F10","F11","F12"},{"`","1","2","3","4","5","6","7","8","9","0","-","=","Bk"},{"Tab","Q","W","E","R","T","Y","U","I","O","P","[","]","\\"},{"Caps","A","S","D","F","G","H","J","K","L",";","'","Enter"},{"LSh","Z","X","C","V","B","N","M",",",".","/","RSh"},{"Ctrl","Win","Alt","Space","Alt","Win","Ctrl"}};
   for(int row=0;row<codes.length;row++){int x=245;for(int col=0;col<codes[row].length;col++){
-   int code=codes[row][col],w=code==32?200:code==340||code==344?60:39;
+   int code=codes[row][col],w=code==32?160:code==340||code==344?52:35;
    var key=InputUtil.Type.KEYSYM.createFromCode(code);
    boolean active=selected!=null&&selected.key().getBoundKeyTranslationKey().equals(key.getTranslationKey());
    box(c,x,30+row*37,w,31,labels[row][col],active,()->assign(key));x+=w+3;

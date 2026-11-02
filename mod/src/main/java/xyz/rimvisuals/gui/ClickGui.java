@@ -78,7 +78,7 @@ public class ClickGui extends Screen {
         profileName.filter = ch -> ch < 128 && (Character.isLetterOrDigit(ch) || ch == '_' || ch == '-');
     }
 
-    public void showCategoryForTest(int index){tab=0;selected=Modules.VIEWMODEL;}
+    public void showCategoryForTest(int index){tab=0;selected=index==4?Modules.VIEWMODEL:null;}
     @Override public boolean shouldPause() { return false; }
     @Override public void removed() { Modules.save(); }
 
