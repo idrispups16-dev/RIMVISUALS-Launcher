@@ -22,7 +22,7 @@ public final class KeybindManagerScreen extends Screen {
  private float scale=1;
  private String status="Select an action, then click a key or Capture";
  public KeybindManagerScreen(Screen parent){super(Text.literal("RIMVISUALS Keybind Manager"));this.parent=parent;}
- @Override protected void init(){search=addDrawableChild(new TextFieldWidget(textRenderer,8,8,Math.max(80,width-100),20,Text.literal("Search actions")));search.setPlaceholder(Text.literal("Search actions"));search.setChangedListener(q->filter());filter();if(selected==null&&!Keybinds.actions().isEmpty())selected=Keybinds.actions().getFirst();if(selected!=null)conflictLabels=Keybinds.conflicts(selected,InputUtil.fromTranslationKey(selected.key().getBoundKeyTranslationKey()));addDrawableChild(ButtonWidget.builder(Text.literal("Back"),b->close()).dimensions(width-84,8,76,20).build());}
+ @Override protected void init(){search=addDrawableChild(new TextFieldWidget(textRenderer,8,8,Math.max(80,width-100),20,Text.literal("Search actions")));search.setPlaceholder(Text.literal("Search actions"));search.setChangedListener(q->filter());filter();if(selected==null&&!Keybinds.actions().isEmpty())selected=Keybinds.actions().getFirst();if(selected!=null)conflictLabels=Keybinds.conflicts(selected,InputUtil.fromTranslationKey(selected.key().getBoundKeyTranslationKey()));addDrawableChild(new RimButton(width-84,8,76,20,Text.literal("Back"),b->close()));}
  @Override public boolean shouldPause(){return false;}
  private void box(DrawContext c,int x,int y,int w,int h,String label,boolean active,Runnable action){
   Gfx.roundBorder(c,x,y,w,h,5,active?0xff4e3f99:0xff171520,active?0xff818cf8:0xff302b42);

@@ -16,8 +16,8 @@ public final class LocalDataScreen extends Screen {
  @Override protected void init(){
   query=addDrawableChild(new TextFieldWidget(textRenderer,12,34,Math.max(60,width/3-18),20,Text.literal("Search")));query.setPlaceholder(Text.literal("Search"));query.setChangedListener(q->filter());
   name=addDrawableChild(new TextFieldWidget(textRenderer,width/3,34,Math.max(50,width*2/3-108),20,Text.literal("Name")));name.setMaxLength(markers?40:16);name.setPlaceholder(Text.literal(markers?"Marker name":"Minecraft name"));
-  addDrawableChild(ButtonWidget.builder(Text.literal("Add"),b->add()).dimensions(width-96,34,84,20).build());
-  addDrawableChild(ButtonWidget.builder(Text.literal("Back"),b->close()).dimensions(width-88,8,76,20).build());refresh();
+  addDrawableChild(new RimButton(width-96,34,84,20,Text.literal("Add"),b->add()));
+  addDrawableChild(new RimButton(width-88,8,76,20,Text.literal("Back"),b->close()));refresh();
  }
  private void refresh(){if(LocalData.store()==null){status=LocalData.error;return;}var list=new ArrayList<Row>();
   if(markers)for(var m:LocalData.store().marks())list.add(new Row(m.id(),m.name()+" | "+Math.round(m.x())+" "+Math.round(m.y())+" "+Math.round(m.z())+" | "+m.dimension()));

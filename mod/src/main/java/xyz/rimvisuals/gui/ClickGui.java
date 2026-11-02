@@ -30,6 +30,7 @@ import java.util.function.DoubleConsumer;
 
 /** RIMVISUALS menu: tabs, search, module cards with settings, color editor, profiles. */
 public class ClickGui extends Screen {
+    private final Screen parentScreen;
     private static final String[] TABS = {"Visuals", "HUD", "Utilities", "Profiles", "Keybinds", "Friends", "Markers"};
     private static final int NONE = Integer.MIN_VALUE;
 
@@ -71,13 +72,17 @@ public class ClickGui extends Screen {
     private float s, fade;
     private int vw, vh, wx, wy, ww, wh, cx, cw, ctop, cbot, cy;
 
-    public ClickGui() {
+    public ClickGui() { this(null); }
+    public ClickGui(Screen parent) {
         super(Text.literal("RIMVISUALS"));
+        parentScreen=parent;
         for (Module m : Modules.ALL) if (!m.toggleable) expanded.add(m);
         search.onChange = () -> {targetScroll = 0;filterKey="";};
         profileName.filter = ch -> ch < 128 && (Character.isLetterOrDigit(ch) || ch == '_' || ch == '-');
     }
 
+    public void editHud(xyz.rimvisuals.core.HudModule m){tab=1;selected=m;colorOpen.add(m.accentColor);detailScroll=0;}
+    @Override public void close(){client.setScreen(parentScreen);}
     public void showCategoryForTest(int index){tab=0;selected=index==4?Modules.VIEWMODEL:null;}
     @Override public boolean shouldPause() { return false; }
     @Override public void removed() { Modules.save(); }

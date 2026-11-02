@@ -36,6 +36,7 @@ public final class Keybinds {
  public static List<String> conflicts(Action action,InputUtil.Key proposed){
   if(proposed.getCode()==GLFW.GLFW_KEY_UNKNOWN)return List.of();
   var out=new ArrayList<String>();
+  if(proposed.getCategory()==InputUtil.Type.KEYSYM&&(proposed.getCode()==GLFW.GLFW_KEY_ESCAPE||proposed.getCode()==GLFW.GLFW_KEY_F3))out.add("Minecraft reserved Escape/debug control");
   for(var key:MinecraftClient.getInstance().options.allKeys)if(key!=action.key&&key.getBoundKeyTranslationKey().equals(proposed.getTranslationKey()))out.add(net.minecraft.text.Text.translatable(key.getId()).getString());
   return out;
  }

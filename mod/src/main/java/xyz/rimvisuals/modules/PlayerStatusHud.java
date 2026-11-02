@@ -10,11 +10,11 @@ public final class PlayerStatusHud extends HudModule {
  public enum Kind {TOTEMS,SATURATION,LOW_HP,TNT}
  public final Kind kind;
  public final Setting.Num threshold=add(new Setting.Num("Health threshold",6,1,20,1));
- private final List<String> lines=new ArrayList<>();private long next;private Object lastWorld;
+ private final List<String> lines=new ArrayList<>();private long next;private int lastWorldId;
  public PlayerStatusHud(String id,String name,Kind kind,int y){super(id,name,"Own-player / loaded-world information; no server or inventory actions",200,y);this.kind=kind;threshold.hidden=kind!=Kind.LOW_HP;enabled=false;}
  public static int countTotems(int main,int off){return Math.max(0,main)+Math.max(0,off);}
  public static double fuseSeconds(int ticks){return Math.max(0,ticks)/20.0;}
- private void refresh(MinecraftClient mc){long now=System.nanoTime();if(now<next&&lastWorld==mc.world)return;lastWorld=mc.world;next=now+100_000_000L;lines.clear();
+ private void refresh(MinecraftClient mc){long now=System.nanoTime();if(now<next&&lastWorldId==System.identityHashCode(mc.world))return;lastWorldId=System.identityHashCode(mc.world);next=now+100_000_000L;lines.clear();
   if(mc.player!=null&&mc.world!=null)switch(kind){
    case TOTEMS->{int count=0;var inventory=mc.player.getInventory();for(int i=0;i<Math.min(36,inventory.size());i++){var st=inventory.getStack(i);if(st.isOf(Items.TOTEM_OF_UNDYING))count+=st.getCount();}var off=mc.player.getOffHandStack();count=countTotems(count,off.isOf(Items.TOTEM_OF_UNDYING)?off.getCount():0);lines.add("Totems: "+count);}
    case SATURATION->{var h=mc.player.getHungerManager();lines.add("Food: "+h.getFoodLevel()+" / 20");lines.add(String.format(Locale.ROOT,"Saturation: %.1f",h.getSaturationLevel()));}
