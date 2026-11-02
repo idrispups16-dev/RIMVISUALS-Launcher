@@ -14,8 +14,8 @@ public final class ServerHelpers {
  private static final EquipmentSlot[] SLOTS={EquipmentSlot.HEAD,EquipmentSlot.CHEST,EquipmentSlot.LEGS,EquipmentSlot.FEET};
  private ServerHelpers(){}
  public static String address(){return address;}
- public static ServerHelper active(){return current!=null&&current.enabled&&HelperData.matches(address,current.ft,current.aliases.value)?current:null;}
- public static void clear(){Modules.HW_HELPER.session.clear();Modules.FT_HELPER.session.clear();address="";current=null;display=List.of();low=false;Arrays.fill(warned,false);tick=0;actionUntil=0;sidebar=Set.of();budgetAt=0;budget=0;auctionMatches=0;}
+ public static ServerHelper active(){return current!=null&&current.enabled?current:null;}
+ public static void clear(){Notifier.clearPrefix("HW Helper:");Notifier.clearPrefix("FT Helper:");Modules.HW_HELPER.session.clear();Modules.FT_HELPER.session.clear();address="";current=null;display=List.of();low=false;Arrays.fill(warned,false);tick=0;actionUntil=0;sidebar=Set.of();budgetAt=0;budget=0;auctionMatches=0;}
  public static void init(){
   net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents.JOIN.register((handler,sender,mc)->clear());
   net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents.DISCONNECT.register((handler,mc)->clear());
@@ -38,13 +38,13 @@ public final class ServerHelpers {
   ServerHelper h=current;long started=PerformanceMonitor.begin();long now=System.nanoTime();Set<String> fresh=new HashSet<>();List<String> lines=new ArrayList<>(12);lines.add(h.name+" • "+HelperData.host(address));
   if(h.scoreboard.value){var board=mc.world.getScoreboard();var objective=board.getObjectiveForSlot(ScoreboardDisplaySlot.SIDEBAR);
    if(objective!=null){String title=HelperData.clean(objective.getDisplayName().getString());fresh.add(title);if(!sidebar.contains(title))receive(title,2);lines.add(title);
-    int count=0,scanned=0;for(var row:board.getScoreboardEntries(objective)){if(scanned++>=15)break;if(row.hidden())continue;String text=HelperData.clean(row.name().getString());fresh.add(text);if(!sidebar.contains(text))receive(text,2);if(count++<4)lines.add(text);}
+    int count=0,scanned=0;for(var row:board.getScoreboardEntries(objective)){if(scanned++>=15)break;if(row.hidden())continue;String text=HelperData.clean(net.minecraft.scoreboard.Team.decorateName(board.getScoreHolderTeam(row.owner()),row.name()).getString());fresh.add(text);if(!sidebar.contains(text))receive(text,2);if(count++<4)lines.add(text);}
    }
   }
   if(h.action.value&&now<actionUntil&&!h.session.action.isEmpty())lines.add(h.session.action);
   if(!h.session.event.isEmpty())lines.add("Event: "+h.session.event);
-  if(h.ft&&!h.session.region.isEmpty())lines.add("Region: "+h.session.region);
-  long seconds=h.session.remaining(now);if(seconds>0)lines.add("Received timer: "+seconds+"s");
+  if(h.ft&&!h.session.region.isEmpty())lines.add("Region (received): "+h.session.region);
+  h.session.timers.values().removeIf(t->t.remaining(now)==0);for(var timer:h.session.timers.values())lines.add(timer.label()+": "+timer.remaining(now)+"s");
   if(h.health.value){float hp=mc.player.getHealth();if(hp<=h.hp.value&&hp>0){lines.add("LOW HP: "+Math.round(hp));if(!low&&h.notifications.value)Notifier.push(h.name+": low HP",0xff5555);low=true;}else if(hp>h.hp.value+2)low=false;}
   else low=false;
   for(int i=0;i<4;i++){var stack=mc.player.getEquippedStack(SLOTS[i]);boolean danger=h.armor.value&&!stack.isEmpty()&&Notifier.lowDurability(stack.getDamage(),stack.getMaxDamage(),h.durability.value);

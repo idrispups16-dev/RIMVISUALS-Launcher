@@ -25,6 +25,8 @@ public final class Notifier {
         return NOTES;
     }
 
+    public static void clearPrefix(String prefix) { NOTES.removeIf(n -> n.text.startsWith(prefix)); }
+
     public static void push(String text, int rgb) {
         var h = Modules.NOTIFICATIONS;
         long now = System.nanoTime();

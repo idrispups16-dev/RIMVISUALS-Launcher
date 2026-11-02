@@ -41,15 +41,21 @@ public final class HelperData {
   }catch(ArithmeticException|NumberFormatException e){return -1;}
  }
  public static final class Session {
-  public String event="",region="",action="",timerSource="";public long until;private String last="";private long lastAt;
-  public void clear(){event=region=action=timerSource=last="";until=lastAt=0;}
+  public record Timer(String label,long until){public long remaining(long now){return Math.max(0,(until-now+999_999_999L)/1_000_000_000L);}}
+  public final java.util.LinkedHashMap<String,Timer> timers=new java.util.LinkedHashMap<>();
+  public String event="",region="",action="",timerSource="";public long until;private final java.util.LinkedHashMap<String,Long> recent=new java.util.LinkedHashMap<>();
+  public void clear(){event=region=action=timerSource="";until=0;timers.clear();recent.clear();}
   public boolean accept(String raw,String eventPrefix,String timerPrefix,String regionPrefix,long now){
    String s=clean(raw);if(s.isEmpty())return false;
-   if(s.equals(last)&&now-lastAt<2_000_000_000L)return false;
-   last=s;lastAt=now;boolean changed=false;
+   Long seen=recent.get(s);if(seen!=null&&now-seen<2_000_000_000L)return false;
+   recent.put(s,now);while(recent.size()>32)recent.remove(recent.keySet().iterator().next());boolean changed=false;
    String e=after(s,eventPrefix);if(!e.isEmpty()&&!e.equals(event)){event=e;changed=true;}
    String r=after(s,regionPrefix);if(!r.isEmpty())region=r;
-   int seconds=seconds(s,timerPrefix);if(seconds>=0){until=now+seconds*1_000_000_000L;timerSource=s;changed=true;}
+   int seconds=seconds(s,timerPrefix);if(seconds>=0){
+    until=now+seconds*1_000_000_000L;timerSource=s;
+    String payload=after(s,timerPrefix);int space=payload.indexOf(' ');String label=space<0?"Received timer":payload.substring(space+1).strip();if(label.isEmpty())label="Received timer";
+    timers.put(label,new Timer(label,until));while(timers.size()>8)timers.remove(timers.keySet().iterator().next());changed=true;
+   }
    return changed;
   }
   public long remaining(long now){return Math.max(0,(until-now+999_999_999L)/1_000_000_000L);}
