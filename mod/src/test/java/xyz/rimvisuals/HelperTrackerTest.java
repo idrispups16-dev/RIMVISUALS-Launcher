@@ -3,6 +3,14 @@ import org.junit.jupiter.api.Test;
 import xyz.rimvisuals.core.HelperTracker;
 import static org.junit.jupiter.api.Assertions.*;
 class HelperTrackerTest {
+ @Test @org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable(named="RIM_API_PROBE",matches="true")
+ void probesActualJavaTransportWithoutFabricatingFallback() throws Exception {
+  var result=xyz.rimvisuals.core.HolyEventsApi.fetch("").get(15,java.util.concurrent.TimeUnit.SECONDS);
+  assertNotNull(result);assertFalse(result.status().isBlank());
+  if(result.status().equals("API OK"))assertTrue(result.events().stream().allMatch(e->!e.name().isBlank()&&!e.server().isBlank()));else assertTrue(result.events().isEmpty());
+  System.out.println("RIM_HW_HTTP_CLIENT: "+result.status()+", received="+result.events().size());
+ }
+ @Test void parsesActualPublicSnapshot() throws Exception {try(var in=getClass().getResourceAsStream("/helpers/hw-events-public-2026-11-02.json")){assertNotNull(in);String json=new String(in.readAllBytes(),java.nio.charset.StandardCharsets.UTF_8);var root=com.google.gson.JsonParser.parseString(json).getAsJsonObject();int count=0;for(var e:root.entrySet())count+=e.getValue().getAsJsonArray().size();var events=HelperTracker.api(json,1000);assertEquals(count,events.size());assertFalse(events.isEmpty());assertTrue(events.stream().allMatch(e->e.start()==0&&e.end()==0&&e.coordinates().isEmpty()));}}
  @Test void parsesPublishedWireShapeWithoutInventingTimes(){var list=HelperTracker.api("{\"LITE_ANARCHY_1\":[{\"instanceId\":\"i1\",\"id\":\"cube\",\"metadata\":{\"displayName\":\"Куб\",\"rare\":\"epic\"}}]}",1000);assertEquals(1,list.size());var e=list.getFirst();assertEquals("Куб",e.name());assertEquals(HelperTracker.State.ACTIVE,e.state());assertEquals(0,e.start());assertEquals(0,e.end());assertEquals("time unknown",e.countdown(1000));assertEquals("",e.coordinates());}
  @Test void malformedApiCannotCreateEvents(){assertThrows(RuntimeException.class,()->HelperTracker.api("oops",0));assertThrows(RuntimeException.class,()->HelperTracker.api("[]",0));assertThrows(RuntimeException.class,()->HelperTracker.api("x".repeat(262145),0));assertTrue(HelperTracker.api("{}",0).isEmpty());assertThrows(RuntimeException.class,()->HelperTracker.api("{\"error\":\"bad\"}",0));assertTrue(HelperTracker.api("{\"x\":[{},null,42]}",0).isEmpty());}
  @Test void messageTimesAndCoordinatesAreReceivedOnly(){var t=new HelperTracker();assertFalse(t.message("unrelated chat","Вулкан","s",1000));assertTrue(t.message("Вулкан начнется через 2 мин 10 сек анархия #12 координаты: 100 64 -50","Вулкан","s",1000));var e=t.events.values().iterator().next();assertEquals(HelperTracker.State.UPCOMING,e.state());assertEquals(131000,e.start());assertEquals("Anarchy #12",e.server());assertEquals("100 64 -50",e.coordinates());assertFalse(t.message("Вулкан начнется через 2 мин 10 сек анархия #12 координаты: 100 64 -50","Вулкан","s",1500));}
