@@ -21,7 +21,9 @@
     "ClientPlayNetworkHandlerMixin",
     "ClientWorldMixin",
     "WorldRendererMixin",
-    "ChatScreenAccessor"
+    "ChatScreenAccessor",
+    "ItemGuiOpacityMixin",
+    "GuiItemOpacityMixin"
   ],
   "injectors": {
     "defaultRequire": 1

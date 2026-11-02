@@ -11,8 +11,12 @@ public final class Gfx {
 
     /** Applies the current HUD element opacity to an ARGB colour. */
     public static int ha(int argb) {
-        if (hudAlpha >= 1f) return argb;
-        int a = Math.round((argb >>> 24) * Math.max(0f, hudAlpha));
+        return multiplyAlpha(argb,hudAlpha);
+    }
+
+    public static int multiplyAlpha(int argb,float opacity) {
+        if (opacity >= 1f) return argb;
+        int a = Math.round((argb >>> 24) * Math.max(0f, opacity));
         return (a << 24) | (argb & 0xFFFFFF);
     }
 

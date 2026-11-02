@@ -21,10 +21,11 @@ independently of the grid. Elements fit to the viewport without overwriting the 
 positions are clamped on drawing and dragging. Toolbar wraps on narrow screens.
 
 All 13 HUDs participate in snapshot/CFG/JSON/backup, including custom accent, scale and opacity.
-**Known rendering limit:** the shared opacity multiplier affects panel geometry and text;
-Minecraft's queued item icons (Armor/Inventory/Cooldowns) still use vanilla opaque item drawing.
-Do not describe this as verified whole-element icon transparency. Interactive dragging, icon
-appearance, overlap and resizing need the Windows world checks below.
+Opacity now accompanies deferred vanilla item-atlas submissions for Armor/Inventory/Cooldowns,
+without creating extra framebuffers or rerendering the item model. Inventory counts and durability
+bars use the same alpha-aware helpers. Custom oversized/special item renderers and third-party GUI
+renderer replacements are not certified by startup/mixin tests. Interactive dragging, item opacity,
+overlap and resizing still need the Windows world checks below.
 
 ## Work removed or bounded
 
@@ -70,7 +71,8 @@ NaN/infinite numeric input is ignored. Backups retain ten snapshots.
 GitHub Actions runs Gradle build/JUnit, a bounded xvfb client startup, mixin audit and ClickGUI
 rendering. HUD tests serialize every registered HUD and a full module snapshot through real disk
 CFG, JSON and backup. They compare restored values, including Viewmodel/Swing/preset values.
-Smoke checks exercise viewmodel/swing matrices and chat-editor entry/return. These checks do not
+Smoke checks exercise viewmodel/swing matrices and HUD toolbar initialization/close. Vanilla
+ChatScreen requires an in-world player; actual chat draft/focus return remains a Windows world check. These checks do not
 load a gameplay world or measure FPS. Local Gradle was attempted but the environment denied a
 network socket during Loom initialization; authoritative build results come from GitHub runners.
 
@@ -90,7 +92,7 @@ off because profiling itself has a cost. No network credentials or tokens are ne
 HUD: type a draft in chat, click HUD Editor, drag every enabled element, wheel/Shift-wheel,
 right-click one element, toggle grid and use every alignment button. Test 1920x1080 and a narrow
 window, different Minecraft GUI scales, then restart and compare layout/colours/opacity. Confirm
-normal chat typing after return. Check item-icon opacity separately against the known limitation.
+normal chat typing after return. Check item-icon opacity separately, including enchanted items and third-party resource packs.
 
 CFG: Create, Save/replace Cancel and Confirm, Copy, Rename Cancel and Confirm, Export/Import,
 Delete Cancel and Confirm, Backup/Restore and restart. Bind a PvP profile to a test server,
