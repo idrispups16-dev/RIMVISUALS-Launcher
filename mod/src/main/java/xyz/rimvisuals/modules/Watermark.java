@@ -17,10 +17,10 @@ public final class Watermark extends HudModule {
     @Override public int height(MinecraftClient mc) { return 16; }
 
     @Override public void draw(DrawContext c, MinecraftClient mc, int x, int y) {
-        int w = width(mc), h = height(mc), acc = Theme.accent();
+        int w = width(mc), h = height(mc), acc = accent();
         Gfx.round(c, x, y, w, h, 8, Gfx.withAlpha(0x08080F, (float) opacity.value));
         int tx = x + 6;
         if (star.value) { Gfx.star(c, x + 11, y + h / 2, 4, acc); tx += 14; }
-        c.drawTextWithShadow(mc.textRenderer, "RIMVISUALS", tx, y + 4, Theme.text());
+        Gfx.text(c, mc.textRenderer, "RIMVISUALS", tx, y + 4, Theme.text());
     }
 }

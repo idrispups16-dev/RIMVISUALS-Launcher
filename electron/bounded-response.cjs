@@ -1,0 +1,2 @@
+async function readLimited(response,limit){const length=response.headers?.get('content-length');if(length&&(!Number.isFinite(Number(length))||Number(length)>limit))throw Error('Download exceeds size limit');if(!response.body){const b=Buffer.from(await response.arrayBuffer());if(b.length>limit)throw Error('Download exceeds size limit');return b;}let n=0;const chunks=[];for await(const chunk of response.body){n+=chunk.length;if(n>limit)throw Error('Download exceeds size limit');chunks.push(Buffer.from(chunk));}return Buffer.concat(chunks,n);}
+module.exports={readLimited};

@@ -9,30 +9,37 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961
         with:
           distribution: temurin
           java-version: '21'
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@ed408507eac070d1f99cc633dbcf757c94c7933a
         with:
           gradle-version: '9.2.1'
+      - name: Probe public HolyWorld API (record availability)
+        run: python mod/tools/probe_hw_api.py
       - run: gradle -p mod build --stacktrace
+        env:
+          RIM_API_PROBE: 'true'
       - name: Minecraft startup and GUI smoke test
         run: |
           set -o pipefail
           timeout 240s xvfb-run -a gradle -p mod runClient -PrimSmoke --stacktrace 2>&1 | tee smoke.log
           grep -q 'RIMVISUALS_SMOKE_OK' smoke.log
-      - uses: actions/upload-artifact@v4
+          grep -q 'RIM_CONFIG_OK' smoke.log
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
         with:
           name: RIMVISUALS-Fabric-1.21.11
           path: mod/build/libs/rimvisuals-*.jar
           if-no-files-found: error
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
         if: always()
         with:
           name: RIMVISUALS-Test-Logs
           path: |
+            hw-api-*.json
             smoke.log
             mod/build/test-results/test/*.xml
             mod/run/logs/latest.log
+            mod/run/screenshots/*.png

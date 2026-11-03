@@ -13,6 +13,13 @@ public abstract class Setting {
     public abstract String save();
     public abstract void load(String s);
 
+    public static final class Text extends Setting {
+        public String value;
+        public Text(String name,String value){super(name);this.value=HelperData.clean(value);}
+        @Override public String save(){return value;}
+        @Override public void load(String s){value=HelperData.clean(s);}
+    }
+
     public static final class Bool extends Setting {
         public boolean value;
         public Bool(String name, boolean value) { super(name); this.value = value; }
@@ -27,6 +34,7 @@ public abstract class Setting {
             super(name); this.min = min; this.max = max; this.step = step; this.value = value;
         }
         public void set(double v) {
+            if (!Double.isFinite(v)) return;
             v = Math.max(min, Math.min(max, v));
             if (step > 0) v = Math.round(v / step) * step;
             value = Math.max(min, Math.min(max, v));

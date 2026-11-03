@@ -28,3 +28,14 @@ dependencies { testImplementation 'org.junit.jupiter:junit-jupiter:5.11.4'; test
 test { useJUnitPlatform() }
 
 if (project.hasProperty('rimSmoke')) { loom { runs { client { vmArg '-Drimvisuals.smoke=true' } } } }
+
+// Normalize archive metadata; distribution uses one authoritative tested JAR.
+tasks.withType(org.gradle.api.tasks.bundling.AbstractArchiveTask).configureEach {
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+}
+
+// Keep concise bytecode hook diagnostics visible when Minecraft mappings change.
+test { testLogging { showStandardStreams = true } }
+
+test { systemProperty 'junit.jupiter.extensions.autodetection.enabled', 'true' }

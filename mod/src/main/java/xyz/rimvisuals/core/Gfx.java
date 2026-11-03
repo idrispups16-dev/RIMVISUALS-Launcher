@@ -6,6 +6,28 @@ import net.minecraft.client.gui.DrawContext;
 public final class Gfx {
     private Gfx() {}
 
+    /** Per-element HUD opacity multiplier; set by RimHud around each element and always restored to 1. */
+    public static float hudAlpha = 1f;
+
+    /** Applies the current HUD element opacity to an ARGB colour. */
+    public static int ha(int argb) {
+        return multiplyAlpha(argb,hudAlpha);
+    }
+
+    public static int multiplyAlpha(int argb,float opacity) {
+        if (opacity >= 1f) return argb;
+        int a = Math.round((argb >>> 24) * Math.max(0f, opacity));
+        return (a << 24) | (argb & 0xFFFFFF);
+    }
+
+    public static void fill(DrawContext c, int x1, int y1, int x2, int y2, int color) { c.fill(x1, y1, x2, y2, ha(color)); }
+
+    public static void text(DrawContext c, net.minecraft.client.font.TextRenderer tr, String s, int x, int y, int color) {
+        int col = ha(color);
+        if ((col >>> 24) < 4) return; // fully transparent text would otherwise render opaque
+        c.drawTextWithShadow(tr, s, x, y, col);
+    }
+
     public static int alpha(int argb, float f) {
         int a = argb >>> 24;
         if (a == 0) return argb;
@@ -29,6 +51,7 @@ public final class Gfx {
 
     public static void round(DrawContext c, int x, int y, int w, int h, int r, int color) {
         if (w <= 0 || h <= 0) return;
+        color = ha(color);
         r = Math.min(r, Math.min(w, h) / 2);
         if (r <= 0) { c.fill(x, y, x + w, y + h, color); return; }
         for (int i = 0; i < r; i++) {
@@ -54,6 +77,7 @@ public final class Gfx {
 
     /** Four-point star used as the RIMVISUALS mark. */
     public static void star(DrawContext c, int cx, int cy, int r, int color) {
+        color = ha(color);
         for (int d = -r; d <= r; d++) {
             float t = 1f - Math.abs(d) / (float) r;
             int hw = Math.round(r * t * t * t);
