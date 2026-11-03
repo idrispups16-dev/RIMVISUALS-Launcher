@@ -15,6 +15,7 @@ public final class RimHud {
     public static int clampY(HudModule m, int vh, int h) { return Math.max(0, Math.min((int) m.posY.value, Math.max(0, vh - h))); }
 
     public static void render(DrawContext ctx, RenderTickCounter tick) {
+        if (!xyz.rimvisuals.auth.DeviceAuth.INSTANCE.active()) return;
         MinecraftClient mc = MinecraftClient.getInstance();
         if (mc.player == null || mc.options.hudHidden) return;
         int w = ctx.getScaledWindowWidth(), h = ctx.getScaledWindowHeight();

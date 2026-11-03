@@ -21,20 +21,30 @@ import xyz.rimvisuals.gui.ClickGui;
 
 public class RimVisualsClient implements ClientModInitializer {
     public static KeyBinding menuKey;
+    private boolean accountPromptShown;
 
     @Override
     public void onInitializeClient() {
+        xyz.rimvisuals.auth.DeviceAuth.INSTANCE.init();
         Modules.load();
         LauncherSettings.load();
         menuKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
                 "key.rimvisuals.menu", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_RIGHT_SHIFT, KeyBinding.Category.MISC));
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             SmokeTest.tick(client);
+            var auth=xyz.rimvisuals.auth.DeviceAuth.INSTANCE;
+            if (!Boolean.getBoolean("rimvisuals.smoke") && client.getOverlay()==null) {
+                if (!accountPromptShown && client.currentScreen instanceof TitleScreen && !auth.active()) {
+                    accountPromptShown=true; client.setScreen(new xyz.rimvisuals.gui.AccountScreen(client.currentScreen));
+                }
+                if (!auth.active() && (client.currentScreen instanceof ClickGui || client.currentScreen instanceof xyz.rimvisuals.gui.HudEditorScreen))
+                    client.setScreen(new xyz.rimvisuals.gui.AccountScreen(null));
+            }
             Modules.PERFORMANCE.applyPreset();
             Modules.VIEWMODEL.presets();
             LauncherSettings.tick();
             while (menuKey.wasPressed()) {
-                if (client.currentScreen == null) client.setScreen(new ClickGui());
+                if (client.currentScreen == null) client.setScreen(xyz.rimvisuals.auth.DeviceAuth.INSTANCE.active()?new ClickGui():new xyz.rimvisuals.gui.AccountScreen(client.currentScreen));
             }
         });
         HudRenderCallback.EVENT.register(RimHud::render);
@@ -48,5 +58,7 @@ public class RimVisualsClient implements ClientModInitializer {
         boolean mob = RimPlatform.mobile();
         Screens.getButtons(screen).add(ButtonWidget.builder(Text.literal("RIMVISUALS"), b -> client.setScreen(new ClickGui()))
                 .dimensions(6, 6, mob ? 110 : 84, mob ? 26 : 20).build());
+        Screens.getButtons(screen).add(ButtonWidget.builder(Text.literal("Account"), b -> client.setScreen(new xyz.rimvisuals.gui.AccountScreen(screen)))
+                .dimensions(6, mob?36:30, mob?110:84, mob?26:20).build());
     }
 }
