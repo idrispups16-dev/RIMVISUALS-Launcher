@@ -24,5 +24,7 @@ public final class InterfaceModule extends Module {
     public final Setting.Color background=add(new Setting.Color("Panel background",0x0e0b18));
     public final Setting.Color secondary=add(new Setting.Color("Gradient accent",0x3b82f6));
     public final Setting.Num gridSnap=add(new Setting.Num("HUD grid snap",0,0,32,2));
+    public final Setting.Bool compactSidebar=add(new Setting.Bool("Compact sidebar",false));
+    public final Setting.Mode menuLayout=add(new Setting.Mode("Module columns",0,"Three","Two","One"));
     public float animSpeed() { return (float) animationSpeed.value; }
 }

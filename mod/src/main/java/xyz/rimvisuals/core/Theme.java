@@ -2,11 +2,11 @@ package xyz.rimvisuals.core;
 
 /** Interface themes. Index matches InterfaceModule.theme: Violet, Blue, Midnight, Custom. */
 public final class Theme {
-    private static final int[] ACC = {0xFFA855F7, 0xFF3B82F6, 0xFF6366F1};
-    private static final int[] ACC2 = {0xFF3B82F6, 0xFF8B5CF6, 0xFFA855F7};
+    private static final int[] ACC = {0xFFA78BEF, 0xFF3B82F6, 0xFF6366F1};
+    private static final int[] ACC2 = {0xFFC4A9FF, 0xFF8B5CF6, 0xFFA855F7};
     private static final int[] BG = {0xF006060C, 0xF0050810, 0xF0030309, 0xF006060C};
     private static final int[] PANEL = {0xF00E0B18, 0xF00A1020, 0xF0090912, 0xF00E0B18};
-    private static final int[] CARD = {0xFF171326, 0xFF121A30, 0xFF14142A, 0xFF171326};
+    private static final int[] CARD = {0xFF202027, 0xFF121A30, 0xFF17171F, 0xFF202027};
 
     private Theme() {}
 
