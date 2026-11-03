@@ -16,7 +16,7 @@ public final class CrystalScale extends Module {
 
     /** Final model scale for a crystal that has existed for {@code ageTicks}. */
     public float factor(float ageTicks) {
-        if (!enabled) return 1f;
+        if (!isActive()) return 1f;
         boolean still = xyz.rimvisuals.core.Modules.PERFORMANCE.reducedMotion.value;
         float grow = still ? 1f : ScaleMath.growIn(ageTicks, (float) growIn.value);
         return (float) scale.value * grow;

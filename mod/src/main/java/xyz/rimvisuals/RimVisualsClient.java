@@ -22,10 +22,14 @@ import xyz.rimvisuals.gui.ClickGui;
 public class RimVisualsClient implements ClientModInitializer {
     public static KeyBinding menuKey, monitorKey;
     private int diagnosticTicks;
+    private boolean accountPromptShown;
 
     @Override
     public void onInitializeClient() {
         xyz.rimvisuals.core.ClientCompatibility.init();
+        boolean devSmoke=net.fabricmc.loader.api.FabricLoader.getInstance().isDevelopmentEnvironment()&&Boolean.getBoolean("rimvisuals.smoke");
+        xyz.rimvisuals.auth.AccessGate.configure(devSmoke?()->true:xyz.rimvisuals.auth.DeviceAuth.INSTANCE::active);
+        if(!devSmoke)xyz.rimvisuals.auth.DeviceAuth.INSTANCE.init();
         Modules.load();
         LauncherSettings.load();
         xyz.rimvisuals.core.CombatEvents.init();
@@ -53,6 +57,12 @@ public class RimVisualsClient implements ClientModInitializer {
             xyz.rimvisuals.core.Notifier.tick(client);
             xyz.rimvisuals.core.Keybinds.tick(client);
             SmokeTest.tick(client);
+            if(!devSmoke&&client.getOverlay()==null){
+                if(!accountPromptShown&&client.currentScreen instanceof TitleScreen&&!xyz.rimvisuals.auth.AccessGate.allowed()){
+                    accountPromptShown=true;client.setScreen(new xyz.rimvisuals.gui.AccountScreen(client.currentScreen));
+                }
+                if(!xyz.rimvisuals.auth.AccessGate.allowed()&&(client.currentScreen instanceof ClickGui||client.currentScreen instanceof xyz.rimvisuals.gui.HudEditorScreen))client.setScreen(new xyz.rimvisuals.gui.AccountScreen(null));
+            }
             xyz.rimvisuals.core.CombatEvents.tick(client);
             xyz.rimvisuals.core.RimOverlays.tick();
             xyz.rimvisuals.core.Trails.tick(client);
@@ -69,9 +79,10 @@ public class RimVisualsClient implements ClientModInitializer {
         ClientLifecycleEvents.CLIENT_STOPPING.register(client -> Modules.save());
     }
 
-    public static void openMenu(MinecraftClient client) { client.setScreen(new ClickGui()); }
+    public static void openMenu(MinecraftClient client) { client.setScreen(xyz.rimvisuals.auth.AccessGate.allowed()?new ClickGui():new xyz.rimvisuals.gui.AccountScreen(client.currentScreen)); }
 
     public static void openHudFromChat(MinecraftClient client, Screen screen) {
+        if(!xyz.rimvisuals.auth.AccessGate.allowed()){client.setScreen(new xyz.rimvisuals.gui.AccountScreen(screen));return;}
         var field = ((xyz.rimvisuals.mixin.ChatScreenAccessor) screen).rimChatField();
         String draft = field.getText();
         client.setScreen(new xyz.rimvisuals.gui.HudEditorScreen(screen, () -> {
@@ -92,7 +103,8 @@ public class RimVisualsClient implements ClientModInitializer {
             return;
         }
         if (!(screen instanceof TitleScreen) && !(screen instanceof GameMenuScreen)) return;
-        Screens.getButtons(screen).add(ButtonWidget.builder(Text.literal("RIMVISUALS"), b -> client.setScreen(new ClickGui()))
+        Screens.getButtons(screen).add(ButtonWidget.builder(Text.literal("RIMVISUALS"), b -> openMenu(client))
                 .dimensions(6, 6, mob ? 110 : 84, mob ? 26 : 20).build());
+        Screens.getButtons(screen).add(ButtonWidget.builder(Text.literal("Account"),b->client.setScreen(new xyz.rimvisuals.gui.AccountScreen(screen))).dimensions(6,mob?36:30,mob?110:84,mob?26:20).build());
     }
 }

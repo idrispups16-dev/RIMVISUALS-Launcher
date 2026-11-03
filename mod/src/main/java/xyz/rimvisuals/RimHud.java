@@ -39,16 +39,17 @@ public final class RimHud {
     public static int clampY(HudModule m, int vh, int h) { return Math.max(0, Math.min((int) m.posY.value, Math.max(0, vh - h))); }
 
     public static void render(DrawContext ctx, RenderTickCounter tick) {
+        if(!xyz.rimvisuals.auth.AccessGate.allowed())return;
         MinecraftClient mc = MinecraftClient.getInstance();
         if (mc.player == null || mc.options.hudHidden) return;
         if(Modules.PERFORMANCE.diagnostics.value)xyz.rimvisuals.core.FrameTimes.record(System.nanoTime());
         int w = ctx.getScaledWindowWidth(), h = ctx.getScaledWindowHeight();
         long total=PerformanceMonitor.begin();
-        if (Modules.PULSE.enabled && !Modules.PERFORMANCE.safe.value) {long t=PerformanceMonitor.begin();Modules.PULSE.render(ctx,w,h);PerformanceMonitor.end("Pulse Glow",t);}
-        if (Modules.PARTICLES.enabled && Modules.PARTICLES.overlay.value && !Modules.PERFORMANCE.safe.value) {long t=PerformanceMonitor.begin();Modules.PARTICLES.drawOverlay(ctx,w,h);PerformanceMonitor.end("Particles",t);}
-        if (Modules.DAMAGE_TINT.enabled) {long t=PerformanceMonitor.begin();Modules.DAMAGE_TINT.draw(ctx,mc,w,h);PerformanceMonitor.end("Damage Tint",t);}
-        if (Modules.GOLDEN_APPLE_GLOW.enabled) {long t=PerformanceMonitor.begin();Modules.GOLDEN_APPLE_GLOW.draw(ctx,mc,w,h);PerformanceMonitor.end("Golden Apple Glow",t);}
-        if (Modules.HIT_MARKER.enabled && mc.currentScreen == null) {long t=PerformanceMonitor.begin();Modules.HIT_MARKER.draw(ctx,w,h);PerformanceMonitor.end("Hit Marker",t);}
+        if (Modules.PULSE.isActive() && !Modules.PERFORMANCE.safe.value) {long t=PerformanceMonitor.begin();Modules.PULSE.render(ctx,w,h);PerformanceMonitor.end("Pulse Glow",t);}
+        if (Modules.PARTICLES.isActive() && Modules.PARTICLES.overlay.value && !Modules.PERFORMANCE.safe.value) {long t=PerformanceMonitor.begin();Modules.PARTICLES.drawOverlay(ctx,w,h);PerformanceMonitor.end("Particles",t);}
+        if (Modules.DAMAGE_TINT.isActive()) {long t=PerformanceMonitor.begin();Modules.DAMAGE_TINT.draw(ctx,mc,w,h);PerformanceMonitor.end("Damage Tint",t);}
+        if (Modules.GOLDEN_APPLE_GLOW.isActive()) {long t=PerformanceMonitor.begin();Modules.GOLDEN_APPLE_GLOW.draw(ctx,mc,w,h);PerformanceMonitor.end("Golden Apple Glow",t);}
+        if (Modules.HIT_MARKER.isActive() && mc.currentScreen == null) {long t=PerformanceMonitor.begin();Modules.HIT_MARKER.draw(ctx,w,h);PerformanceMonitor.end("Hit Marker",t);}
         if (mc.currentScreen instanceof HudEditorScreen) {PerformanceMonitor.end("HUD overlays",total);return;}
         float hs = (float) Modules.UI.hudScale.value;
         int vw = Math.round(w / hs), vh = Math.round(h / hs);

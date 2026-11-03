@@ -13,7 +13,7 @@ public class WeatherRenderingMixin {
     @Redirect(method = "renderPieces", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/math/ColorHelper;getWhite(F)I"))
     private int rimWeather(float alpha) {
         var m = Modules.WEATHER_COLOR;
-        int white = ColorHelper.getWhite(m.enabled ? alpha * (float) m.opacity.value : alpha);
-        return m.enabled ? WorldColors.tint(white, m.color.rgb, m.strength.value) : white;
+        int white = ColorHelper.getWhite(m.isActive() ? alpha * (float) m.opacity.value : alpha);
+        return m.isActive() ? WorldColors.tint(white, m.color.rgb, m.strength.value) : white;
     }
 }

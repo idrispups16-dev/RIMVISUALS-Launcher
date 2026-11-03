@@ -10,5 +10,5 @@ import xyz.rimvisuals.core.Modules;
 @Mixin(InGameHud.class)
 public class InGameHudMixin {
  @Inject(method="renderCrosshair",at=@At("HEAD"),cancellable=true)
- private void rimCrosshair(DrawContext c,RenderTickCounter tick,CallbackInfo ci){var mc=MinecraftClient.getInstance();if(!Modules.CROSSHAIR.enabled||!mc.options.getPerspective().isFirstPerson()||mc.player==null||mc.player.isSpectator())return;Modules.CROSSHAIR.draw(c,c.getScaledWindowWidth(),c.getScaledWindowHeight());ci.cancel();}
+ private void rimCrosshair(DrawContext c,RenderTickCounter tick,CallbackInfo ci){var mc=MinecraftClient.getInstance();if(!Modules.CROSSHAIR.isActive()||!mc.options.getPerspective().isFirstPerson()||mc.player==null||mc.player.isSpectator())return;Modules.CROSSHAIR.draw(c,c.getScaledWindowWidth(),c.getScaledWindowHeight());ci.cancel();}
 }

@@ -17,7 +17,7 @@ public final class TotemScale extends Module {
 
     /** Multiplier applied on top of the vanilla 0.8 scale; {@code progress} is 0..1 through the 40-tick animation. */
     public float factor(float progress) {
-        if (!enabled) return 1f;
+        if (!isActive()) return 1f;
         float shrink = shrinkOut.value && !xyz.rimvisuals.core.Modules.PERFORMANCE.reducedMotion.value
                 ? ScaleMath.shrinkOut(progress, (float) shrinkStart.value, 0f) : 1f;
         return (float) scale.value * shrink;

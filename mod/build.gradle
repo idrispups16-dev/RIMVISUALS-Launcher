@@ -37,3 +37,5 @@ tasks.withType(org.gradle.api.tasks.bundling.AbstractArchiveTask).configureEach 
 
 // Keep concise bytecode hook diagnostics visible when Minecraft mappings change.
 test { testLogging { showStandardStreams = true } }
+
+test { systemProperty 'junit.jupiter.extensions.autodetection.enabled', 'true' }

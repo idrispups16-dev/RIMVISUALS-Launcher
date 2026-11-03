@@ -14,7 +14,7 @@ public final class ServerHelpers {
  private static final EquipmentSlot[] SLOTS={EquipmentSlot.HEAD,EquipmentSlot.CHEST,EquipmentSlot.LEGS,EquipmentSlot.FEET};
  private ServerHelpers(){}
  public static String address(){return address;}
- public static ServerHelper active(){return current!=null&&current.enabled?current:null;}
+ public static ServerHelper active(){return current!=null&&current.isActive()?current:null;}
  public static void clear(){HelperRuntime.clear();Notifier.clearPrefix("HW Helper:");Notifier.clearPrefix("FT Helper:");Modules.HW_HELPER.session.clear();Modules.FT_HELPER.session.clear();address="";current=null;display=List.of();low=false;Arrays.fill(warned,false);tick=0;actionUntil=0;sidebar=Set.of();budgetAt=0;budget=0;auctionMatches=0;}
  public static void init(){
   HelperRuntime.init();
@@ -34,7 +34,7 @@ public final class ServerHelpers {
  /** Selects only the matching enabled helper; never initiates a connection. */
  public static void updateConnection(String connected){
   if(connected==null)connected="";
-  ServerHelper next=Modules.HW_HELPER.enabled&&HelperData.matches(connected,false,Modules.HW_HELPER.aliases.value)?Modules.HW_HELPER:Modules.FT_HELPER.enabled&&HelperData.matches(connected,true,Modules.FT_HELPER.aliases.value)?Modules.FT_HELPER:null;
+  ServerHelper next=Modules.HW_HELPER.isActive()&&HelperData.matches(connected,false,Modules.HW_HELPER.aliases.value)?Modules.HW_HELPER:Modules.FT_HELPER.isActive()&&HelperData.matches(connected,true,Modules.FT_HELPER.aliases.value)?Modules.FT_HELPER:null;
   if(!connected.equals(address)||next!=current){clear();address=connected;current=next;}
  }
  public static void tick(MinecraftClient mc){

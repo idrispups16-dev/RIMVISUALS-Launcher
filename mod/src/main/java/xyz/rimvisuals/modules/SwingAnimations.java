@@ -10,7 +10,7 @@ public final class SwingAnimations extends Module {
  public final Setting.Num duration=add(new Setting.Num("Visual duration multiplier",1,.25,3,.05));
  public final Setting.Mode easing=add(new Setting.Mode("Easing",1,"Linear","Smoothstep","Sine"));
  public SwingAnimations(){super("swing","Swing Animations","Adds submission-time swing transforms; attack timing unchanged. Reduced Motion disables this.",Category.SWING);enabled=false;}
- public boolean apply(MatrixStack m,int sign,float progress,boolean mainHand){if(!enabled||style.index==0||xyz.rimvisuals.core.Modules.PERFORMANCE.reducedMotion.value)return false;
+ public boolean apply(MatrixStack m,int sign,float progress,boolean mainHand){if(!isActive()||style.index==0||xyz.rimvisuals.core.Modules.PERFORMANCE.reducedMotion.value)return false;
   long start=xyz.rimvisuals.core.PerformanceMonitor.begin();try{float wave=(float)xyz.rimvisuals.core.VisualMath.envelope(progress,(mainHand?mainSpeed.value:offSpeed.value)/duration.value,easing.index,intensity.value),a=(float)angle.value*wave*sign,o=(float)offset.value*wave;
   switch(style.index){case 1->m.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(-a*.5f));case 2->{m.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(a));m.multiply(RotationAxis.POSITIVE_X.rotationDegrees(-a));}case 3->m.translate(-sign*o,0,0);case 4->m.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(360*wave*sign));case 5->{m.translate(sign*o,0,0);m.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(-a));}case 6->m.translate(0,0,-o);case 7->m.multiply(RotationAxis.POSITIVE_X.rotationDegrees(a));case 8->m.multiply(RotationAxis.POSITIVE_X.rotationDegrees(-a*.1f));case 9->{m.translate(sign*o,-o*.5f,-o);m.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(a));}}
   return true;

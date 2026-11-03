@@ -12,5 +12,5 @@ public final class HurtCamera extends Module {
         enabled = false;
     }
 
-    public double scale() { return enabled ? strength.value / 100.0 : 1.0; }
+    public double scale() { return isActive() ? strength.value / 100.0 : 1.0; }
 }

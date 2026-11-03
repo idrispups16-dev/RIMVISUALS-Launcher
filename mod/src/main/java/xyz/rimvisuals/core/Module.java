@@ -18,6 +18,7 @@ public class Module {
 
     private static final java.util.Set<String> SAFE_SUPPRESSED=java.util.Set.of("china_hat","block_overlay","anchor_fade","hand_glow","entity_outline","target_highlight","damage_particles","hit_particles","critical_particles","crit_particles","sharpness_particles","kill_effects","pearl_trails","projectile_trails","sword_trails","explosion_effects","particles","pulse_glow");
     private static final java.util.Set<String> COMBAT_PARTICLES=java.util.Set.of("damage_particles","hit_particles","crit_particles","sharpness_particles","kill_effects","pearl_trails","projectile_trails","sword_trails","explosion_effects");
+    public boolean isActive(){return enabled && xyz.rimvisuals.auth.AccessGate.allowed();}
     public String suppressionReason(){
         if(!enabled)return "";
         if(id.equals("swing")&&Modules.PERFORMANCE.reducedMotion.value)return "REDUCED MOTION";

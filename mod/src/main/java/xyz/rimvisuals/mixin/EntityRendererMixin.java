@@ -19,7 +19,7 @@ public class EntityRendererMixin {
         if (!entity.isGlowing()) {
             int t = Modules.TARGET_HIGHLIGHT.colorFor(entity, mc);
             if (t != -1) return t;
-            if (o.enabled && o.selects(entity, mc.player)) return o.color.rgb;
+            if (o.isActive() && o.selects(entity, mc.player)) return o.color.rgb;
         }
         return entity.getTeamColorValue();
     }

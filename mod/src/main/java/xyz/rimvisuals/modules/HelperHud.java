@@ -8,7 +8,7 @@ public final class HelperHud extends HudModule {
  public enum Kind{EVENTS,COOLDOWNS,REGIONS,NOTIFICATIONS}
  public final ServerHelper helper;public final Kind kind;
  public HelperHud(ServerHelper helper,Kind kind,int y){super(helper.id+"_"+kind.name().toLowerCase(java.util.Locale.ROOT),helper.name+" "+kind,"Gameplay settings: Utilities > HW/FT Settings",460,y);this.helper=helper;this.kind=kind;}
- @Override public boolean visible(){return enabled&&(MinecraftClient.getInstance().currentScreen instanceof xyz.rimvisuals.gui.HudEditorScreen||ServerHelpers.active()==helper&&(kind!=Kind.EVENTS||helper.events.value)&&(kind!=Kind.COOLDOWNS||helper.cooldowns.value)&&(kind!=Kind.NOTIFICATIONS||helper.notifications.value&&!HelperRuntime.notice().isEmpty()));}
+ @Override public boolean visible(){return isActive()&&(MinecraftClient.getInstance().currentScreen instanceof xyz.rimvisuals.gui.HudEditorScreen||ServerHelpers.active()==helper&&(kind!=Kind.EVENTS||helper.events.value)&&(kind!=Kind.COOLDOWNS||helper.cooldowns.value)&&(kind!=Kind.NOTIFICATIONS||helper.notifications.value&&!HelperRuntime.notice().isEmpty()));}
  private List<String> lines(){return switch(kind){case EVENTS->HelperRuntime.eventRows();case REGIONS->HelperRuntime.regionRows();case NOTIFICATIONS->HelperRuntime.noticeLines();case COOLDOWNS->List.of();};}
  @Override public int width(MinecraftClient mc){return 260;}
  @Override public int height(MinecraftClient mc){return kind==Kind.COOLDOWNS?24+Math.max(1,HelperRuntime.cooldownRows().size())*24:24+Math.max(1,lines().size())*11;}

@@ -20,12 +20,12 @@ public final class VisualHitbox extends xyz.rimvisuals.core.Module {
  public VisualHitbox(){super("visual_hitbox","Visual Hitbox","Depth-tested visual outlines of existing player/mob bounds; width is in world units. No hitbox, reach or server changes",Category.VISUALS);enabled=false;}
  public static int cap(boolean safe,boolean ultra){return safe?2:ultra?8:4;}
  private boolean valid(LivingEntity e,MinecraftClient mc){return e!=null&&e!=mc.player&&e.isAlive()&&!e.isRemoved()&&(e instanceof PlayerEntity?players.value:mobs.value&&e instanceof net.minecraft.entity.mob.MobEntity)&&e.squaredDistanceTo(mc.player)<=distance.value*distance.value;}
- public void tick(MinecraftClient mc){if(!enabled||mc.player==null||mc.world==null){candidates.clear();return;}if(++ticks%2!=0)return;candidates.clear();
+ public void tick(MinecraftClient mc){if(!isActive()||mc.player==null||mc.world==null){candidates.clear();return;}if(++ticks%2!=0)return;candidates.clear();
   if(targetOnly.value){LivingEntity e=mc.targetedEntity instanceof LivingEntity l?l:CombatEvents.recentTarget(2);if(valid(e,mc))candidates.add(new WeakReference<>(e));return;}
   int cap=cap(Modules.PERFORMANCE.safe.value,Modules.PERFORMANCE.preset.index==2);
   for(var e:mc.world.getEntitiesByClass(LivingEntity.class,mc.player.getBoundingBox().expand(distance.value),e->true))if(valid(e,mc)){candidates.add(new WeakReference<>(e));if(candidates.size()>=cap)break;}
  }
- public void draw(MatrixStack m,OrderedRenderCommandQueue q,Vec3d camera){if(!enabled)return;var mc=MinecraftClient.getInstance();if(mc.player==null||mc.world==null)return;long start=PerformanceMonitor.begin();
+ public void draw(MatrixStack m,OrderedRenderCommandQueue q,Vec3d camera){if(!isActive())return;var mc=MinecraftClient.getInstance();if(mc.player==null||mc.world==null)return;long start=PerformanceMonitor.begin();
   try{int n=0,cap=cap(Modules.PERFORMANCE.safe.value,Modules.PERFORMANCE.preset.index==2);for(var ref:candidates){var e=ref.get();if(!valid(e,mc))continue;
    Vec3d p=e.getLerpedPos(mc.getRenderTickCounter().getTickProgress(false));Box b=e.getBoundingBox().offset(p.x-e.getX()-camera.x,p.y-e.getY()-camera.y,p.z-e.getZ()-camera.z);emit(m,q,b);if(++n>=cap)break;
   }}finally{PerformanceMonitor.end("Visual Hitbox",start);}

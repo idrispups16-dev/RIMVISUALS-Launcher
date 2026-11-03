@@ -14,6 +14,6 @@ public class FluidRendererMixin {
             constant = @Constant(intValue = 16777215))
     private int rimLava(int white) {
         var m = Modules.LAVA_COLOR;
-        return m.enabled ? WorldColors.tint(white, m.color.rgb, m.strength.value) : white;
+        return m.isActive() ? WorldColors.tint(white, m.color.rgb, m.strength.value) : white;
     }
 }

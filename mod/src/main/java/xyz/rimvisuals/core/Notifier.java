@@ -46,7 +46,7 @@ public final class Notifier {
 
     public static void tick(MinecraftClient mc) {
         var cfg = Modules.NOTIFICATIONS;
-        if (!cfg.enabled || mc.player == null) return;
+        if (!cfg.isActive() || mc.player == null) return;
         if (cfg.lowHealth.value) {
             float hp = mc.player.getHealth();
             if (hp > 0 && hp <= cfg.healthThreshold.value && !lowHealthWarned) { lowHealthWarned = true; push("Low health: " + Math.round(hp / 2f * 10) / 10f + " hearts", 0xFF5555); }
@@ -64,6 +64,6 @@ public final class Notifier {
 
     public static void totemUsed() {
         var cfg = Modules.NOTIFICATIONS;
-        if (cfg.enabled && cfg.totem.value) push("Totem of Undying used", 0xFFD34D);
+        if (cfg.isActive() && cfg.totem.value) push("Totem of Undying used", 0xFFD34D);
     }
 }

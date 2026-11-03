@@ -23,7 +23,7 @@ public final class HandColor extends Module {
 
     /** ARGB tint for the given hand, or -1 (no change) when the hand is not affected. */
     public int tint(boolean mainHand, long nanos) {
-        if (!enabled || !(mainHand ? main.value : off.value)) return -1;
+        if (!isActive() || !(mainHand ? main.value : off.value)) return -1;
         double phase = Modules.PERFORMANCE.reducedMotion.value ? 0 : nanos / 1e9 * speed.value;
         int rgb = switch (mode.index) {
             case 1 -> ColorMath.gradient(color.rgb, color2.rgb, phase);

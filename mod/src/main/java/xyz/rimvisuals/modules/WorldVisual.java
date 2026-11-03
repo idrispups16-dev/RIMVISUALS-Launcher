@@ -19,7 +19,7 @@ public final class WorldVisual extends xyz.rimvisuals.core.Module {
  public WorldVisual(String id,String name,Kind kind){super(id,name,kind==Kind.HAT?"Depth-tested conical player hat; third-person self, optional nearby players. Safe Mode suppresses geometry":"Translucent selected-block shape bounding box; no interaction or hitbox changes. Safe Mode suppresses geometry",Category.VISUALS);this.kind=kind;enabled=false;radius.hidden=height.hidden=others.hidden=kind!=Kind.HAT;}
  public static int segments(boolean ultra){return ultra?32:16;}
  public void draw(MatrixStack matrices,OrderedRenderCommandQueue queue,Vec3d camera){
-  if(!enabled||Modules.PERFORMANCE.safe.value)return;var mc=MinecraftClient.getInstance();if(mc.world==null||mc.player==null)return;
+  if(!isActive()||Modules.PERFORMANCE.safe.value)return;var mc=MinecraftClient.getInstance();if(mc.world==null||mc.player==null)return;
   long start=PerformanceMonitor.begin();
   try {
    if(kind==Kind.BLOCK){if(!(mc.crosshairTarget instanceof BlockHitResult hit)||hit.getType()!=HitResult.Type.BLOCK)return;var pos=hit.getBlockPos();var shape=mc.world.getBlockState(pos).getOutlineShape(mc.world,pos);if(shape.isEmpty())return;Box box=shape.getBoundingBox().offset(pos).expand(.002).offset(-camera.x,-camera.y,-camera.z);box(matrices,queue,box);}

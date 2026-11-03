@@ -7,7 +7,7 @@ public final class ServerHelperHud extends HudModule {
  private final ServerHelper helper;private final java.util.List<String> inactive;
  public ServerHelperHud(ServerHelper h,int y){super(h.id+"_hud",h.name+" HUD","Received server information only; edit layout here, parsing rules in Utilities",230,y);helper=h;inactive=java.util.List.of(h.name+" — inactive");}
  private java.util.List<String> lines(){return ServerHelpers.active()==helper?ServerHelpers.lines(helper):inactive;}
- @Override public boolean visible(){return enabled&&(ServerHelpers.active()==helper||MinecraftClient.getInstance().currentScreen instanceof xyz.rimvisuals.gui.HudEditorScreen);}
+ @Override public boolean visible(){return isActive()&&(ServerHelpers.active()==helper||MinecraftClient.getInstance().currentScreen instanceof xyz.rimvisuals.gui.HudEditorScreen);}
  @Override public int width(MinecraftClient mc){return 222;}
  @Override public int height(MinecraftClient mc){return 8+12*Math.max(1,lines().size());}
  @Override public void draw(DrawContext c,MinecraftClient mc,int x,int y){

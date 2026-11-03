@@ -10,7 +10,7 @@ public final class Zoom extends Module {
  public Zoom(){super("zoom","Zoom","Camera FOV only. Assign Toggle Zoom in Keybinds; no attack, movement or sensitivity changes",Category.UTILITIES);enabled=false;}
  public static double bounded(double value){return Double.isFinite(value)?Math.max(.1,Math.min(1,value)):1;}
  public double apply(double fov,boolean inWorld){
-  double target=enabled&&inWorld?bounded(factor.value):1;
+  double target=isActive()&&inWorld?bounded(factor.value):1;
   if(target==1&&Math.abs(current-1)<.001){current=1;last=0;return fov;}
   long now=System.nanoTime();double dt=last==0?.05:Math.min(.05,Math.max(0,(now-last)/1e9));last=now;
   if(!smooth.value||Modules.PERFORMANCE.reducedMotion.value)current=target;

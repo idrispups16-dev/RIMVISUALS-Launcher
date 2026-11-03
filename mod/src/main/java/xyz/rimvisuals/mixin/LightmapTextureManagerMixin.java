@@ -17,7 +17,7 @@ public class LightmapTextureManagerMixin {
     /** putFloat calls in update(): 0 ambient, 1 skyFactor, 2 flicker, 3 night vision, 4 darkness, 5 sky darkness, 6 gamma. */
     @ModifyArg(method = "update(F)V", at = @At(value = "INVOKE", target = PUT, ordinal = 3), index = 0)
     private float rimNightVision(float vanilla) {
-        if (!Modules.NIGHT_VISION_FADE.enabled) return vanilla;
+        if (!Modules.NIGHT_VISION_FADE.isActive()) return vanilla;
         var p = MinecraftClient.getInstance().player;
         if (p == null || !p.hasStatusEffect(StatusEffects.NIGHT_VISION)) return vanilla;
         var e = p.getStatusEffect(StatusEffects.NIGHT_VISION);
@@ -26,6 +26,6 @@ public class LightmapTextureManagerMixin {
 
     @ModifyArg(method = "update(F)V", at = @At(value = "INVOKE", target = PUT, ordinal = 6), index = 0)
     private float rimGamma(float vanilla) {
-        return Modules.FULLBRIGHT.enabled ? Fullbright.effective(vanilla, Modules.FULLBRIGHT.gamma.value) : vanilla;
+        return Modules.FULLBRIGHT.isActive() ? Fullbright.effective(vanilla, Modules.FULLBRIGHT.gamma.value) : vanilla;
     }
 }

@@ -16,7 +16,7 @@ public final class CrystalFade extends Module {
 
     /** Alpha 0..1 for a crystal that has existed for {@code ageTicks}; 1 means draw exactly like vanilla. */
     public float alpha(float ageTicks) {
-        if (!enabled) return 1f;
+        if (!isActive()) return 1f;
         float ticks = xyz.rimvisuals.core.Modules.PERFORMANCE.reducedMotion.value ? 0f : (float) fadeIn.value;
         return ScaleMath.fadeAlpha(ageTicks, ticks, (float) opacity.value);
     }

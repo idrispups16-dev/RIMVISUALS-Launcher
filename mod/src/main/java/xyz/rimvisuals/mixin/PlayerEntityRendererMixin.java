@@ -35,12 +35,12 @@ public class PlayerEntityRendererMixin {
     private void rimArm(OrderedRenderCommandQueue queue, ModelPart part, MatrixStack matrices, RenderLayer layer, int light, int overlay, Sprite sprite) {
         long t0 = PerformanceMonitor.begin();
         int tint = -1;
-        if (Modules.HAND_COLOR.enabled) {
+        if (Modules.HAND_COLOR.isActive()) {
             boolean mainIsRight = MinecraftClient.getInstance().options.getMainArm().getValue() == Arm.RIGHT;
             tint = Modules.HAND_COLOR.tint(rimRight == mainIsRight, System.nanoTime());
         }
         PerformanceMonitor.end("Hand Color", t0);
-        if (Modules.HAND_GLOW.enabled && !Modules.PERFORMANCE.safe.value && !rimGlowDone && rimSkin != null) {
+        if (Modules.HAND_GLOW.isActive() && !Modules.PERFORMANCE.safe.value && !rimGlowDone && rimSkin != null) {
             rimGlowDone = true; // renderArm submits the sleeve too; glow is drawn once per arm
             long g0 = PerformanceMonitor.begin();
             boolean mainIsRight = MinecraftClient.getInstance().options.getMainArm().getValue() == Arm.RIGHT;

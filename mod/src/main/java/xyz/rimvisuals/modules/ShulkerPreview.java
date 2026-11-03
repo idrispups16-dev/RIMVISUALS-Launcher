@@ -13,7 +13,7 @@ public final class ShulkerPreview extends xyz.rimvisuals.core.Module {
  private Optional<TooltipData> cached=Optional.empty();
  public ShulkerPreview(){super("shulker_preview","Shulker Preview","27-slot tooltip from container data already supplied by Minecraft. No server inventory queries",Category.UTILITIES);enabled=false;}
  public Optional<TooltipData> data(ItemStack stack){
-  if(!enabled||!(stack.getItem() instanceof BlockItem b)||!(b.getBlock() instanceof ShulkerBoxBlock))return Optional.empty();
+  if(!isActive()||!(stack.getItem() instanceof BlockItem b)||!(b.getBlock() instanceof ShulkerBoxBlock))return Optional.empty();
   var contents=stack.get(DataComponentTypes.CONTAINER);if(contents==null)return Optional.empty();
   if(contents!=last){last=contents;cached=Optional.of(new Data(contents.stream().limit(27).map(ItemStack::copy).toList()));}
   return cached;

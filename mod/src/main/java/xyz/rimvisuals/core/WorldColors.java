@@ -20,9 +20,9 @@ public final class WorldColors {
     /** Terrain-affecting settings in one number; when it changes, chunk meshes must be rebuilt. */
     public static int signature() {
         var w=Modules.WATER_COLOR; var l=Modules.LAVA_COLOR; var b=Modules.BIOME_COLORS;
-        int h = w.enabled ? 31*w.color.rgb + Double.hashCode(w.strength.value) : 0;
-        h=31*h+(l.enabled ? 31*l.color.rgb+Double.hashCode(l.strength.value) : 0);
-        h=31*h+(b.enabled ? 31*(b.grass.value ? b.grassColor.rgb : 0)
+        int h = w.isActive() ? 31*w.color.rgb + Double.hashCode(w.strength.value) : 0;
+        h=31*h+(l.isActive() ? 31*l.color.rgb+Double.hashCode(l.strength.value) : 0);
+        h=31*h+(b.isActive() ? 31*(b.grass.value ? b.grassColor.rgb : 0)
             +(b.foliage.value ? b.foliageColor.rgb : 0)+Double.hashCode(b.strength.value) : 0);
         return h;
     }

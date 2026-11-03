@@ -15,18 +15,18 @@ public class BiomeColorsMixin {
     @Inject(method = "getGrassColor(Lnet/minecraft/world/BlockRenderView;Lnet/minecraft/util/math/BlockPos;)I", at = @At("RETURN"), cancellable = true)
     private static void rimGrass(BlockRenderView world, BlockPos pos, CallbackInfoReturnable<Integer> cir) {
         var m = Modules.BIOME_COLORS;
-        if (m.enabled && m.grass.value) cir.setReturnValue(WorldColors.tint(cir.getReturnValueI(), m.grassColor.rgb, m.strength.value));
+        if (m.isActive() && m.grass.value) cir.setReturnValue(WorldColors.tint(cir.getReturnValueI(), m.grassColor.rgb, m.strength.value));
     }
 
     @Inject(method = "getFoliageColor(Lnet/minecraft/world/BlockRenderView;Lnet/minecraft/util/math/BlockPos;)I", at = @At("RETURN"), cancellable = true)
     private static void rimFoliage(BlockRenderView world, BlockPos pos, CallbackInfoReturnable<Integer> cir) {
         var m = Modules.BIOME_COLORS;
-        if (m.enabled && m.foliage.value) cir.setReturnValue(WorldColors.tint(cir.getReturnValueI(), m.foliageColor.rgb, m.strength.value));
+        if (m.isActive() && m.foliage.value) cir.setReturnValue(WorldColors.tint(cir.getReturnValueI(), m.foliageColor.rgb, m.strength.value));
     }
 
     @Inject(method = "getWaterColor(Lnet/minecraft/world/BlockRenderView;Lnet/minecraft/util/math/BlockPos;)I", at = @At("RETURN"), cancellable = true)
     private static void rimWater(BlockRenderView world, BlockPos pos, CallbackInfoReturnable<Integer> cir) {
         var m = Modules.WATER_COLOR;
-        if (m.enabled) cir.setReturnValue(WorldColors.tint(cir.getReturnValueI(), m.color.rgb, m.strength.value));
+        if (m.isActive()) cir.setReturnValue(WorldColors.tint(cir.getReturnValueI(), m.color.rgb, m.strength.value));
     }
 }

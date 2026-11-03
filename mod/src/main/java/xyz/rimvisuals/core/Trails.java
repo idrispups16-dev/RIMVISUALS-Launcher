@@ -27,23 +27,23 @@ public final class Trails {
 
     public static void tick(MinecraftClient mc) {
         var pearl = Modules.PEARL_TRAILS; var proj = Modules.PROJECTILE_TRAILS; var sword = Modules.SWORD_TRAILS;
-        if ((!pearl.enabled && !proj.enabled && !sword.enabled) || mc.world == null || mc.player == null) { swing.clear(); return; }
+        if ((!pearl.isActive() && !proj.isActive() && !sword.isActive()) || mc.world == null || mc.player == null) { swing.clear(); return; }
         long t0 = PerformanceMonitor.begin();
         int budget = Fx.ambientBudget(24); // hard ceiling of particles for ALL trails this tick
         if (budget <= 0) { swing.clear();PerformanceMonitor.end("Trails", t0); return; }
         seen.clear();
-        for (Entity e : mc.world.getOtherEntities(mc.player,mc.player.getBoundingBox().expand(48),e -> e instanceof ProjectileEntity || (sword.enabled && e instanceof PlayerEntity))) {
+        for (Entity e : mc.world.getOtherEntities(mc.player,mc.player.getBoundingBox().expand(48),e -> e instanceof ProjectileEntity || (sword.isActive() && e instanceof PlayerEntity))) {
             if (budget <= 0) break;
             double d2 = e.squaredDistanceTo(mc.player);
             if (e instanceof EnderPearlEntity) {
-                if (pearl.enabled && d2 < 48 * 48) budget -= projectile(mc, e, pearl.color.rgb, (float) pearl.size.value, (int) pearl.density.value, budget, false, mc.player);
+                if (pearl.isActive() && d2 < 48 * 48) budget -= projectile(mc, e, pearl.color.rgb, (float) pearl.size.value, (int) pearl.density.value, budget, false, mc.player);
             } else if (e instanceof ProjectileEntity) {
-                if (proj.enabled && d2 < 48 * 48) budget -= projectile(mc, e, proj.color.rgb, (float) proj.size.value, (int) proj.density.value, budget, proj.ownOnly.value, mc.player);
-            } else if (sword.enabled && e instanceof PlayerEntity p && d2 < 24 * 24 && (sword.who.index == 1 || p == mc.player)) {
+                if (proj.isActive() && d2 < 48 * 48) budget -= projectile(mc, e, proj.color.rgb, (float) proj.size.value, (int) proj.density.value, budget, proj.ownOnly.value, mc.player);
+            } else if (sword.isActive() && e instanceof PlayerEntity p && d2 < 24 * 24 && (sword.who.index == 1 || p == mc.player)) {
                 budget -= sword(mc, p, budget);
             }
         }
-        if(sword.enabled && budget>0)budget-=sword(mc,mc.player,budget);
+        if(sword.isActive() && budget>0)budget-=sword(mc,mc.player,budget);
         Fx.refund(budget);
         swing.keySet().retainAll(seen);
         PerformanceMonitor.end("Trails", t0);

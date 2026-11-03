@@ -65,7 +65,7 @@ public final class AnchorFade extends Module {
     }
 
     public void onExplosion(ClientWorld world, Vec3d center, float radius) {
-        if (!enabled) return;
+        if (!isActive()) return;
         BlockPos p = anchorCandidate(center, radius);
         if (p == null) return;
         BlockState s = world.getBlockState(p);
@@ -75,7 +75,7 @@ public final class AnchorFade extends Module {
 
     /** Called before the client applies a block update. */
     public void onBlockUpdate(ClientWorld world, BlockPos pos, BlockState incoming) {
-        if (!enabled) return;
+        if (!isActive()) return;
         if (pendingPos != null && System.nanoTime() - pendingNanos > 1_500_000_000L) pendingPos = null;
         if (pendingPos == null || !pendingPos.equals(pos)) return;
         BlockState old = world.getBlockState(pos);
@@ -108,7 +108,7 @@ public final class AnchorFade extends Module {
     public float scaleAt(float t) { return shrink.value ? Easing.lerp(1f, (float) endScale.value, Easing.apply(easing.index, t)) : 1f; }
 
     public void render(MatrixStack matrices, OrderedRenderCommandQueue queue, Vec3d cam) {
-        if(!enabled||xyz.rimvisuals.core.Modules.PERFORMANCE.safe.value){ghosts.clear();pendingPos=null;return;}
+        if(!isActive()||xyz.rimvisuals.core.Modules.PERFORMANCE.safe.value){ghosts.clear();pendingPos=null;return;}
         if (ghosts.isEmpty()) return;
         long t0 = PerformanceMonitor.begin();
         long now = System.nanoTime(), dur = (long) (duration.value * 1_000_000L);

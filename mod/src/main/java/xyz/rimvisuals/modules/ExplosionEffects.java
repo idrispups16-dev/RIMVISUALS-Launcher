@@ -27,7 +27,7 @@ public final class ExplosionEffects extends Module {
     public static int count(double amount, float radius) { return (int) Math.max(4, Math.min(80, Math.round(amount * radius / 4.0))); }
 
     public void onExplosion(Vec3d c, float radius) {
-        if (!enabled || radius < minRadius.value) return;
+        if (!isActive() || radius < minRadius.value) return;
         MinecraftClient mc = MinecraftClient.getInstance();
         if (mc.player == null || mc.player.squaredDistanceTo(c) > maxDistance.value * maxDistance.value) return;
         long t0 = PerformanceMonitor.begin();

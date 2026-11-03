@@ -26,7 +26,7 @@ public final class TotemFade extends Module {
 
     /** Opacity at animation progress 0..1. */
     public float alpha(float progress) {
-        if (!enabled) return 1f;
+        if (!isActive()) return 1f;
         float s = (float) start.value;
         if (progress <= s) return 1f;
         return Easing.lerp(1f, (float) endOpacity.value, Easing.apply(easing.index, (progress - s) / (1f - s)));

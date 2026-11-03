@@ -17,7 +17,7 @@ public class FogRendererMixin {
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/fog/FogRenderer;applyFog(Ljava/nio/ByteBuffer;ILorg/joml/Vector4f;FFFFFF)V"))
     private void rimFog(Args args,net.minecraft.client.render.Camera camera,int viewDistance,net.minecraft.client.render.RenderTickCounter counter,float partial,net.minecraft.client.world.ClientWorld world) {
         var fog = Modules.CUSTOM_FOG;
-        if(!fog.enabled){if(Modules.ATMOSPHERE.enabled){Vector4f c=args.get(2);int rgb=Modules.ATMOSPHERE.rgb();float t=(float)Modules.ATMOSPHERE.strength.value;c.set(c.x+(((rgb>>16)&255)/255f-c.x)*t,c.y+(((rgb>>8)&255)/255f-c.y)*t,c.z+((rgb&255)/255f-c.z)*t,c.w);}return;}
+        if(!fog.isActive()){if(Modules.ATMOSPHERE.isActive()){Vector4f c=args.get(2);int rgb=Modules.ATMOSPHERE.rgb();float t=(float)Modules.ATMOSPHERE.strength.value;c.set(c.x+(((rgb>>16)&255)/255f-c.x)*t,c.y+(((rgb>>8)&255)/255f-c.y)*t,c.z+((rgb&255)/255f-c.z)*t,c.w);}return;}
         if(!fog.fluids.value&&camera.getSubmersionType()!=net.minecraft.block.enums.CameraSubmersionType.NONE)return;
         long t0 = PerformanceMonitor.begin();
         if (fog.recolor.value && fog.strength.value > 0) {
