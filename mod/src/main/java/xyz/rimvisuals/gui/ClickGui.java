@@ -180,8 +180,9 @@ public class ClickGui extends Screen {
         int bx=wx+ww-32;
         button(c,bx,wy+10,24,24,"x",mx,my,this::close,false);
         button(c,bx-34,wy+10,28,24,String.valueOf(gridColumns),mx,my,()->{gridColumns=gridColumns==3?1:gridColumns+1;Modules.UI.menuLayout.index=3-gridColumns;targetScroll=0;},false);
+        button(c,bx-68,wy+10,28,24,"HUD",mx,my,()->client.setScreen(new HudEditorScreen(this)),false);
         int searchW=Math.min(160,Math.max(70,ww-sideW-220));
-        drawInput(c,search,bx-44-searchW,wy+10,searchW,24);
+        drawInput(c,search,bx-78-searchW,wy+10,searchW,24);
 
         String[] icons={"V","H","U","P","K","F","M"};
         int navStep=Math.max(19,Math.min(34,(wh-112)/TABS.length));
@@ -219,7 +220,15 @@ public class ClickGui extends Screen {
 
         c.disableScissor();
         if(detailVisible) renderDetails(c,mx,my);
-        if(!tooltip.isEmpty()){var lines=textRenderer.wrapLines(Text.literal(tooltip),Math.max(120,ww-30));int tipY=wy+wh+3;if(tipY+lines.size()*10>vh)tipY=wy+wh-lines.size()*10-5;c.fill(wx+5,tipY-3,wx+ww-5,tipY+lines.size()*10+2,0xee080810);for(var line:lines){c.drawText(textRenderer,line,wx+10,tipY,Theme.text(),false);tipY+=10;}}
+        if(!tooltip.isEmpty()){
+            int tipW=Math.min(270,ww-24);
+            var lines=textRenderer.wrapLines(Text.literal(tooltip),tipW-16);
+            int tipH=lines.size()*11+12;
+            int tipX=Math.max(wx+6,Math.min((int)mx+12,wx+ww-tipW-6));
+            int tipY=Math.max(wy+6,Math.min((int)my+16,wy+wh-tipH-6));
+            Gfx.roundBorder(c,tipX,tipY,tipW,tipH,6,0xf517171e,0xff484251);
+            for(var line:lines){c.drawText(textRenderer,line,tipX+8,tipY+6,Theme.text(),false);tipY+=11;}
+        }
         ms.popMatrix();
     }
 
