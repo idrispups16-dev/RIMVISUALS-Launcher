@@ -27,6 +27,7 @@ public class RimVisualsClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         xyz.rimvisuals.core.ClientCompatibility.init();
+        xyz.rimvisuals.core.EffectParticles.init();
         boolean devSmoke=net.fabricmc.loader.api.FabricLoader.getInstance().isDevelopmentEnvironment()&&Boolean.getBoolean("rimvisuals.smoke");
         xyz.rimvisuals.auth.AccessGate.configure(devSmoke?()->true:xyz.rimvisuals.auth.DeviceAuth.INSTANCE::active);
         if(!devSmoke)xyz.rimvisuals.auth.DeviceAuth.INSTANCE.init();
