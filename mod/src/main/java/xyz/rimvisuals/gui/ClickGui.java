@@ -71,7 +71,7 @@ public class ClickGui extends Screen {
     private List<String> profiles = Modules.listProfiles();
     private String status = "";
 
-    private boolean mob;
+    private boolean mob,closing;
     private float s, fade;
     private int vw, vh, wx, wy, ww, wh, cx, cw, ctop, cbot, cy;
 
@@ -85,7 +85,7 @@ public class ClickGui extends Screen {
     }
 
     public void editHud(xyz.rimvisuals.core.HudModule m){tab=1;selected=m;colorOpen.add(m.accentColor);detailScroll=0;}
-    @Override public void close(){client.setScreen(parentScreen);}
+    @Override public void close(){closing=true;}
     public void showHelperForTest(){tab=2;selected=Modules.FT_HELPER;}
     public void showCategoryForTest(int index){tab=0;selected=index==4?Modules.VIEWMODEL:null;}
     @Override public boolean shouldPause() { return false; }
@@ -120,7 +120,7 @@ public class ClickGui extends Screen {
 
     private void drawSwitch(DrawContext c, int x, int y, int w, int h, Object key, boolean on) {
         float t = anim(key, on ? 1f : 0f, 14f);
-        Gfx.round(c, x, y, w, h, h / 2, f(Gfx.mix(0xFF2A2740, Theme.accent(), t)));
+        Gfx.round(c, x, y, w, h, h / 2, f(Gfx.mix(0xFF2A2A2A, Theme.accent(), t)));
         int k = h - 4;
         Gfx.round(c, x + 2 + Math.round((w - k - 4) * t), y + 2, k, k, k / 2, f(0xFFFFFFFF));
     }
@@ -143,14 +143,17 @@ public class ClickGui extends Screen {
     @Override
     public void render(DrawContext c, int mouseX, int mouseY, float delta) {
         if(Boolean.getBoolean("rimvisuals.smoke"))xyz.rimvisuals.SmokeTest.frames++;
+        fade = Math.max(0.001f, open.to(closing?0f:1f, 13f));
+        if(closing&&fade<.025f){client.setScreen(parentScreen);return;}
         mob = RimPlatform.mobile();
         s = (float) Modules.UI.guiScale.value;
         s = Math.max(0.45f, Math.min(s, Math.min(width / 640f, height / 400f)));
+        s *= .94f+.06f*fade;
         vw = Math.round(width / s);
         vh = Math.round(height / s);
         double mx = mouseX / s, my = mouseY / s;
         hits.clear();tooltip="";
-        fade = Math.max(0.02f, open.to(1f, 9f));
+
         int acc = Theme.accent();
 
         c.fill(0, 0, width, height, Gfx.withAlpha(0x000000, (float)Modules.UI.backdrop.value * fade));
@@ -167,10 +170,10 @@ public class ClickGui extends Screen {
         wy = (vh - wh) / 2 + Math.round((1f - fade) * 12);
 
         // Soft charcoal frame and quiet dividers, with the accent reserved for active controls.
-        Gfx.roundBorder(c,wx,wy,ww,wh,12,f(0xf218181f),f(0xff35333f));
-        Gfx.round(c,wx+5,wy+5,sideW-5,wh-10,9,f(0xff131319));
-        c.fill(wx+sideW+3,wy+12,wx+sideW+4,wy+wh-12,f(0xff292831));
-        Gfx.star(c,wx+21,wy+22,8,f(acc));
+        Gfx.roundBorder(c,wx,wy,ww,wh,12,f(0xf2181818),f(0xff353535));
+        Gfx.round(c,wx+5,wy+5,sideW-5,wh-10,9,f(0xff131313));
+        c.fill(wx+sideW+3,wy+12,wx+sideW+4,wy+wh-12,f(0xff292929));
+        Gfx.rv(c,wx+21,wy+22,8,f(acc));
         if(!sidebarCompact)txt(c,"RIMVISUALS",wx+38,wy+18,Theme.text());
         hit(wx+8,wy+8,sideW-12,28,this::toggleSidebar,null);
 
@@ -188,7 +191,7 @@ public class ClickGui extends Screen {
         int navStep=Math.max(19,Math.min(34,(wh-112)/TABS.length));
         int th=Math.min(28,navStep-3),ty=wy+53;
         float sel=tabPos.to(tab,14f);
-        Gfx.round(c,wx+10,ty+Math.round(sel*navStep),sideW-18,th,6,f(0xff2d253e));
+        Gfx.round(c,wx+10,ty+Math.round(sel*navStep),sideW-18,th,6,f(0xff323232));
         for(int i=0;i<TABS.length;i++){
             final int index=i;int y=ty+i*navStep;
             if(y+th>wy+wh-58)break;
@@ -197,8 +200,8 @@ public class ClickGui extends Screen {
             hit(wx+10,y,sideW-18,th,()->selectTab(index),null);
         }
         int foot=wy+wh-44;
-        Gfx.round(c,wx+11,foot,sideW-20,30,6,f(0xff211e2c));
-        Gfx.star(c,wx+25,foot+15,5,f(acc));
+        Gfx.round(c,wx+11,foot,sideW-20,30,6,f(0xff232323));
+        Gfx.rv(c,wx+25,foot+15,5,f(acc));
         if(!sidebarCompact){txt(c,"Account",wx+41,foot+6,Theme.text());txt(c,"RIMVISUALS",wx+41,foot+18,Theme.muted());}
         hit(wx+11,foot,sideW-20,30,()->client.setScreen(new AccountScreen(this)),null);
 
@@ -226,7 +229,7 @@ public class ClickGui extends Screen {
             int tipH=lines.size()*11+12;
             int tipX=Math.max(wx+6,Math.min((int)mx+12,wx+ww-tipW-6));
             int tipY=Math.max(wy+6,Math.min((int)my+16,wy+wh-tipH-6));
-            Gfx.roundBorder(c,tipX,tipY,tipW,tipH,6,0xf517171e,0xff484251);
+            Gfx.roundBorder(c,tipX,tipY,tipW,tipH,6,0xf5171717,0xff484848);
             for(var line:lines){c.drawText(textRenderer,line,tipX+8,tipY+6,Theme.text(),false);tipY+=11;}
         }
         ms.popMatrix();
@@ -236,7 +239,8 @@ public class ClickGui extends Screen {
 
     private void selectTab(int index) {
         if(index==4){client.setScreen(new KeybindManagerScreen(this));return;}
-        if(index==5||index==6){client.setScreen(new LocalDataScreen(this,index==6));return;}
+        if(index==5){client.setScreen(new FriendsScreen(this));return;}
+        if(index==6){client.setScreen(new LocalDataScreen(this,true));return;}
         tab=index;targetScroll=0;scrollA.value=0;selected=null;search.text="";filterKey="";
     }
 
@@ -265,15 +269,15 @@ public class ClickGui extends Screen {
             bottoms[col]+=cardH+gap;
             if(y+cardH<ctop||y>cbot)continue;
             boolean hover=in(mx,my,x,y,cardW,cardH);
-            Gfx.roundBorder(c,x,y,cardW,cardH,9,f(hover?0xff202028:0xff1c1c23),f(selected==m?Theme.accent2():0xff303039));
+            Gfx.roundBorder(c,x,y,cardW,cardH,9,f(hover?0xff282828:0xff202020),f(selected==m?Theme.accent2():0xff353535));
             int headerY=y+15;
-            Gfx.star(c,x+14,headerY+3,4,f(m.enabled?Theme.accent2():Theme.muted()));
+            Gfx.rv(c,x+14,headerY+3,4,f(m.enabled?Theme.accent2():Theme.muted()));
             txt(c,textRenderer.trimToWidth(m.name,cardW-69),x+26,headerY,m.toggleable&&!m.enabled?Theme.muted():Theme.text());
             if(y>=ctop&&y+34<=cbot){
                 hit(x+6,y+5,cardW-45,29,()->{selected=m;detailScroll=0;detailA.value=0;focus=null;},null);
                 if(m.toggleable){checkbox(c,x+cardW-27,y+12,m.enabled);hit(x+cardW-33,y+5,28,29,()->m.enabled=!m.enabled,null);}
             }
-            c.fill(x+10,y+36,x+cardW-10,y+37,f(0xff2b2b34));
+            c.fill(x+10,y+36,x+cardW-10,y+37,f(0xff303030));
             int rowY=y+43;
             for(Setting st:preview){previewSetting(c,m,st,x+6,rowY,cardW-12,mx,my);rowY+=st instanceof Setting.Num?32:24;}
             String note=m.suppressionReason();
@@ -287,8 +291,8 @@ public class ClickGui extends Screen {
     }
 
     private void checkbox(DrawContext c,int x,int y,boolean checked){
-        Gfx.roundBorder(c,x,y,13,13,4,f(checked?Theme.accent():0xff24242d),f(checked?Theme.accent():0xff44424f));
-        if(checked)txtC(c,"+",x,y,13,13,0xfff7f2ff);
+        Gfx.roundBorder(c,x,y,13,13,4,f(checked?Theme.accent():0xff282828),f(checked?Theme.accent():0xff484848));
+        if(checked)txtC(c,"+",x,y,13,13,0xfff2f2f2);
     }
     private void previewSetting(DrawContext c,Module module,Setting st,int x,int y,int w,double mx,double my){
         int h=st instanceof Setting.Num?32:24;
@@ -300,15 +304,15 @@ public class ClickGui extends Screen {
         }else if(st instanceof Setting.Num value){
             txt(c,value.display(),x+w-textRenderer.getWidth(value.display())-6,y+5,Theme.accent2());
             int trackX=x+7,trackW=w-14,trackY=y+23,filled=(int)Math.round(trackW*value.fraction());
-            Gfx.round(c,trackX,trackY,trackW,2,1,f(0xff383641));
+            Gfx.round(c,trackX,trackY,trackW,2,1,f(0xff3d3d3d));
             if(filled>0)Gfx.round(c,trackX,trackY,filled,2,1,f(Theme.accent2()));
-            Gfx.round(c,trackX+filled-2,trackY-2,5,5,2,f(0xffeee8fa));
+            Gfx.round(c,trackX+filled-2,trackY-2,5,5,2,f(0xffeeeeee));
             hit(x,y,w,h,null,px->value.set(value.min+Math.max(0,Math.min(1,(px-trackX)/(double)trackW))*(value.max-value.min)));
         }else if(st instanceof Setting.Mode value){
             String label=textRenderer.trimToWidth(value.get(),valueW-8);int bw=textRenderer.getWidth(label)+10;
-            Gfx.round(c,x+w-bw-3,y,bw,19,4,f(0xff292832));txtC(c,label,x+w-bw-3,y,bw,19,Theme.muted());hit(x,y,w,h,value::next,null);
+            Gfx.round(c,x+w-bw-3,y,bw,19,4,f(0xff303030));txtC(c,label,x+w-bw-3,y,bw,19,Theme.muted());hit(x,y,w,h,value::next,null);
         }else if(st instanceof Setting.Color value){
-            Gfx.roundBorder(c,x+w-21,y+2,14,14,4,f(0xff000000|value.rgb),f(0xff777080));
+            Gfx.roundBorder(c,x+w-21,y+2,14,14,4,f(0xff000000|value.rgb),f(0xff777777));
             hit(x,y,w,h,()->{selected=module;colorOpen.add(value);detailScroll=0;detailA.value=0;},null);
         }
         if(in(mx,my,x,y,w,h))tooltip=st.name;
@@ -317,7 +321,7 @@ public class ClickGui extends Screen {
     private void renderDetails(DrawContext c,double mx,double my) {
         int oldX=cx,oldW=cw,oldTop=ctop,oldCy=cy;
         cx=detailX;cw=detailW;
-        Gfx.roundBorder(c,cx,ctop,cw,cbot-ctop,9,f(0xff19191f),f(0xff45404f));
+        Gfx.roundBorder(c,cx,ctop,cw,cbot-ctop,9,f(0xff191919),f(0xff454545));
         button(c,cx+6,ctop+5,44,18,"Back",mx,my,()->{selected=null;detailScroll=0;},false);
         txt(c,textRenderer.trimToWidth(selected.name,cw-65),cx+58,ctop+10,Theme.text());
         ctop+=32;cy=ctop-Math.round(detailA.to(detailScroll,16));
@@ -444,7 +448,7 @@ public class ClickGui extends Screen {
         txt(c, textRenderer.trimToWidth(label,w-24-textRenderer.getWidth(value)), x + 8, y + 4, Theme.text());
         txt(c, value, x + w - 8 - textRenderer.getWidth(value), y + 4, Theme.muted());
         int tx = x + 8, tw = w - 16, th = mob ? 5 : 3, ty = y + h - (mob ? 13 : 10), kn = mob ? 11 : 7;
-        Gfx.round(c, tx, ty, tw, th, th / 2, f(0xFF2A2740));
+        Gfx.round(c, tx, ty, tw, th, th / 2, f(0xFF2A2A2A));
         int fw = (int) Math.round(tw * Math.max(0, Math.min(1, frac)));
         if (fw > 0) Gfx.round(c, tx, ty, Math.max(fw, th), th, th / 2, f(Theme.accent()));
         Gfx.round(c, tx + fw - kn / 2, ty + th / 2 - kn / 2, kn, kn, kn / 2, f(0xFFFFFFFF));
@@ -589,6 +593,7 @@ public class ClickGui extends Screen {
     @Override
     public boolean mouseClicked(Click click, boolean doubled) {
         double mouseX=click.x(), mouseY=click.y(); int button=click.button();
+        if(closing)return true;
         if (button != 0) return super.mouseClicked(click, doubled);
         double x = mouseX / s, y = mouseY / s;
         focus = null;
@@ -640,6 +645,8 @@ public class ClickGui extends Screen {
     @Override
     public boolean keyPressed(KeyInput input) {
         int keyCode=input.key();
+        var menuKey=net.minecraft.client.util.InputUtil.fromTranslationKey(xyz.rimvisuals.RimVisualsClient.menuKey.getBoundKeyTranslationKey());
+        if(focus==null&&menuKey.getCategory()==net.minecraft.client.util.InputUtil.Type.KEYSYM&&menuKey.getCode()==keyCode){close();return true;}
         if (keyCode == GLFW.GLFW_KEY_ESCAPE) { close(); return true; }
         if (focus != null) {
             if (keyCode == GLFW.GLFW_KEY_BACKSPACE) { focus.backspace(); return true; }

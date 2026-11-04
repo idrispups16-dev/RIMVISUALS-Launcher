@@ -22,8 +22,6 @@ public final class Keybinds {
    var key=KeyBindingHelper.registerKeyBinding(new KeyBinding("key.rimvisuals.toggle."+m.id,InputUtil.Type.KEYSYM,GLFW.GLFW_KEY_UNKNOWN,KeyBinding.Category.MISC));
    actions.add(new Action(m.id,"Toggle "+m.name,key,()->m.enabled=!m.enabled));
   }
-  var swap=KeyBindingHelper.registerKeyBinding(new KeyBinding("key.rimvisuals.swap",InputUtil.Type.KEYSYM,GLFW.GLFW_KEY_UNKNOWN,KeyBinding.Category.MISC));
-  actions.add(new Action("item_swap_action","Item Swap to offhand",swap,()->Modules.ITEM_SWAP.run()));
   helperAction("helper_events","Toggle Events HUD",()->toggleHelperHud(0));
   helperAction("helper_cooldowns","Toggle Cooldowns HUD",()->toggleHelperHud(1));
   helperAction("helper_regions","Toggle Regions HUD",()->toggleHelperHud(2));
@@ -31,15 +29,18 @@ public final class Keybinds {
   helperAction("helper_settings","Open HW/FT Settings",()->MinecraftClient.getInstance().setScreen(new xyz.rimvisuals.gui.HelperSettingsScreen(null,ServerHelpers.active()==Modules.FT_HELPER)));
   helperAction("helper_refresh","Manual Refresh Events",HelperRuntime::refresh);
   helperAction("helper_trap_plast","Toggle Trapka/Plast Timer Visibility",()->forHelpers(h->{boolean show=!(h.trapVisible.value||h.plastVisible.value);h.trapVisible.value=show;h.plastVisible.value=show;}));
+  var ping=KeyBindingHelper.registerKeyBinding(new KeyBinding("key.rimvisuals.friend_ping",InputUtil.Type.KEYSYM,GLFW.GLFW_KEY_N,KeyBinding.Category.MISC));
+  actions.add(new Action("friend_ping","Friends / Share marker",ping,SocialClient::ping));
   load(pending);
  }
+ private static boolean retired(String key){return key.equals("keybind.item_swap_action")||key.equals("keybind.item_swap")||key.matches("keybind\\.(hw|ft)_use_(trap|plast|custom)");}
  private static void helperAction(String id,String label,Runnable run){var key=KeyBindingHelper.registerKeyBinding(new KeyBinding("key.rimvisuals."+id,InputUtil.Type.KEYSYM,GLFW.GLFW_KEY_UNKNOWN,KeyBinding.Category.MISC));actions.add(new Action(id,label,key,run));}
  private static void forHelpers(java.util.function.Consumer<xyz.rimvisuals.modules.ServerHelper> action){var h=ServerHelpers.active();if(h!=null)action.accept(h);else{action.accept(Modules.HW_HELPER);action.accept(Modules.FT_HELPER);}}
  private static void toggleHelperHud(int kind){forHelpers(h->{var hud=kind==0?(h.ft?Modules.FT_EVENTS:Modules.HW_EVENTS):kind==1?(h.ft?Modules.FT_COOLDOWNS:Modules.HW_COOLDOWNS):(h.ft?Modules.FT_REGIONS:Modules.HW_REGIONS);hud.enabled=!hud.enabled;});}
  public static void tick(MinecraftClient mc){for(var a:actions)while(a.key.wasPressed())if(mc.currentScreen==null)a.run.run();}
  public static void snapshot(Properties p){p.putAll(pending);for(var a:actions)p.setProperty("keybind."+a.id,a.key.getBoundKeyTranslationKey());}
  public static void load(Properties p){
-  for(String k:p.stringPropertyNames())if(k.startsWith("keybind.")&&p.getProperty(k).length()<80)pending.setProperty(k,p.getProperty(k));
+  for(String k:p.stringPropertyNames())if(k.startsWith("keybind.")&&!retired(k)&&p.getProperty(k).length()<80)pending.setProperty(k,p.getProperty(k));
   boolean changed=false;
   for(var a:actions){String value=pending.getProperty("keybind."+a.id);if(value!=null)try{a.key.setBoundKey(InputUtil.fromTranslationKey(value));changed=true;}catch(IllegalArgumentException ignored){}}
   if(changed)KeyBinding.updateKeysByCode();

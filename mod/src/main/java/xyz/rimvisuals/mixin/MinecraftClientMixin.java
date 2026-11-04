@@ -10,6 +10,12 @@ import xyz.rimvisuals.core.Modules;
 
 @Mixin(MinecraftClient.class)
 public class MinecraftClientMixin {
+    @Inject(method="doAttack()Z",at=@At(value="INVOKE",target="Lnet/minecraft/client/network/ClientPlayerEntity;swingHand(Lnet/minecraft/util/Hand;)V"))
+    private void rimAttackSwing(CallbackInfoReturnable<Boolean> cir){
+        var mc=(MinecraftClient)(Object)this;
+        if(mc.player!=null&&!mc.player.isSpectator()&&mc.crosshairTarget!=null&&mc.crosshairTarget.getType()!=net.minecraft.util.hit.HitResult.Type.BLOCK)
+            Modules.SWING.attack(true,System.nanoTime());
+    }
     @Inject(method = "hasOutline(Lnet/minecraft/entity/Entity;)Z", at = @At("RETURN"), cancellable = true)
     private void rimOutline(Entity entity, CallbackInfoReturnable<Boolean> cir) {
         if (cir.getReturnValueZ()) return;

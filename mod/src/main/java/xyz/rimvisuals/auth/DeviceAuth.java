@@ -39,6 +39,8 @@ public final class DeviceAuth {
     private String api, key, token, verifier, candidate, challenge;
     private long expires, nextPoll, nextValidation;
     private boolean initialized;
+    private volatile long socialRevision;
+    public long socialRevision(){return socialRevision;}
 
     private DeviceAuth() {}
     public boolean active() { return !locallySignedOut && lease.active(System.nanoTime()); }
@@ -86,11 +88,11 @@ public final class DeviceAuth {
                 String status = status(result);
                 if (status.equals("approved")) {
                     locallySignedOut = false;
-                    token = candidate; challenge = null; code = ""; nextValidation = 0;
+                    socialRevision++;token = candidate; challenge = null; code = ""; nextValidation = 0;
                     save(); validate();
                 } else if (status.equals("no_access") || status.equals("invalid") || status.equals("expired")) {
                     // If the successful claim response was lost, the candidate may already be active.
-                    token = candidate; challenge = null; code = ""; validate();
+                    socialRevision++;token = candidate; challenge = null; code = ""; validate();
                     if (lease.active(System.nanoTime())) { locallySignedOut = false; save(); }
                 }
             }
@@ -113,9 +115,18 @@ public final class DeviceAuth {
         }
     }
     public void logout() {
-        locallySignedOut = true;
+        socialRevision++;locallySignedOut = true;
         lease.clear(); message = "Вы вышли. Для отзыва сеанса откройте кабинет на сайте.";
         worker.execute(() -> { lease.clear(); token = null; challenge = null; code = ""; try { Files.deleteIfExists(file); } catch (Exception ignored) {} });
+    }
+    public void social(String action, JsonObject payload, java.util.function.Consumer<JsonObject> callback) {
+        worker.execute(() -> {
+            JsonObject result;
+            try { if(!active()||token==null)throw new IllegalStateException(); configure();
+                result=rpc("mod_social",Map.of("p_token",token,"p_action",action,"p_payload",payload));
+            }catch(Exception e){result=new JsonObject();result.addProperty("status","unavailable");}
+            callback.accept(result);
+        });
     }
     private void configure() throws Exception {
         if (api != null) return;
@@ -125,14 +136,14 @@ public final class DeviceAuth {
         if (!url.equals("https://pixqnuuvpxxxwaxjntpl.supabase.co")) throw new IllegalStateException("unexpected auth server");
         key = config.get("supabaseAnonKey").getAsString(); api = url + "/rest/v1/rpc/";
     }
-    private JsonObject rpc(String name, Map<String, String> args) throws Exception {
+    private JsonObject rpc(String name, Map<String, ?> args) throws Exception {
         return request(HttpRequest.newBuilder(URI.create(api + name)).timeout(Duration.ofSeconds(10))
             .header("apikey", key).header("Content-Type", "application/json")
             .POST(HttpRequest.BodyPublishers.ofString(JSON.toJson(args))).build());
     }
     private JsonObject request(HttpRequest request) throws Exception {
         HttpResponse<String> response = http.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
-        if (response.statusCode() != 200 || response.body().length() > 16384) throw new IllegalStateException("auth request failed");
+        if (response.statusCode() != 200 || response.body().length() > 65536) throw new IllegalStateException("auth request failed");
         return JSON.fromJson(response.body(), JsonObject.class);
     }
     private void save() {
