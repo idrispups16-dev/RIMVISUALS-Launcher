@@ -58,6 +58,7 @@ public class RimVisualsClient implements ClientModInitializer {
             xyz.rimvisuals.core.WorldColors.tick(client);
             xyz.rimvisuals.core.Notifier.tick(client);
             xyz.rimvisuals.core.Keybinds.tick(client);
+            Modules.SWING.worldChanged(client.world);
             xyz.rimvisuals.core.SocialClient.tick(client);
             SmokeTest.tick(client);
             if(!devSmoke&&client.getOverlay()==null){
