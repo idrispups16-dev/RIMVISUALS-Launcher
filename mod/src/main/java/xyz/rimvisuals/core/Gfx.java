@@ -2,7 +2,7 @@ package xyz.rimvisuals.core;
 
 import net.minecraft.client.gui.DrawContext;
 
-/** Small drawing helpers (rounded rectangles, glow, star logo). Only uses DrawContext.fill. */
+/** Small drawing helpers (rounded rectangles, glow, RV logo). Only uses DrawContext.fill. */
 public final class Gfx {
     private Gfx() {}
 
@@ -75,14 +75,12 @@ public final class Gfx {
         }
     }
 
-    /** Four-point star used as the RIMVISUALS mark. */
-    public static void star(DrawContext c, int cx, int cy, int r, int color) {
-        color = ha(color);
-        for (int d = -r; d <= r; d++) {
-            float t = 1f - Math.abs(d) / (float) r;
-            int hw = Math.round(r * t * t * t);
-            c.fill(cx - hw, cy + d, cx + hw + 1, cy + d + 1, color);
-            c.fill(cx + d, cy - hw, cx + d + 1, cy + hw + 1, color);
-        }
+    /** Original compact RV monogram, drawn on a seven by five grid. */
+    public static void rv(DrawContext c, int cx, int cy, int radius, int color) {
+        String[] glyph={"1100101","1010101","1100101","1010101","1010010"};
+        int cell=Math.max(1,(radius*2+1)/7), x=cx-7*cell/2,y=cy-5*cell/2;
+        color=ha(color);
+        for(int row=0;row<5;row++)for(int col=0;col<7;col++)if(glyph[row].charAt(col)=='1')
+            c.fill(x+col*cell,y+row*cell,x+(col+1)*cell,y+(row+1)*cell,color);
     }
 }

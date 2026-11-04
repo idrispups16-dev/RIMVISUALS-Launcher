@@ -98,4 +98,3 @@ exception when invalid_text_representation or numeric_value_out_of_range then re
 end $$;
 revoke all on function public.mod_social(text,text,jsonb) from public;
 grant execute on function public.mod_social(text,text,jsonb) to anon,authenticated;
-

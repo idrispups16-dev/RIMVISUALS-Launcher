@@ -173,7 +173,7 @@ public class ClickGui extends Screen {
         Gfx.roundBorder(c,wx,wy,ww,wh,12,f(0xf2181818),f(0xff353535));
         Gfx.round(c,wx+5,wy+5,sideW-5,wh-10,9,f(0xff131313));
         c.fill(wx+sideW+3,wy+12,wx+sideW+4,wy+wh-12,f(0xff292929));
-        Gfx.star(c,wx+21,wy+22,8,f(acc));
+        Gfx.rv(c,wx+21,wy+22,8,f(acc));
         if(!sidebarCompact)txt(c,"RIMVISUALS",wx+38,wy+18,Theme.text());
         hit(wx+8,wy+8,sideW-12,28,this::toggleSidebar,null);
 
@@ -201,7 +201,7 @@ public class ClickGui extends Screen {
         }
         int foot=wy+wh-44;
         Gfx.round(c,wx+11,foot,sideW-20,30,6,f(0xff232323));
-        Gfx.star(c,wx+25,foot+15,5,f(acc));
+        Gfx.rv(c,wx+25,foot+15,5,f(acc));
         if(!sidebarCompact){txt(c,"Account",wx+41,foot+6,Theme.text());txt(c,"RIMVISUALS",wx+41,foot+18,Theme.muted());}
         hit(wx+11,foot,sideW-20,30,()->client.setScreen(new AccountScreen(this)),null);
 
@@ -271,7 +271,7 @@ public class ClickGui extends Screen {
             boolean hover=in(mx,my,x,y,cardW,cardH);
             Gfx.roundBorder(c,x,y,cardW,cardH,9,f(hover?0xff282828:0xff202020),f(selected==m?Theme.accent2():0xff353535));
             int headerY=y+15;
-            Gfx.star(c,x+14,headerY+3,4,f(m.enabled?Theme.accent2():Theme.muted()));
+            Gfx.rv(c,x+14,headerY+3,4,f(m.enabled?Theme.accent2():Theme.muted()));
             txt(c,textRenderer.trimToWidth(m.name,cardW-69),x+26,headerY,m.toggleable&&!m.enabled?Theme.muted():Theme.text());
             if(y>=ctop&&y+34<=cbot){
                 hit(x+6,y+5,cardW-45,29,()->{selected=m;detailScroll=0;detailA.value=0;focus=null;},null);

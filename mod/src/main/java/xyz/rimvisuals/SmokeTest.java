@@ -16,8 +16,7 @@ public final class SmokeTest {
    if(!RimVisualsClient.menuKey.getDefaultKey().getTranslationKey().equals("key.keyboard.right.shift"))throw new IllegalStateException("Unexpected default menu bind");
    var pingAction=xyz.rimvisuals.core.Keybinds.actions().stream().filter(a->a.id().equals("friend_ping")).findFirst().orElseThrow();
    if(!pingAction.key().getDefaultKey().getTranslationKey().equals("key.keyboard.n"))throw new IllegalStateException("N marker default missing");
-   for(String actionId:java.util.List.of("hw_use_trap","hw_use_plast","hw_use_custom","ft_use_trap","ft_use_plast","ft_use_custom"))
-     if(xyz.rimvisuals.core.Keybinds.actions().stream().noneMatch(a->a.id().equals(actionId)))throw new IllegalStateException("Helper bind missing: "+actionId);
+   if(xyz.rimvisuals.core.Keybinds.actions().stream().anyMatch(a->a.id().matches("(hw|ft)_use_.*")||a.id().equals("item_swap_action")))throw new IllegalStateException("Retired item-use bind was registered");
    var bindSnapshot=xyz.rimvisuals.core.Modules.snapshot();
    try {
     var action=xyz.rimvisuals.core.Keybinds.actions().getFirst();

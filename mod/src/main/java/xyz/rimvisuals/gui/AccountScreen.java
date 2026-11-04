@@ -25,7 +25,7 @@ public final class AccountScreen extends Screen {
     @Override public void render(DrawContext c,int mx,int my,float delta) {
         c.fill(0,0,width,height,0xf00c0b14);
         Gfx.roundBorder(c,x,y,w,244,16,0xff17151f,0xff493562);
-        c.drawCenteredTextWithShadow(textRenderer,"✦ RIMVISUALS",width/2,y+19,0xffbb99ff);
+        c.drawCenteredTextWithShadow(textRenderer,"RV · RIMVISUALS",width/2,y+19,0xffbb99ff);
         c.drawCenteredTextWithShadow(textRenderer,DeviceAuth.INSTANCE.active()?"Аккаунт подключён":"Подтвердите вход через сайт",width/2,y+42,0xffe9e0ff);
         String code=DeviceAuth.INSTANCE.code();
         if(!code.isEmpty())code=code.substring(0,4)+"-"+code.substring(4);
