@@ -2,6 +2,7 @@ package xyz.rimvisuals;
 /** Opt-in startup contracts for existing render paths; no gameplay/world validation claim. */
 public final class PvpRenderChecks {
  public static void run(){
+   xyz.rimvisuals.core.EffectParticles.checkLoadedSprite();
   var saved=xyz.rimvisuals.core.Modules.snapshot();
   try{
    var fade=xyz.rimvisuals.core.Modules.TOTEM_FADE;fade.enabled=true;fade.start.set(.6);fade.endOpacity.set(.15);

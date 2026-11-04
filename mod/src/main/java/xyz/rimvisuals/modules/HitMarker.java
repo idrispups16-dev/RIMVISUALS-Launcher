@@ -17,8 +17,13 @@ public final class HitMarker extends Module {
     public final Setting.Num duration = add(new Setting.Num("Duration (ms)", 350, 100, 1000, 25));
 
     public HitMarker() {
-        super("hit_marker", "Hit Marker", "Shows a marker at the crosshair when you attack a living entity. Pure 2D overlay, a handful of rectangles while visible.", Category.VISUALS);
+        super("hit_marker", "Hit Marker", "Shows a marker at the crosshair when you attack a living entity. Hidden with F1, like the vanilla HUD.", Category.VISUALS);
         enabled = false;
+    }
+
+    @Override public String statusNote() {
+        var mc = net.minecraft.client.MinecraftClient.getInstance();
+        return mc != null && mc.options.hudHidden ? "Hidden by F1: show HUD to see Hit Marker" : "Attack a living entity to show the marker";
     }
 
     public void draw(DrawContext c, int w, int h) {
