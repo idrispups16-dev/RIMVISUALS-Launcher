@@ -84,7 +84,12 @@ begin
  select coalesce(jsonb_agg(jsonb_build_object('code',p.friend_code,'nickname',p.nickname,'kind','sent')),'[]'::jsonb)
  into sent from public.rim_social_profiles p join public.rim_friendships f on f.recipient=p.user_id where f.sender=u and not f.accepted;
  select coalesce(jsonb_agg(jsonb_build_object('id',m.id,'nickname',p.nickname,'name',m.name,'x',m.x,'y',m.y,'z',m.z,'expires_at',m.expires_at)),'[]'::jsonb)
- into markers from public.rim_friend_markers m join public.rim_social_profiles p on p.user_id=m.owner_id
+ into markers from (
+  select mm.* from public.rim_friend_markers mm
+  where mm.server_hash=srv and mm.dimension=dim and mm.expires_at>now()
+  and (mm.owner_id=u or exists(select 1 from public.rim_friendships ff where ff.accepted and ((ff.sender=u and ff.recipient=mm.owner_id) or (ff.recipient=u and ff.sender=mm.owner_id))))
+  order by mm.created_at desc limit 32
+ ) m join public.rim_social_profiles p on p.user_id=m.owner_id
  where m.server_hash=srv and m.dimension=dim and m.expires_at>now() and public.mod_access_until(m.owner_id) is not null
  and exists(select 1 from public.mod_sessions s where s.user_id=m.owner_id and s.expires_at>now())
  and (m.owner_id=u or exists(select 1 from public.rim_friendships f where f.accepted and ((f.sender=u and f.recipient=m.owner_id) or (f.recipient=u and f.sender=m.owner_id))));
@@ -93,3 +98,4 @@ exception when invalid_text_representation or numeric_value_out_of_range then re
 end $$;
 revoke all on function public.mod_social(text,text,jsonb) from public;
 grant execute on function public.mod_social(text,text,jsonb) to anon,authenticated;
+
