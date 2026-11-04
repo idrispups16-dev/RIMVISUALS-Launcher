@@ -14,6 +14,10 @@ public final class SmokeTest {
    RimVisualsClient.openMenu(client);
    if(!(client.currentScreen instanceof ClickGui))throw new IllegalStateException("Menu entry did not open ClickGUI");
    if(!RimVisualsClient.menuKey.getDefaultKey().getTranslationKey().equals("key.keyboard.right.shift"))throw new IllegalStateException("Unexpected default menu bind");
+   var pingAction=xyz.rimvisuals.core.Keybinds.actions().stream().filter(a->a.id().equals("friend_ping")).findFirst().orElseThrow();
+   if(!pingAction.key().getDefaultKey().getTranslationKey().equals("key.keyboard.n"))throw new IllegalStateException("N marker default missing");
+   for(String actionId:java.util.List.of("hw_use_trap","hw_use_plast","hw_use_custom","ft_use_trap","ft_use_plast","ft_use_custom"))
+     if(xyz.rimvisuals.core.Keybinds.actions().stream().noneMatch(a->a.id().equals(actionId)))throw new IllegalStateException("Helper bind missing: "+actionId);
    var bindSnapshot=xyz.rimvisuals.core.Modules.snapshot();
    try {
     var action=xyz.rimvisuals.core.Keybinds.actions().getFirst();
@@ -61,7 +65,8 @@ public final class SmokeTest {
    stage++;shotDone=shotRequested=false;nextShotAt=ticks+12;
    if(stage==1){var gui=new ClickGui();gui.showCategoryForTest(4);client.setScreen(gui);}
    else if(stage==2)client.setScreen(new xyz.rimvisuals.gui.KeybindManagerScreen(new ClickGui()));
-   else if(stage<5)client.setScreen(new xyz.rimvisuals.gui.LocalDataScreen(new ClickGui(),stage==4));
+   else if(stage==3)client.setScreen(new xyz.rimvisuals.gui.FriendsScreen(new ClickGui()));
+   else if(stage==4)client.setScreen(new xyz.rimvisuals.gui.LocalDataScreen(new ClickGui(),true));
    else if(stage==5)client.setScreen(new PreviewScreen());
    else if(stage==6){var gui=new ClickGui();gui.showHelperForTest();client.setScreen(gui);}
    else if(stage==7)client.setScreen(new xyz.rimvisuals.gui.HelperConnectScreen(new ClickGui(),false));

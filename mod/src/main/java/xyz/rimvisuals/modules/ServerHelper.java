@@ -5,6 +5,7 @@ import xyz.rimvisuals.core.Module;
 /** Own local-information helper; no server commands or guessed event durations. */
 public final class ServerHelper extends Module {
  public final boolean ft;
+ public final Setting.Text bindItem=add(new Setting.Text("Custom bind item name contains",""));
  public final Setting.Text aliases=add(new Setting.Text("Extra exact hosts",""));
  public final Setting.Bool chat=add(new Setting.Bool("Read system chat",true));
  public final Setting.Bool action=add(new Setting.Bool("Read action bar",true));

@@ -19,7 +19,7 @@ public final class HelperSettingsScreen extends Screen {
   button(12,10,half,"HolyWorld"+(ft?"":" selected"),()->{ft=false;page=0;rebuild();});button(20+half,10,half,"FunTime"+(ft?" selected":""),()->{ft=true;page=0;rebuild();});
   boolean compact=height<350;int columns=compact?6:3;int tw=(width-24-(columns-1)*5)/columns;String[] compactTabs={"Events","CDs","Alerts","Regions","Binds","HUD"};for(int i=0;i<TABS.length;i++){final int index=i;button(12+(i%columns)*(tw+5),(compact?34:36)+(i/columns)*24,tw,(tab==i?"> ":"")+(compact?compactTabs[i]:TABS[i]),()->{tab=index;page=0;rebuild();});}
   int y=compact?60:90;button(12,y,width-24,h.name+": "+(h.enabled?"ON":"OFF"),()->{h.enabled=!h.enabled;Modules.save();rebuild();});y+=24;
-  if(tab==4){button(12,y,width-24,"Open Keybind Manager (helper actions are unbound by default)",()->client.setScreen(new KeybindManagerScreen(this)));y+=26;}
+  if(tab==4){button(12,y,width-24,"Настроить бинды: трапка / пласт / свой предмет",()->client.setScreen(new KeybindManagerScreen(this,h.name+" /")));y+=26;}
   if(tab==5){button(12,y,width-24,"Open existing HUD Editor",()->client.setScreen(new HudEditorScreen(this)));y+=24;}
   if(tab==2||tab==5){var hud=ft?Modules.FT_NOTICES:Modules.HW_NOTICES;button(12,y,width-24,"Helper notification HUD: "+(hud.enabled?"ON":"OFF"),()->{hud.enabled=!hud.enabled;Modules.save();rebuild();});y+=24;}
   if(tab==5){var huds=ft?java.util.List.of(Modules.FT_EVENTS,Modules.FT_COOLDOWNS,Modules.FT_REGIONS):java.util.List.of(Modules.HW_EVENTS,Modules.HW_COOLDOWNS,Modules.HW_REGIONS);for(var hud:huds){button(12,y,width-24,hud.name+": "+(hud.enabled?"ON":"OFF"),()->{hud.enabled=!hud.enabled;Modules.save();rebuild();});y+=24;}}
@@ -42,7 +42,7 @@ public final class HelperSettingsScreen extends Screen {
   case 1->List.of(h.cooldowns,h.trapName,h.plastName,h.trapPrefix,h.plastPrefix,h.estimates,h.trapSeconds,h.plastSeconds,h.trapVisible,h.plastVisible,h.trapColor,h.plastColor);
   case 2->List.of(h.notifications,h.sounds,h.soundVolume,h.readyNotify,h.health,h.hp,h.armor,h.durability);
   case 3->List.of(h.regionPrefix,h.scoreboard,h.action,h.chat);
-  case 4->List.of();
+  case 4->List.of(h.trapName,h.plastName,h.bindItem);
   default->List.of();};}
  @Override public void render(DrawContext c,int mx,int my,float delta){c.fill(0,0,width,height,0xf00b0912);super.render(c,mx,my,delta);for(var label:fieldLabels)c.drawText(textRenderer,label.text,12,label.y,0xffbba9ff,false);String footer=TABS[tab]+" "+(page+1)+"/"+shownPages+" | "+(status.isEmpty()?HelperRuntime.status():status);c.drawText(textRenderer,textRenderer.trimToWidth(footer,width-24),12,height-23,0xffaaa6bb,false);}
  @Override public boolean shouldPause(){return false;}

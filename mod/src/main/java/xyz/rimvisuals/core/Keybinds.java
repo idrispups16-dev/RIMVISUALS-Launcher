@@ -31,6 +31,14 @@ public final class Keybinds {
   helperAction("helper_settings","Open HW/FT Settings",()->MinecraftClient.getInstance().setScreen(new xyz.rimvisuals.gui.HelperSettingsScreen(null,ServerHelpers.active()==Modules.FT_HELPER)));
   helperAction("helper_refresh","Manual Refresh Events",HelperRuntime::refresh);
   helperAction("helper_trap_plast","Toggle Trapka/Plast Timer Visibility",()->forHelpers(h->{boolean show=!(h.trapVisible.value||h.plastVisible.value);h.trapVisible.value=show;h.plastVisible.value=show;}));
+  for(var h:List.of(Modules.HW_HELPER,Modules.FT_HELPER)){
+   String prefix=h.ft?"ft":"hw";
+   helperAction(prefix+"_use_trap",h.name+" / Use Trapka",()->HelperItemBindings.use(h,0));
+   helperAction(prefix+"_use_plast",h.name+" / Use Plast",()->HelperItemBindings.use(h,1));
+   helperAction(prefix+"_use_custom",h.name+" / Use custom item",()->HelperItemBindings.use(h,2));
+  }
+  var ping=KeyBindingHelper.registerKeyBinding(new KeyBinding("key.rimvisuals.friend_ping",InputUtil.Type.KEYSYM,GLFW.GLFW_KEY_N,KeyBinding.Category.MISC));
+  actions.add(new Action("friend_ping","Friends / Share marker",ping,SocialClient::ping));
   load(pending);
  }
  private static void helperAction(String id,String label,Runnable run){var key=KeyBindingHelper.registerKeyBinding(new KeyBinding("key.rimvisuals."+id,InputUtil.Type.KEYSYM,GLFW.GLFW_KEY_UNKNOWN,KeyBinding.Category.MISC));actions.add(new Action(id,label,key,run));}

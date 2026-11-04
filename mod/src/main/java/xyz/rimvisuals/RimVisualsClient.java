@@ -40,6 +40,7 @@ public class RimVisualsClient implements ClientModInitializer {
                 "key.rimvisuals.monitor", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_UNKNOWN, KeyBinding.Category.MISC));
         xyz.rimvisuals.core.Keybinds.init();
         xyz.rimvisuals.core.LocalData.init();
+        xyz.rimvisuals.core.ClientCommands.init();
         xyz.rimvisuals.core.ServerHelpers.init();
         net.fabricmc.fabric.api.client.rendering.v1.TooltipComponentCallback.EVENT.register(data -> data instanceof xyz.rimvisuals.modules.ShulkerPreview.Data preview ? new xyz.rimvisuals.gui.ShulkerTooltip(preview) : null);
         net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> client.execute(() -> {
@@ -57,6 +58,7 @@ public class RimVisualsClient implements ClientModInitializer {
             xyz.rimvisuals.core.WorldColors.tick(client);
             xyz.rimvisuals.core.Notifier.tick(client);
             xyz.rimvisuals.core.Keybinds.tick(client);
+            xyz.rimvisuals.core.SocialClient.tick(client);
             SmokeTest.tick(client);
             if(!devSmoke&&client.getOverlay()==null){
                 if(!accountPromptShown&&client.currentScreen instanceof TitleScreen&&!xyz.rimvisuals.auth.AccessGate.allowed()){
