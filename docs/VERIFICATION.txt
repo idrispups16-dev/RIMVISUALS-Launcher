@@ -4,6 +4,6 @@ Build: Gradle test build --offline: PASS.
 Startup/mixin/GUI dev smoke: PASS (no public-server test).
 API IDs: 223.
 Source publication payload secret-pattern scan: 0 findings (not a full security audit).
-Live HolyWorld API response: NOT YET VERIFIED.
-Video on HolyWorld: NOT YET RECORDED.
+Live HolyWorld API response: VERIFIED, accepted=true state=READY blockedCount=1 (2026-11-05 21:12:52 Asia/Dubai).
+Video on HolyWorld: RECORDED, 37-second trimmed app-window capture; status/world/menu, no audio. Specific blocked ID was not logged; see LIVE-VERIFICATION.md.
 EV certificate/code signature: NONE; unprotected source review route.
