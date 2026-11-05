@@ -1,0 +1,1117 @@
+[
+  {
+    "id": "friends_options",
+    "name": "Friends & Markers",
+    "description": "Mutual account friends, shared pings (N), local .way name X Y Z. Match the room on multi-server networks."
+  },
+  {
+    "id": "friends_options.share_rimvisuals_status_with_friends",
+    "name": "Friends & Markers / Share RIMVISUALS status with friends",
+    "description": "Boolean sub-option of friends_options; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "friends_options.receive_friend_markers",
+    "name": "Friends & Markers / Receive friend markers",
+    "description": "Boolean sub-option of friends_options; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "friends_options.rim_friend_name_badges",
+    "name": "Friends & Markers / RIM friend name badges",
+    "description": "Boolean sub-option of friends_options; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "info_hud",
+    "name": "Info HUD",
+    "description": "FPS, ping and coordinates"
+  },
+  {
+    "id": "info_hud.custom_accent",
+    "name": "Info HUD / Custom accent",
+    "description": "Boolean sub-option of info_hud; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "info_hud.show_fps",
+    "name": "Info HUD / Show FPS",
+    "description": "Boolean sub-option of info_hud; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "info_hud.show_ping",
+    "name": "Info HUD / Show ping",
+    "description": "Boolean sub-option of info_hud; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "info_hud.show_xyz",
+    "name": "Info HUD / Show XYZ",
+    "description": "Boolean sub-option of info_hud; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "watermark",
+    "name": "Watermark",
+    "description": "RIMVISUALS tag"
+  },
+  {
+    "id": "watermark.custom_accent",
+    "name": "Watermark / Custom accent",
+    "description": "Boolean sub-option of watermark; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "watermark.show_rv_logo",
+    "name": "Watermark / Show RV logo",
+    "description": "Boolean sub-option of watermark; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "pulse_glow",
+    "name": "Pulse Glow",
+    "description": "Soft glowing screen edges"
+  },
+  {
+    "id": "pulse_glow.use_theme_accent",
+    "name": "Pulse Glow / Use theme accent",
+    "description": "Boolean sub-option of pulse_glow; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "particles",
+    "name": "Particle Effects",
+    "description": "Decorative floating particles"
+  },
+  {
+    "id": "particles.in_game_overlay",
+    "name": "Particle Effects / In-game overlay",
+    "description": "Boolean sub-option of particles; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "particles.menu_particles",
+    "name": "Particle Effects / Menu particles",
+    "description": "Boolean sub-option of particles; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "interface",
+    "name": "Interface",
+    "description": "Theme, colors, scale and touch mode"
+  },
+  {
+    "id": "interface.auto_save_cfg",
+    "name": "Interface / Auto Save CFG",
+    "description": "Boolean sub-option of interface; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "interface.compact_sidebar",
+    "name": "Interface / Compact sidebar",
+    "description": "Boolean sub-option of interface; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "performance",
+    "name": "Performance",
+    "description": "CPU submission timings, bounded effects; no GPU/FPS claims"
+  },
+  {
+    "id": "performance.performance_safe_mode",
+    "name": "Performance / Performance Safe Mode",
+    "description": "Boolean sub-option of performance; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "performance.reduced_motion",
+    "name": "Performance / Reduced motion",
+    "description": "Boolean sub-option of performance; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "performance.adaptive_particles",
+    "name": "Performance / Adaptive particles",
+    "description": "Boolean sub-option of performance; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "performance.performance_monitor",
+    "name": "Performance / Performance monitor",
+    "description": "Boolean sub-option of performance; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "performance.diagnostic_cpu_timings",
+    "name": "Performance / Diagnostic CPU timings",
+    "description": "Boolean sub-option of performance; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "viewmodel",
+    "name": "Viewmodel Editor",
+    "description": "Per-hand position, scale, rotation and item depth; cosmetic only"
+  },
+  {
+    "id": "viewmodel.item_category_transforms",
+    "name": "Viewmodel Editor / Item category transforms",
+    "description": "Boolean sub-option of viewmodel; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "viewmodel.smooth_transitions",
+    "name": "Viewmodel Editor / Smooth transitions",
+    "description": "Boolean sub-option of viewmodel; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "swing",
+    "name": "Swing Animations",
+    "description": "Adds submission-time swing transforms; attack timing unchanged. Reduced Motion disables this."
+  },
+  {
+    "id": "hand_lighting",
+    "name": "Hand Lighting",
+    "description": "Item illumination only. Bloom/outline/blur shaders are not implemented; no Iris pipeline hooks."
+  },
+  {
+    "id": "hand_lighting.main_hand_lighting",
+    "name": "Hand Lighting / Main hand lighting",
+    "description": "Boolean sub-option of hand_lighting; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "hand_lighting.off_hand_lighting",
+    "name": "Hand Lighting / Off hand lighting",
+    "description": "Boolean sub-option of hand_lighting; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "crystal_scale",
+    "name": "Crystal Scale",
+    "description": "Changes how large End Crystals are drawn and lets new crystals grow in. Visual only; hitbox is unchanged."
+  },
+  {
+    "id": "crystal_fade",
+    "name": "Crystal Fade",
+    "description": "Makes End Crystals translucent and lets new crystals fade in. Visual only; minimum opacity is limited so crystals stay visible."
+  },
+  {
+    "id": "totem_scale",
+    "name": "Totem Scale",
+    "description": "Changes the size of the totem pop animation and can shrink it away at the end. Visual only."
+  },
+  {
+    "id": "totem_scale.shrink_at_end",
+    "name": "Totem Scale / Shrink at end",
+    "description": "Boolean sub-option of totem_scale; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "hit_color",
+    "name": "Hit Color",
+    "description": "Changes the colour of the damage flash on every entity (including you). One small texture upload when the setting changes; no per-frame cost."
+  },
+  {
+    "id": "hit_particles",
+    "name": "Hit Particles",
+    "description": "Spawns coloured particles when you attack a living entity. Count obeys the performance budget and Safe Mode cap."
+  },
+  {
+    "id": "crit_particles",
+    "name": "Critical Particles",
+    "description": "Adds your own coloured burst when an attack looks like a critical hit (falling, not sprinting, cooldown nearly full). The server decides the real crit; vanilla particles are unchanged."
+  },
+  {
+    "id": "damage_particles",
+    "name": "Damage Particles",
+    "description": "Spawns particles on entities that lose health, scaled by damage taken. Server hurt packets by default; optional synced-health delta mode. Hurt packets do not reveal damage amount."
+  },
+  {
+    "id": "pearl_trails",
+    "name": "Pearl Trails",
+    "description": "Coloured particle trail behind ender pearls in flight. Count per tick is capped by the performance budget (Safe Mode: 6)."
+  },
+  {
+    "id": "pearl_trails.own_projectiles_only",
+    "name": "Pearl Trails / Own projectiles only",
+    "description": "Boolean sub-option of pearl_trails; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "projectile_trails",
+    "name": "Projectile Trails",
+    "description": "Coloured particle trail behind arrows, tridents and thrown items in flight (not pearls). Count per tick is capped by the performance budget (Safe Mode: 6)."
+  },
+  {
+    "id": "projectile_trails.own_projectiles_only",
+    "name": "Projectile Trails / Own projectiles only",
+    "description": "Boolean sub-option of projectile_trails; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "sword_trails",
+    "name": "Sword Trails",
+    "description": "Coloured particles along the sword tip while swinging a sword. Count per tick is capped by the performance budget (Safe Mode: 6)."
+  },
+  {
+    "id": "sharpness_particles",
+    "name": "Sharpness Particles",
+    "description": "Adds a coloured burst on hits made with a Sharpness-enchanted held item (level read from the item you hold). Obeys the performance budget."
+  },
+  {
+    "id": "inventory_hud",
+    "name": "Inventory HUD",
+    "description": "Main inventory grid; hotbar is not duplicated"
+  },
+  {
+    "id": "inventory_hud.custom_accent",
+    "name": "Inventory HUD / Custom accent",
+    "description": "Boolean sub-option of inventory_hud; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "inventory_hud.show_stack_counts",
+    "name": "Inventory HUD / Show stack counts",
+    "description": "Boolean sub-option of inventory_hud; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "hit_marker",
+    "name": "Hit Marker",
+    "description": "Shows a marker at the crosshair when you attack a living entity. Hidden with F1, like the vanilla HUD."
+  },
+  {
+    "id": "kill_effects",
+    "name": "Kill Effects",
+    "description": "Spawns a burst where your last target dies (health reaches 0 within 6 s of your hit). Obeys the performance budget."
+  },
+  {
+    "id": "damage_tint",
+    "name": "Damage Tint",
+    "description": "Tints the screen edges when you take damage. 2D overlay drawn only while the hurt timer runs."
+  },
+  {
+    "id": "cps_hud",
+    "name": "CPS",
+    "description": "Clicks per second (attack and use key presses seen per rendered frame; very fast clicking above your FPS is under-counted)."
+  },
+  {
+    "id": "cps_hud.custom_accent",
+    "name": "CPS / Custom accent",
+    "description": "Boolean sub-option of cps_hud; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "cps_hud.show_right_click",
+    "name": "CPS / Show right click",
+    "description": "Boolean sub-option of cps_hud; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "keystrokes_hud",
+    "name": "Keystrokes",
+    "description": "Movement keys and mouse buttons using your configured key bindings"
+  },
+  {
+    "id": "keystrokes_hud.custom_accent",
+    "name": "Keystrokes / Custom accent",
+    "description": "Boolean sub-option of keystrokes_hud; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "keystrokes_hud.show_mouse_buttons",
+    "name": "Keystrokes / Show mouse buttons",
+    "description": "Boolean sub-option of keystrokes_hud; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "keystrokes_hud.show_jump_bar",
+    "name": "Keystrokes / Show jump bar",
+    "description": "Boolean sub-option of keystrokes_hud; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "potion_hud",
+    "name": "Potion HUD",
+    "description": "Active effects with level and time left"
+  },
+  {
+    "id": "potion_hud.custom_accent",
+    "name": "Potion HUD / Custom accent",
+    "description": "Boolean sub-option of potion_hud; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "potion_hud.show_level",
+    "name": "Potion HUD / Show level",
+    "description": "Boolean sub-option of potion_hud; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "potion_hud.highlight_last_10_s",
+    "name": "Potion HUD / Highlight last 10 s",
+    "description": "Boolean sub-option of potion_hud; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "speed_hud",
+    "name": "Speed (BPS)",
+    "description": "Your horizontal speed in blocks per second"
+  },
+  {
+    "id": "speed_hud.custom_accent",
+    "name": "Speed (BPS) / Custom accent",
+    "description": "Boolean sub-option of speed_hud; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "speed_hud.show_unit",
+    "name": "Speed (BPS) / Show unit",
+    "description": "Boolean sub-option of speed_hud; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "session_hud",
+    "name": "Session Info",
+    "description": "Play time in this world and the current server address"
+  },
+  {
+    "id": "session_hud.custom_accent",
+    "name": "Session Info / Custom accent",
+    "description": "Boolean sub-option of session_hud; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "session_hud.show_play_time",
+    "name": "Session Info / Show play time",
+    "description": "Boolean sub-option of session_hud; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "session_hud.show_server",
+    "name": "Session Info / Show server",
+    "description": "Boolean sub-option of session_hud; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "hand_color",
+    "name": "Hand Color",
+    "description": "Tints the first-person arm: solid, gradient or rainbow, with per-hand opacity. Multiplies the skin colour; item models are not changed."
+  },
+  {
+    "id": "hand_color.main_hand",
+    "name": "Hand Color / Main hand",
+    "description": "Boolean sub-option of hand_color; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "hand_color.off_hand",
+    "name": "Hand Color / Off hand",
+    "description": "Boolean sub-option of hand_color; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "custom_fog",
+    "name": "Custom Fog",
+    "description": "Visible range changes render-distance fog in blocks; Legacy preserves percentage configs. Custom Fog takes priority over Atmosphere. Iris shader packs may override the result."
+  },
+  {
+    "id": "custom_fog.override_color",
+    "name": "Custom Fog / Override color",
+    "description": "Boolean sub-option of custom_fog; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "custom_fog.affect_fluid_fog",
+    "name": "Custom Fog / Affect fluid fog",
+    "description": "Boolean sub-option of custom_fog; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "hand_glow",
+    "name": "Hand Glow",
+    "description": "Translucent glowing halo around your first-person arm (stacked enlarged copies of the arm, fully lit). Geometry halo, not a bloom filter. Safe Mode suppresses the halo; Balanced caps it at one layer."
+  },
+  {
+    "id": "hand_glow.rainbow",
+    "name": "Hand Glow / Rainbow",
+    "description": "Boolean sub-option of hand_glow; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "hand_glow.main_hand",
+    "name": "Hand Glow / Main hand",
+    "description": "Boolean sub-option of hand_glow; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "hand_glow.off_hand",
+    "name": "Hand Glow / Off hand",
+    "description": "Boolean sub-option of hand_glow; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "water_color",
+    "name": "Water Color",
+    "description": "Recolours water in the world (blocks and cauldrons). Terrain is rebuilt shortly after you change a setting."
+  },
+  {
+    "id": "lava_color",
+    "name": "Lava Color",
+    "description": "Recolours lava surfaces. Terrain is rebuilt shortly after you change a setting."
+  },
+  {
+    "id": "weather_color",
+    "name": "Weather Color",
+    "description": "Tints falling rain and snow. Applies live, no rebuild needed."
+  },
+  {
+    "id": "biome_colors",
+    "name": "Biome Colors",
+    "description": "Overrides the biome tint on grass, ferns and leaves. Terrain is rebuilt shortly after you change a setting."
+  },
+  {
+    "id": "biome_colors.tint_grass",
+    "name": "Biome Colors / Tint grass",
+    "description": "Boolean sub-option of biome_colors; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "biome_colors.tint_leaves",
+    "name": "Biome Colors / Tint leaves",
+    "description": "Boolean sub-option of biome_colors; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "entity_outline",
+    "name": "Entity Outline",
+    "description": "Outlines selected entities through walls using the game's glow outline. Your own body is not outlined."
+  },
+  {
+    "id": "entity_outline.players",
+    "name": "Entity Outline / Players",
+    "description": "Boolean sub-option of entity_outline; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "entity_outline.hostile_mobs",
+    "name": "Entity Outline / Hostile mobs",
+    "description": "Boolean sub-option of entity_outline; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "entity_outline.other_living_entities",
+    "name": "Entity Outline / Other living entities",
+    "description": "Boolean sub-option of entity_outline; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "target_highlight",
+    "name": "Target Highlight",
+    "description": "Outlines the entity under your crosshair and/or the entity you hit last, through walls."
+  },
+  {
+    "id": "target_highlight.crosshair_target",
+    "name": "Target Highlight / Crosshair target",
+    "description": "Boolean sub-option of target_highlight; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "target_highlight.last_hit_target",
+    "name": "Target Highlight / Last hit target",
+    "description": "Boolean sub-option of target_highlight; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "totem_fade",
+    "name": "Totem Fade",
+    "description": "Fades the totem-pop item out near the end of its animation (works with Totem Scale). Visual only."
+  },
+  {
+    "id": "anchor_fade",
+    "name": "Anchor Fade / Scale",
+    "description": "When a Respawn Anchor explodes, a client-only copy of its model fades and shrinks where it stood. Visual only: no block, hitbox or server change."
+  },
+  {
+    "id": "anchor_fade.fade",
+    "name": "Anchor Fade / Scale / Fade",
+    "description": "Boolean sub-option of anchor_fade; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "anchor_fade.scale",
+    "name": "Anchor Fade / Scale / Scale",
+    "description": "Boolean sub-option of anchor_fade; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "anchor_fade.tint",
+    "name": "Anchor Fade / Scale / Tint",
+    "description": "Boolean sub-option of anchor_fade; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "explosion_effects",
+    "name": "Explosion Effects",
+    "description": "Extra shockwave ring and sparks for explosions near you (crystals, TNT, anchors, beds). Uses the shared particle budget; Safe Mode suppresses it."
+  },
+  {
+    "id": "explosion_effects.shockwave_ring",
+    "name": "Explosion Effects / Shockwave ring",
+    "description": "Boolean sub-option of explosion_effects; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "explosion_effects.sparks",
+    "name": "Explosion Effects / Sparks",
+    "description": "Boolean sub-option of explosion_effects; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "cooldowns_hud",
+    "name": "Cooldowns",
+    "description": "Active item cooldowns with progress bars"
+  },
+  {
+    "id": "cooldowns_hud.custom_accent",
+    "name": "Cooldowns / Custom accent",
+    "description": "Boolean sub-option of cooldowns_hud; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "cooldowns_hud.progress_bar",
+    "name": "Cooldowns / Progress bar",
+    "description": "Boolean sub-option of cooldowns_hud; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "cooldowns_hud.show_percent",
+    "name": "Cooldowns / Show percent",
+    "description": "Boolean sub-option of cooldowns_hud; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "notifications",
+    "name": "Notifications",
+    "description": "Short alerts: totem used, low health, low armor durability"
+  },
+  {
+    "id": "notifications.custom_accent",
+    "name": "Notifications / Custom accent",
+    "description": "Boolean sub-option of notifications; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "notifications.totem_used",
+    "name": "Notifications / Totem used",
+    "description": "Boolean sub-option of notifications; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "notifications.low_health",
+    "name": "Notifications / Low health",
+    "description": "Boolean sub-option of notifications; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "notifications.low_armor_durability",
+    "name": "Notifications / Low armor durability",
+    "description": "Boolean sub-option of notifications; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "fullbright",
+    "name": "Fullbright",
+    "description": "Lights dark areas by raising the lightmap gamma. Your Brightness option is left unchanged."
+  },
+  {
+    "id": "night_vision_fade",
+    "name": "Night Vision Fade",
+    "description": "Night Vision fades out smoothly over its last 10 seconds instead of flickering."
+  },
+  {
+    "id": "golden_apple_glow",
+    "name": "Golden Apple Glow",
+    "description": "Gold screen-edge glow while you have absorption. 2D overlay, drawn only while active."
+  },
+  {
+    "id": "golden_apple_glow.pulse",
+    "name": "Golden Apple Glow / Pulse",
+    "description": "Boolean sub-option of golden_apple_glow; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "custom_sky",
+    "name": "Custom Sky",
+    "description": "Blends the daytime sky dome colour with your colour; strength 0 is vanilla. Does not change the horizon fog (use Custom Fog) or the End/Nether sky."
+  },
+  {
+    "id": "hurt_camera",
+    "name": "Hurt Camera",
+    "description": "Scales the camera shake/roll when damaged on top of the vanilla Damage Tilt option (0% removes it). Death animation is unchanged."
+  },
+  {
+    "id": "armor_hud",
+    "name": "Armor HUD",
+    "description": "Worn armour pieces with durability percent and bar"
+  },
+  {
+    "id": "armor_hud.custom_accent",
+    "name": "Armor HUD / Custom accent",
+    "description": "Boolean sub-option of armor_hud; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "armor_hud.vertical_layout",
+    "name": "Armor HUD / Vertical layout",
+    "description": "Boolean sub-option of armor_hud; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "armor_hud.durability_percent",
+    "name": "Armor HUD / Durability percent",
+    "description": "Boolean sub-option of armor_hud; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "armor_hud.durability_bar",
+    "name": "Armor HUD / Durability bar",
+    "description": "Boolean sub-option of armor_hud; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "armor_hud.hide_empty_slots",
+    "name": "Armor HUD / Hide empty slots",
+    "description": "Boolean sub-option of armor_hud; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "target_hud",
+    "name": "Target HUD",
+    "description": "Name, health bar and distance of your current target. Uses health the game already syncs to you."
+  },
+  {
+    "id": "target_hud.custom_accent",
+    "name": "Target HUD / Custom accent",
+    "description": "Boolean sub-option of target_hud; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "target_hud.use_crosshair_target",
+    "name": "Target HUD / Use crosshair target",
+    "description": "Boolean sub-option of target_hud; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "target_hud.show_distance",
+    "name": "Target HUD / Show distance",
+    "description": "Boolean sub-option of target_hud; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "performance_hud",
+    "name": "Performance Monitor",
+    "description": "CPU submission times, not GPU timings"
+  },
+  {
+    "id": "performance_hud.custom_accent",
+    "name": "Performance Monitor / Custom accent",
+    "description": "Boolean sub-option of performance_hud; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "local_marks",
+    "name": "Local Markers",
+    "description": "Local .way markers and temporary friend pings for this server and dimension"
+  },
+  {
+    "id": "local_marks.custom_accent",
+    "name": "Local Markers / Custom accent",
+    "description": "Boolean sub-option of local_marks; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "totem_bar",
+    "name": "Totem Bar",
+    "description": "Own-player / loaded-world information; no server or inventory actions"
+  },
+  {
+    "id": "totem_bar.custom_accent",
+    "name": "Totem Bar / Custom accent",
+    "description": "Boolean sub-option of totem_bar; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "saturation_hud",
+    "name": "Saturation HUD",
+    "description": "Own-player / loaded-world information; no server or inventory actions"
+  },
+  {
+    "id": "saturation_hud.custom_accent",
+    "name": "Saturation HUD / Custom accent",
+    "description": "Boolean sub-option of saturation_hud; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "low_hp_hud",
+    "name": "Low HP",
+    "description": "Own-player / loaded-world information; no server or inventory actions"
+  },
+  {
+    "id": "low_hp_hud.custom_accent",
+    "name": "Low HP / Custom accent",
+    "description": "Boolean sub-option of low_hp_hud; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "tnt_timer",
+    "name": "TNT Timer",
+    "description": "Own-player / loaded-world information; no server or inventory actions"
+  },
+  {
+    "id": "tnt_timer.custom_accent",
+    "name": "TNT Timer / Custom accent",
+    "description": "Boolean sub-option of tnt_timer; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "zoom",
+    "name": "Zoom",
+    "description": "Camera FOV only. Assign Toggle Zoom in Keybinds; no attack, movement or sensitivity changes"
+  },
+  {
+    "id": "zoom.smooth_transition",
+    "name": "Zoom / Smooth transition",
+    "description": "Boolean sub-option of zoom; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "crosshair",
+    "name": "Crosshair",
+    "description": "Own first-person crosshair; does not change aim, attacks or targeting"
+  },
+  {
+    "id": "crosshair.center_dot",
+    "name": "Crosshair / Center dot",
+    "description": "Boolean sub-option of crosshair; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "crosshair.attack_cooldown_bar",
+    "name": "Crosshair / Attack cooldown bar",
+    "description": "Boolean sub-option of crosshair; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "aspect_ratio",
+    "name": "Aspect Ratio",
+    "description": "Changes horizontal camera projection; viewport, GUI and mouse targeting stay vanilla"
+  },
+  {
+    "id": "atmosphere",
+    "name": "Atmosphere",
+    "description": "Shared sky/fog colour grading. Existing Custom Sky/Fog take priority. No time, weather or lighting simulation changes"
+  },
+  {
+    "id": "item_physics",
+    "name": "Item Physics (visual)",
+    "description": "Cosmetic dropped-item tilt/spin/scale. Vanilla bob remains; item position, pickup and physics are unchanged"
+  },
+  {
+    "id": "china_hat",
+    "name": "China Hat",
+    "description": "Depth-tested conical player hat; third-person self, optional nearby players. Safe Mode suppresses geometry"
+  },
+  {
+    "id": "china_hat.other_players",
+    "name": "China Hat / Other players",
+    "description": "Boolean sub-option of china_hat; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "block_overlay",
+    "name": "Block Overlay",
+    "description": "Translucent selected-block shape bounding box; no interaction or hitbox changes. Safe Mode suppresses geometry"
+  },
+  {
+    "id": "block_overlay.other_players",
+    "name": "Block Overlay / Other players",
+    "description": "Boolean sub-option of block_overlay; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "sound_controller",
+    "name": "Sound Controller",
+    "description": "Scales sound categories at playback; Minecraft volume options remain unchanged"
+  },
+  {
+    "id": "shulker_preview",
+    "name": "Shulker Preview",
+    "description": "27-slot tooltip from container data already supplied by Minecraft. No server inventory queries"
+  },
+  {
+    "id": "hotkeys_hud",
+    "name": "Assigned Keys HUD",
+    "description": "Assigned RIM key bindings, up to eight rows; no input simulation"
+  },
+  {
+    "id": "hotkeys_hud.custom_accent",
+    "name": "Assigned Keys HUD / Custom accent",
+    "description": "Boolean sub-option of hotkeys_hud; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "compass_hud",
+    "name": "Compass HUD",
+    "description": "Own heading and yaw"
+  },
+  {
+    "id": "compass_hud.custom_accent",
+    "name": "Compass HUD / Custom accent",
+    "description": "Boolean sub-option of compass_hud; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "visual_hitbox",
+    "name": "Visual Hitbox",
+    "description": "Depth-tested visual outlines of existing player/mob bounds; width is in world units. No hitbox, reach or server changes"
+  },
+  {
+    "id": "visual_hitbox.players",
+    "name": "Visual Hitbox / Players",
+    "description": "Boolean sub-option of visual_hitbox; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "visual_hitbox.mobs",
+    "name": "Visual Hitbox / Mobs",
+    "description": "Boolean sub-option of visual_hitbox; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "visual_hitbox.selected_target_only",
+    "name": "Visual Hitbox / Selected target only",
+    "description": "Boolean sub-option of visual_hitbox; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "hw_helper",
+    "name": "HW Helper",
+    "description": "Own server HUD and literal parsing rules. Blank rules do nothing; timer syntax: prefix + seconds or mm:ss. No commands."
+  },
+  {
+    "id": "hw_helper.item_swap",
+    "name": "HW Helper / Item Swap",
+    "description": "Boolean sub-option of hw_helper; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "hw_helper.auction_price",
+    "name": "HW Helper / Auction Price",
+    "description": "Boolean sub-option of hw_helper; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "hw_helper.zako_health_indicator",
+    "name": "HW Helper / Zako Health Indicator",
+    "description": "Boolean sub-option of hw_helper; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "hw_helper.read_system_chat",
+    "name": "HW Helper / Read system chat",
+    "description": "Boolean sub-option of hw_helper; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "hw_helper.read_action_bar",
+    "name": "HW Helper / Read action bar",
+    "description": "Boolean sub-option of hw_helper; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "hw_helper.read_sidebar",
+    "name": "HW Helper / Read sidebar",
+    "description": "Boolean sub-option of hw_helper; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "hw_helper.event_notifications",
+    "name": "HW Helper / Event notifications",
+    "description": "Boolean sub-option of hw_helper; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "hw_helper.auction_match_notification",
+    "name": "HW Helper / Auction match notification",
+    "description": "Boolean sub-option of hw_helper; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "hw_helper.low_hp_warning",
+    "name": "HW Helper / Low HP warning",
+    "description": "Boolean sub-option of hw_helper; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "hw_helper.armor_warning",
+    "name": "HW Helper / Armor warning",
+    "description": "Boolean sub-option of hw_helper; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "hw_helper.track_events",
+    "name": "HW Helper / Track events",
+    "description": "Boolean sub-option of hw_helper; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "hw_helper.holyworld_public_api",
+    "name": "HW Helper / HolyWorld public API",
+    "description": "Boolean sub-option of hw_helper; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "hw_helper.track_pvp_cooldowns",
+    "name": "HW Helper / Track PvP cooldowns",
+    "description": "Boolean sub-option of hw_helper; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "hw_helper.estimated_use_attempt_timers",
+    "name": "HW Helper / Estimated use-attempt timers",
+    "description": "Boolean sub-option of hw_helper; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "hw_helper.show_trapka_timer",
+    "name": "HW Helper / Show Trapka timer",
+    "description": "Boolean sub-option of hw_helper; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "hw_helper.show_plast_timer",
+    "name": "HW Helper / Show Plast timer",
+    "description": "Boolean sub-option of hw_helper; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "hw_helper.helper_sounds",
+    "name": "HW Helper / Helper sounds",
+    "description": "Boolean sub-option of hw_helper; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "hw_helper.cooldown_ready_notifications",
+    "name": "HW Helper / Cooldown READY notifications",
+    "description": "Boolean sub-option of hw_helper; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "ft_helper",
+    "name": "FT Helper",
+    "description": "FunTime HUD, received event data and manual offhand Item Swap. Item Swap: one configured key press; minimum four ticks, no health trigger."
+  },
+  {
+    "id": "ft_helper.item_swap",
+    "name": "FT Helper / Item Swap",
+    "description": "Boolean sub-option of ft_helper; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "ft_helper.auction_price",
+    "name": "FT Helper / Auction Price",
+    "description": "Boolean sub-option of ft_helper; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "ft_helper.zako_health_indicator",
+    "name": "FT Helper / Zako Health Indicator",
+    "description": "Boolean sub-option of ft_helper; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "ft_helper.read_system_chat",
+    "name": "FT Helper / Read system chat",
+    "description": "Boolean sub-option of ft_helper; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "ft_helper.read_action_bar",
+    "name": "FT Helper / Read action bar",
+    "description": "Boolean sub-option of ft_helper; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "ft_helper.read_sidebar",
+    "name": "FT Helper / Read sidebar",
+    "description": "Boolean sub-option of ft_helper; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "ft_helper.event_notifications",
+    "name": "FT Helper / Event notifications",
+    "description": "Boolean sub-option of ft_helper; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "ft_helper.auction_match_notification",
+    "name": "FT Helper / Auction match notification",
+    "description": "Boolean sub-option of ft_helper; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "ft_helper.low_hp_warning",
+    "name": "FT Helper / Low HP warning",
+    "description": "Boolean sub-option of ft_helper; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "ft_helper.armor_warning",
+    "name": "FT Helper / Armor warning",
+    "description": "Boolean sub-option of ft_helper; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "ft_helper.track_events",
+    "name": "FT Helper / Track events",
+    "description": "Boolean sub-option of ft_helper; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "ft_helper.holyworld_public_api",
+    "name": "FT Helper / HolyWorld public API",
+    "description": "Boolean sub-option of ft_helper; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "ft_helper.track_pvp_cooldowns",
+    "name": "FT Helper / Track PvP cooldowns",
+    "description": "Boolean sub-option of ft_helper; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "ft_helper.estimated_use_attempt_timers",
+    "name": "FT Helper / Estimated use-attempt timers",
+    "description": "Boolean sub-option of ft_helper; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "ft_helper.show_trapka_timer",
+    "name": "FT Helper / Show Trapka timer",
+    "description": "Boolean sub-option of ft_helper; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "ft_helper.show_plast_timer",
+    "name": "FT Helper / Show Plast timer",
+    "description": "Boolean sub-option of ft_helper; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "ft_helper.helper_sounds",
+    "name": "FT Helper / Helper sounds",
+    "description": "Boolean sub-option of ft_helper; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "ft_helper.cooldown_ready_notifications",
+    "name": "FT Helper / Cooldown READY notifications",
+    "description": "Boolean sub-option of ft_helper; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "hw_helper_hud",
+    "name": "HW Helper HUD",
+    "description": "Received server information only; edit layout here, parsing rules in Utilities"
+  },
+  {
+    "id": "hw_helper_hud.custom_accent",
+    "name": "HW Helper HUD / Custom accent",
+    "description": "Boolean sub-option of hw_helper_hud; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "ft_helper_hud",
+    "name": "FT Helper HUD",
+    "description": "Received server information only; edit layout here, parsing rules in Utilities"
+  },
+  {
+    "id": "ft_helper_hud.custom_accent",
+    "name": "FT Helper HUD / Custom accent",
+    "description": "Boolean sub-option of ft_helper_hud; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "hw_helper_events",
+    "name": "HW Helper EVENTS",
+    "description": "Gameplay settings: Utilities > HW/FT Settings"
+  },
+  {
+    "id": "hw_helper_events.custom_accent",
+    "name": "HW Helper EVENTS / Custom accent",
+    "description": "Boolean sub-option of hw_helper_events; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "ft_helper_events",
+    "name": "FT Helper EVENTS",
+    "description": "Gameplay settings: Utilities > HW/FT Settings"
+  },
+  {
+    "id": "ft_helper_events.custom_accent",
+    "name": "FT Helper EVENTS / Custom accent",
+    "description": "Boolean sub-option of ft_helper_events; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "hw_helper_cooldowns",
+    "name": "HW Helper COOLDOWNS",
+    "description": "Gameplay settings: Utilities > HW/FT Settings"
+  },
+  {
+    "id": "hw_helper_cooldowns.custom_accent",
+    "name": "HW Helper COOLDOWNS / Custom accent",
+    "description": "Boolean sub-option of hw_helper_cooldowns; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "ft_helper_cooldowns",
+    "name": "FT Helper COOLDOWNS",
+    "description": "Gameplay settings: Utilities > HW/FT Settings"
+  },
+  {
+    "id": "ft_helper_cooldowns.custom_accent",
+    "name": "FT Helper COOLDOWNS / Custom accent",
+    "description": "Boolean sub-option of ft_helper_cooldowns; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "hw_helper_regions",
+    "name": "HW Helper REGIONS",
+    "description": "Gameplay settings: Utilities > HW/FT Settings"
+  },
+  {
+    "id": "hw_helper_regions.custom_accent",
+    "name": "HW Helper REGIONS / Custom accent",
+    "description": "Boolean sub-option of hw_helper_regions; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "ft_helper_regions",
+    "name": "FT Helper REGIONS",
+    "description": "Gameplay settings: Utilities > HW/FT Settings"
+  },
+  {
+    "id": "ft_helper_regions.custom_accent",
+    "name": "FT Helper REGIONS / Custom accent",
+    "description": "Boolean sub-option of ft_helper_regions; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "hw_helper_notifications",
+    "name": "HW Helper NOTIFICATIONS",
+    "description": "Gameplay settings: Utilities > HW/FT Settings"
+  },
+  {
+    "id": "hw_helper_notifications.custom_accent",
+    "name": "HW Helper NOTIFICATIONS / Custom accent",
+    "description": "Boolean sub-option of hw_helper_notifications; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "ft_helper_notifications",
+    "name": "FT Helper NOTIFICATIONS",
+    "description": "Gameplay settings: Utilities > HW/FT Settings"
+  },
+  {
+    "id": "ft_helper_notifications.custom_accent",
+    "name": "FT Helper NOTIFICATIONS / Custom accent",
+    "description": "Boolean sub-option of ft_helper_notifications; if blocked, the complete parent module is disabled and hidden."
+  },
+  {
+    "id": "keybinds",
+    "name": "keybinds",
+    "description": "RIMVISUALS keyboard and mouse binding manager and dispatch."
+  },
+  {
+    "id": "profiles",
+    "name": "profiles",
+    "description": "Local saved settings, presets, backups, import/export and server profile binding."
+  },
+  {
+    "id": "hud_editor",
+    "name": "hud_editor",
+    "description": "Move, resize, recolour and align visible permitted HUD elements."
+  },
+  {
+    "id": "client_settings",
+    "name": "client_settings",
+    "description": "Legacy local launcher settings import; no executable downloads in this mod."
+  }
+]

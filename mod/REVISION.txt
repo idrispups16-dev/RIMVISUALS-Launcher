@@ -1,5 +1,0 @@
-RIMVISUALS 0.2.0 project, revision r3 (2026-10-31)
-- build.gradle: no withSourcesJar, UTF-8 compiler encoding, Java 21
-- workflow: unpacks any zip in repo root, finds build.gradle automatically, builds with Gradle 8.12,
-  requires exactly one jar: build/libs/rimvisuals-0.2.0.jar
-- Source code has NOT been compiled or tested in Minecraft.

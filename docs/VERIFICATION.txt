@@ -1,0 +1,9 @@
+RIMVISUALS 0.4.12-hw-api.1
+Tests: 140; failures: 0; errors: 0.
+Build: Gradle test build --offline: PASS.
+Startup/mixin/GUI dev smoke: PASS (no public-server test).
+API IDs: 223.
+Source publication payload secret-pattern scan: 0 findings (not a full security audit).
+Live HolyWorld API response: NOT YET VERIFIED.
+Video on HolyWorld: NOT YET RECORDED.
+EV certificate/code signature: NONE; unprotected source review route.

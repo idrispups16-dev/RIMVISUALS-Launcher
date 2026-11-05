@@ -1,28 +1,41 @@
-# RIMVISUALS rebuild test branch
+# RIMVISUALS 0.4.12-hw-api.1 — HolyWorld review source
 
-See [rebuild status](docs/REBUILD_STATUS.md) and [complete feature audit](docs/FEATURE_MATRIX.md). This is not a finished client.
+Minecraft Java 1.21.11, Fabric Loader >=0.19.3, Fabric API 0.141.6+1.21.11, JDK 21, Gradle 9.2.1.
 
-# RIMVISUALS Launcher 0.1.6 + Fabric mod 0.2.0
+Это исходники Minecraft-мода, доступные для проверки. Код без обфускации/упаковщика защиты. Обычный Fabric remap переводит Yarn-имена Minecraft в runtime mappings; отдельной защиты кода нет. Права на распространение продукта остаются у владельца (All Rights Reserved). EV-сертификат и цифровая подпись отсутствуют и не заявляются.
 
-Target: Windows 11, Minecraft Java 1.21.11, Fabric Loader 0.19.3, Fabric API 0.141.6+1.21.11, Java 21.
+## Сборка
 
-The launcher opens the official Minecraft Launcher by executable or its discovered Store AUMID. It does not use minecraft://. Microsoft authentication and choosing/starting Fabric remain in the official launcher. Successful process creation/activation request does not prove the game started.
+Windows: `gradlew.bat test build`. Linux/macOS: `./gradlew test build`.
+JAR: `build/libs/rimvisuals-0.4.12-hw-api.1.jar`.
+Gradle wrapper входит в исходники. Первая сборка загружает стандартные зависимости Minecraft/Fabric/Gradle/Maven Central. Серверные ключи и пользовательские сессии для сборки не нужны.
 
-Settings and named launcher profiles are kept in Electron userData. Save also writes only `config/rimvisuals/launcher.json` in the selected Minecraft folder. The mod reads this on startup and every 40 client ticks when modified; switches control HUD, watermark, glow and particle overlay, plus accent and HUD scale. The in-game menu (Right Shift or RIMVISUALS button) retains its own detailed settings, HUD dragging and profiles. Existing mods, worlds and other configuration files are not removed.
+## HolyWorld Feature Control
 
-## Install and test
-1. Download the latest successful Windows workflow artifact, extract and install EXE.
-2. Download the Fabric workflow artifact and extract rimvisuals-0.2.0.jar.
-3. With Minecraft closed, place that JAR and Fabric API 0.141.6+1.21.11 in your chosen instance's mods folder. If an older RIMVISUALS JAR exists, move only that older JAR outside mods to avoid duplicate mod IDs. Keep all other mods and worlds.
-4. Select that same instance directory in RIMVISUALS, save settings, open official launcher, sign in and manually choose Fabric 1.21.11 / Loader 0.19.3.
-5. Test in a disposable world: HUD, watermark, glow, particles, accent and scale; then change settings from the launcher and verify in-game updates. Right Shift opens the editor. Test profile saving/loading and persistence after restart.
+- `src/main/java/xyz/rimvisuals/core/HolyFeatureControl.java`: Fabric play transport, регистрация C2S/S2C codecs, JOIN/DISCONNECT.
+- `HolyFeaturePolicy.java`: проверка JSON, UUID, blocklist, зависимости, частота запросов, сброс сессии.
+- Канал `liteapi:feature-control`; сырой UTF-8 JSON, без префикса длины строки.
+- `method=checkFeatures`, стабильный `client=rimvisuals`; передаются все 223 идентификатора из `docs/API-FEATURES.json`.
+- На доменах holyworld.me/holyworld.ru и их поддоменах функции недоступны до корректного ответа API. Объявление этого API сервером включает проверку также при подключении через IP/другой адрес.
+- Не больше двух попыток за подключение, интервал минимум 10 секунд, таймаут ответа 5 секунд. При ошибке функции на этом подключении остаются недоступными. Переподключение сбрасывает состояние.
+- Запрещённые функции не выполняются и скрываются из ClickGUI, настроек, списка клавиш, стандартного Controls Minecraft, редактора HUD и соответствующих служебных разделов. Профили не обходят runtime-проверку.
+- При запрете дочерней функции скрывается и блокируется весь родитель. Это намеренно консервативное поведение; некоторые разрешённые соседние настройки также могут стать недоступны.
+- Из паузы на проверяемом сервере доступна кнопка `HolyWorld API` с общим статусом. Наличие ответа API не означает разрешение мода администрацией.
 
-Build success is verified separately from Windows installation, Store activation and in-game rendering. The latter require the user's Windows machine and a licensed authenticated Minecraft session. No in-game test is claimed by CI.
+Официальная документация: https://wiki.holyworld.me/lite/api/protocol и https://wiki.holyworld.me/lite/api/feature .
 
-## Build
-Launcher: Node 22, npm install, node --test tests/launcher.cjs, npm run check, npm run dist:win (Windows).
-Mod: Java 21, Gradle 9.2.1, gradle -p mod build. Loom 1.14.10, Yarn 1.21.11+build.6.
+## Авторизация и сеть
 
-Rebuild CI also captures the Viewmodel editor for layout review.
+Релизная сборка использует аккаунт и действующий доступ RIMVISUALS. Исходники не содержат платёжных серверов или серверных секретов. Авторизация обращается к https://rimvisuals.vercel.app и разрешённому Supabase-проекту https://pixqnuuvpxxxwaxjntpl.supabase.co; browser configuration supplies its public API key. Локальная сессия хранится в `config/rimvisuals/mod-session.json`, в исходники она не включена.
 
-The scaled clipping regression is covered by the Viewmodel screenshot review.
+Социальные функции используют серверную службу RIMVISUALS для друзей, статуса и меток: ник/UUID, контекст сервера и измерения, координаты отправленных меток. Отдельный REST API событий: https://api.holyworld.me/v1/events . Feature Control не передаёт пароли, токены аккаунта или HWID — только UUID запроса, ID клиента и список ID функций.
+
+Мод не загружает исполняемые плагины/пайлоады/бутстраперы. Optional Auction Price и Zako Health Indicator не встроены: только переключаемые hooks к отдельно установленным модам. Их самостоятельная допустимость не подтверждается этой сборкой.
+
+## Проверка и ограничения
+
+Полная локальная сборка и тесты выполнены; отчёт с количеством тестов и SHA-256 находится в пакете проверки. Отдельный запуск dev Minecraft прошёл startup/mixin/GUI smoke-проверку. Он не является доказательством подключения к HolyWorld.
+
+Видео реального обмена с HolyWorld и одобрение администрации пока не получены. Тестовые поддельные ответы не выдаются за live-проверку. Администрации нужен аккаунт с доступом для проверки функций в релизной сборке; его предоставляет владелец, не встроенный универсальный ключ.
+
+Сайт: https://rimvisuals.vercel.app/ . Контакт владельца: https://t.me/puwewa . Telegram-канал проекта и число пользователей ещё не предоставлены владельцем.

@@ -1,0 +1,44 @@
+{
+  "required": true,
+  "package": "xyz.rimvisuals.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "HolyControlsListMixin",
+    "HeldItemRendererMixin",
+    "AuctionPriceControlMixin",
+    "ZakoHealthControlMixin",
+    "LivingEntitySwingMixin",
+    "EndCrystalEntityRendererMixin",
+    "EndCrystalEntityRenderStateMixin",
+    "InGameOverlayRendererMixin",
+    "OverlayTextureMixin",
+    "PlayerEntityRendererMixin",
+    "FogRendererMixin",
+    "SkyRenderingMixin",
+    "GameRendererMixin",
+    "LightmapTextureManagerMixin",
+    "MinecraftClientMixin",
+    "EntityRendererMixin",
+    "BiomeColorsMixin",
+    "FluidRendererMixin",
+    "WeatherRenderingMixin",
+    "ClientPlayNetworkHandlerMixin",
+    "ClientWorldMixin",
+    "WorldRendererMixin",
+    "ChatScreenAccessor",
+    "ItemGuiOpacityMixin",
+    "GuiItemOpacityMixin",
+    "InGameHudMixin",
+    "ItemEntityStateMixin",
+    "ItemEntityRendererMixin",
+    "SoundSystemMixin",
+    "ItemStackTooltipMixin",
+    "ParticleOpacityMixin",
+    "DustBlendMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
+
+
