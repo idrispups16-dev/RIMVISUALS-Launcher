@@ -80,7 +80,7 @@ public class RimVisualsClient implements ClientModInitializer {
         HudRenderCallback.EVENT.register(RimHud::render);
         // Touch-friendly entry point: a RIMVISUALS button on the title and pause screens.
         ScreenEvents.AFTER_INIT.register(RimVisualsClient::addMenuButton);
-        ClientLifecycleEvents.CLIENT_STOPPING.register(client -> Modules.save());
+        ClientLifecycleEvents.CLIENT_STOPPING.register(client -> {xyz.rimvisuals.core.JarvisBridge.stop();Modules.save();});
     }
 
     public static void openMenu(MinecraftClient client) { client.setScreen(xyz.rimvisuals.auth.AccessGate.allowed()?new ClickGui():new xyz.rimvisuals.gui.AccountScreen(client.currentScreen)); }
