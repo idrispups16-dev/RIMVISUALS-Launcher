@@ -22,6 +22,15 @@ DEFAULT_SETTINGS: dict[str, Any] = {
     "last_profile": "default",
     "check_updates": True,
     "close_launcher_on_start": False,
+    # RIM JARVIS
+    "jarvis_bridge": True,        # the mod opens its loopback IPC (127.0.0.1 + session token)
+    "jarvis_voice": False,        # spoken replies (local Windows speech)
+    "jarvis_listen": "off",       # off | ptt (push-to-talk) | wake
+    "jarvis_volume": 80,
+    "jarvis_rate": 0,
+    "jarvis_ai": False,           # optional external AI, off unless the user adds an endpoint and key
+    "jarvis_ai_url": "",
+    "jarvis_ai_model": "",
 }
 
 DEFAULT_VISUALS: dict[str, Any] = {
@@ -71,6 +80,14 @@ class Settings:
             v = str(v).strip()
             if v and not re.fullmatch(r"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}", v):
                 raise ValueError("Client ID должен быть GUID")
+        if k == "jarvis_listen" and v not in ("off", "ptt", "wake"):
+            raise ValueError("jarvis_listen")
+        if k in ("jarvis_volume",):
+            v = max(0, min(100, int(v)))
+        if k in ("jarvis_rate",):
+            v = max(-5, min(5, int(v)))
+        if k == "jarvis_ai_url" and v and not str(v).lower().startswith(("https://", "http://127.0.0.1", "http://localhost")):
+            raise ValueError("AI endpoint must be https")
         self.data[k] = v
         self.save()
 
@@ -86,6 +103,8 @@ class Profile:
 
 
 class Profiles:
+    jarvis_enabled = True
+
     def __init__(self, paths: Paths, default_ram: int = 4096):
         self.paths = paths
         self.items: dict[str, Profile] = {}
@@ -163,7 +182,8 @@ class Profiles:
     def write_bridge(self, pid: str) -> Path:
         p = self.items[pid]
         out = self.game_dir(pid) / "config" / "rimvisuals" / "launcher.json"
-        atomic_write(out, json.dumps({"schemaVersion": 1, "visuals": p.visuals}, indent=2))
+        atomic_write(out, json.dumps({"schemaVersion": 1, "visuals": p.visuals,
+                                      "jarvis": {"enabled": bool(self.jarvis_enabled)}}, indent=2))
         return out
 
     # ---- import / export (no paths, no secrets)
