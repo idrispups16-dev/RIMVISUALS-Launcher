@@ -6,10 +6,39 @@ import xyz.rimvisuals.gui.ClickGui;
 /** Opt-in development startup/GUI smoke test. Never active in normal installations. */
 public final class SmokeTest {
  private static net.minecraft.client.gui.tooltip.TooltipComponent shulkerFixture;
+ private static volatile String jarvisResult=null;
+ /** Starts the REAL bridge inside the running game and drives it over a loopback socket from another thread. */
+ private static void jarvisProbe(){
+  xyz.rimvisuals.core.JarvisBridge.start();
+  int port=xyz.rimvisuals.core.JarvisServer.port();String token=xyz.rimvisuals.core.JarvisServer.token();
+  Thread t=new Thread(()->{
+   try(var sock=new java.net.Socket(java.net.InetAddress.getLoopbackAddress(),port);
+       var out=new java.io.PrintWriter(new java.io.OutputStreamWriter(sock.getOutputStream(),java.nio.charset.StandardCharsets.UTF_8),true);
+       var in=new java.io.BufferedReader(new java.io.InputStreamReader(sock.getInputStream(),java.nio.charset.StandardCharsets.UTF_8))){
+    sock.setSoTimeout(8000);
+    out.println("{\"auth\":\""+token+"\"}");if(!in.readLine().contains("hello")){jarvisResult="auth failed";return;}
+    String[] cmds={"{\"action\":\"set_module\",\"module\":\"crystal_fade\",\"enabled\":true}",
+     "{\"action\":\"set_setting\",\"module\":\"hit_particles\",\"setting\":\"color\",\"value\":\"#8B5CF6\"}",
+     "{\"action\":\"performance_mode\",\"mode\":\"Balanced\"}",
+     "{\"action\":\"query\",\"what\":\"fps\"}"};
+    for(String c:cmds){out.println(c);String r=in.readLine();if(r==null||!r.contains("\"ok\":true")){jarvisResult="command failed: "+c+" -> "+r;return;}}
+    jarvisResult="ok";
+   }catch(Exception e){jarvisResult="exception "+e;}
+  },"jarvis-smoke-client");t.setDaemon(true);t.start();
+ }
+ private static void jarvisVerify(){
+  if(!"ok".equals(jarvisResult))throw new IllegalStateException("JARVIS bridge smoke failed: "+jarvisResult);
+  if(!xyz.rimvisuals.core.Modules.CRYSTAL_FADE.enabled||xyz.rimvisuals.core.Modules.HIT_PARTICLES.color.rgb!=0x8B5CF6||xyz.rimvisuals.core.Modules.PERFORMANCE.preset.index!=1)
+   throw new IllegalStateException("JARVIS commands did not change module state");
+  xyz.rimvisuals.core.JarvisBridge.stop();
+  LoggerFactory.getLogger("rimvisuals").info("RIM_JARVIS_OK: socket -> game thread -> Modules (crystal_fade, hit color, performance preset, fps query) in a running client");
+ }
  public static int frames;private static int ticks;private static boolean audited;private static boolean shotRequested,shotDone;
  public static void tick(MinecraftClient client){if(!Boolean.getBoolean("rimvisuals.smoke"))return;
   if(!audited){audited=true;MixinEnvironment.getCurrentEnvironment().audit();}
   ++ticks;
+  if(ticks==3)jarvisProbe();
+  if(ticks==30)jarvisVerify();
   if(ticks==41){IntegrationChecks.run();PvpRenderChecks.run();HelperChecks.run();
    RimVisualsClient.openMenu(client);
    if(!(client.currentScreen instanceof ClickGui))throw new IllegalStateException("Menu entry did not open ClickGUI");
