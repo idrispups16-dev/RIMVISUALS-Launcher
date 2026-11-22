@@ -8,7 +8,9 @@ public final class SmokeTest {
  private static net.minecraft.client.gui.tooltip.TooltipComponent shulkerFixture;
  private static volatile String jarvisResult=null;
  /** Starts the REAL bridge inside the running game and drives it over a loopback socket from another thread. */
+ private static java.util.Properties jarvisSnap;
  private static void jarvisProbe(){
+  jarvisSnap=xyz.rimvisuals.core.Modules.snapshot();
   xyz.rimvisuals.core.JarvisBridge.start();
   int port=xyz.rimvisuals.core.JarvisServer.port();String token=xyz.rimvisuals.core.JarvisServer.token();
   Thread t=new Thread(()->{
@@ -31,6 +33,7 @@ public final class SmokeTest {
   if(!xyz.rimvisuals.core.Modules.CRYSTAL_FADE.enabled||xyz.rimvisuals.core.Modules.HIT_PARTICLES.color.rgb!=0x8B5CF6||xyz.rimvisuals.core.Modules.PERFORMANCE.preset.index!=1)
    throw new IllegalStateException("JARVIS commands did not change module state");
   xyz.rimvisuals.core.JarvisBridge.stop();
+  xyz.rimvisuals.core.Modules.apply(jarvisSnap);xyz.rimvisuals.core.Modules.save(); // later smoke checks see the untouched defaults
   LoggerFactory.getLogger("rimvisuals").info("RIM_JARVIS_OK: socket -> game thread -> Modules (crystal_fade, hit color, performance preset, fps query) in a running client");
  }
  public static int frames;private static int ticks;private static boolean audited;private static boolean shotRequested,shotDone;
