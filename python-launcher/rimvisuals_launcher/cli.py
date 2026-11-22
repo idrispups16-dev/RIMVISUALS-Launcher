@@ -14,15 +14,27 @@ def main(argv: list[str]) -> int:
     sub = ap.add_subparsers(dest="cmd")
     sub.add_parser("diagnose")
     sub.add_parser("install", help="install Java/Minecraft/Fabric/mod, do not start the game")
-    sub.add_parser("play", help="install if needed and start Minecraft with RIMVISUALS")
+    pl = sub.add_parser("play", help="install if needed and start Minecraft with RIMVISUALS")
+    pl.add_argument("--probe", type=int, metavar="SECONDS", help="CI: start the game, wait, report whether Fabric and the mod loaded, then stop it")
+    ja = sub.add_parser("jarvis", help="run one RIM JARVIS command against the running game")
+    ja.add_argument("text")
     sub.add_parser("verify", help="full SHA re-check of game files and the mod")
     sub.add_parser("report")
     gs = sub.add_parser("gui-selftest", help="build every GUI page, optionally save screenshots")
     gs.add_argument("--shots", help="folder for PNG screenshots (needs Pillow)")
+    gs.add_argument("--report", help="write the result to this file (the windowed EXE has no console)")
     a = ap.parse_args(argv)
     if a.cmd == "gui-selftest":
         from .gui.app import selftest
-        return selftest(a.home, a.shots)
+        import io, contextlib
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            code = selftest(a.home, a.shots)
+        if a.report:
+            open(a.report, "w", encoding="utf-8").write(buf.getvalue())
+        else:
+            print(buf.getvalue(), end="")
+        return code
     L = Launcher(a.home and __import__("pathlib").Path(a.home))
 
     def prog(s: str, f: float) -> None:
@@ -42,10 +54,24 @@ def main(argv: list[str]) -> int:
     if a.cmd == "play":
         r = L.inject(prog, CancelToken())
         print(r["message"])
+        if r["status"] == "started" and a.probe:
+            import time
+            end = time.time() + a.probe
+            while time.time() < end and L.run.exit_code is None and not (L.run.fabric_seen and L.run.mod_seen):
+                time.sleep(0.5)
+            time.sleep(1.0)
+            print(f"fabric_loaded={L.run.fabric_seen} rimvisuals_listed={L.run.mod_seen} exit_code={L.run.exit_code}")
+            print("--- game output tail ---\n" + "\n".join(L.run.tail[-40:]))
+            L.stop()
+            return 0 if (L.run.fabric_seen and L.run.mod_seen) else 3
         if r["status"] == "started":
             L.run.proc.wait()
             print(L.crash_hint() or "exited")
         return 0 if r["status"] in ("started", "already") else 2
+    if a.cmd == "jarvis":
+        rep = L.jarvis().ask(a.text)
+        print(rep.text)
+        return 0 if rep.ok else 1
     if a.cmd == "report":
         print(L.report())
         return 0
