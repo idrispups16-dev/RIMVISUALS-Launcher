@@ -25,7 +25,8 @@ jobs:
         shell: pwsh
         run: |
           choco install python314 innosetup -y --no-progress
-          $py = (Get-ChildItem C:\Python314\python.exe).FullName
+          $py = (Get-ChildItem 'C:\hostedtoolcache\windows\Python\3.14.*\x64\python.exe','C:\Python314\python.exe' -ErrorAction SilentlyContinue | Select-Object -First 1).FullName
+          if (-not $py) { $py = (Get-Command python3.14).Source }
           & $py --version
           "PY=$py" | Out-File -Append -Encoding utf8 $env:GITHUB_ENV
       - name: Python dependencies (build + test only; the launcher itself is stdlib-only)
