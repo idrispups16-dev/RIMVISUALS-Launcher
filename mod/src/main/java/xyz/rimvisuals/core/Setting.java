@@ -59,11 +59,35 @@ public abstract class Setting {
         }
     }
 
+    /**
+     * A colour option. {@code rgb} stays the plain colour every existing effect reads; {@code spec} (optional) adds
+     * animation, alpha, gradients and so on for effects that call {@link #argb}. Plain solid colours still save as the old
+     * 6-digit hex, so existing configs load unchanged and unchanged settings write the same text as before.
+     */
     public static final class Color extends Setting {
         public int rgb;
+        public xyz.rimvisuals.color.ColorSpec spec;
         public Color(String name, int rgb) { super(name); this.rgb = rgb & 0xFFFFFF; }
         public String hex() { return String.format("%06X", rgb & 0xFFFFFF); }
-        @Override public String save() { return hex(); }
-        @Override public void load(String s) { try { rgb = Integer.parseInt(s, 16) & 0xFFFFFF; } catch (NumberFormatException ignored) {} }
+
+        /** Current spec; if some code assigned {@code rgb} directly after the spec was set, the direct value wins (spec cleared). */
+        public xyz.rimvisuals.color.ColorSpec spec() {
+            if (spec != null && spec.baseRgb() != rgb) spec = null;
+            return spec != null ? spec : xyz.rimvisuals.color.ColorSpec.solid(rgb);
+        }
+        public void setSpec(xyz.rimvisuals.color.ColorSpec s) {
+            if (s == null) return;
+            rgb = s.baseRgb(); spec = s.isPlainSolid() ? null : s;
+        }
+        public void setSolid(int rgb) { this.rgb = rgb & 0xFFFFFF; this.spec = null; }
+        /** 0xAARRGGBB for this frame. {@code pos} is the place along a trail/ribbon (0..1); pass 0 for single-colour effects. */
+        public int argb(double timeSec, float pos) { return spec().resolve(timeSec, pos); }
+
+        @Override public String save() { return spec().serialize(); }
+        @Override public void load(String s) {
+            xyz.rimvisuals.color.ColorSpec p = xyz.rimvisuals.color.ColorSpec.parse(s);
+            if (p == null) return;                       // malformed text keeps the current colour (same as the old behaviour)
+            setSpec(p);
+        }
     }
 }
