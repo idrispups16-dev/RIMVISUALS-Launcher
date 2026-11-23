@@ -1,7 +1,7 @@
 name: RIMVISUALS Python launcher (EXE + installer)
 on:
   push:
-    branches: ['feature/rimvisuals-python-launcher', 'feature/rimvisuals-jarvis-ai']
+    branches: ['feature/rimvisuals-python-launcher', 'feature/rimvisuals-jarvis-ai', 'feature/rimvisuals-loader']
     paths: ['python-launcher/**', 'mod/**', '.github/workflows/python-launcher.yml']
   workflow_dispatch:
 permissions:
@@ -95,6 +95,24 @@ jobs:
         run: |
           & $env:PY -m rimvisuals_launcher --home $env:RIMVISUALS_HOME play --probe 150 > ..\ci-out\play-probe.log 2>&1
           Get-Content ..\ci-out\play-probe.log -Tail 60
+      - name: Loader detection on real Windows (a Java process that looks like a Fabric Minecraft client; PowerShell/CIM scan must find it)
+        shell: pwsh
+        working-directory: python-launcher
+        run: |
+          $gd = "$env:RUNNER_TEMP\fake mc dir"
+          New-Item -ItemType Directory -Force "$gd\mods" | Out-Null
+          "public class Sleep { public static void main(String[] a) throws Exception { Thread.sleep(120000); } }" | Set-Content "$env:RUNNER_TEMP\Sleep.java"
+          $proc = Start-Process java -ArgumentList "`"$env:RUNNER_TEMP\Sleep.java`" net.minecraft.client.main.Main --username Steve --version fabric-loader-0.19.3-1.21.11 --gameDir `"$gd`"" -PassThru -WindowStyle Hidden
+          Start-Sleep 6
+          & $env:PY -m rimvisuals_launcher --home "$env:RUNNER_TEMP\RV-loader" loader-scan > ..\ci-out\loader-scan.json
+          Get-Content ..\ci-out\loader-scan.json
+          $j = Get-Content ..\ci-out\loader-scan.json -Raw | ConvertFrom-Json
+          Stop-Process -Id $proc.Id -Force
+          $hit = $j | Where-Object { $_.pid -eq $proc.Id }
+          if (-not $hit) { throw "Loader did not find the running Minecraft-like process" }
+          if ($hit.mc_version -ne '1.21.11' -or -not $hit.fabric -or $hit.game_dir -ne $gd) { throw "wrong parse: $($hit | ConvertTo-Json)" }
+          if ($hit.state -ne 'rimvisuals_missing') { throw "unexpected state $($hit.state)" }
+          Write-Host "Loader detection OK"
       - name: Installer (Inno Setup)
         shell: pwsh
         run: |
@@ -118,6 +136,7 @@ jobs:
           Copy-Item python-launcher\dist-installer\RIMVISUALS-Setup.exe ci-out\release\
           Copy-Item python-launcher\assets\rimvisuals-*.jar ci-out\release\
           Copy-Item python-launcher\RIMVISUALS.py ci-out\release\
+          Copy-Item python-launcher\assets\rimvisuals-mod.json ci-out\release\
           Get-ChildItem ci-out\release | ForEach-Object { "{0}  {1}" -f (Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLower(), $_.Name } | Set-Content ci-out\SHA256SUMS.txt
           Get-Content ci-out\SHA256SUMS.txt
       - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f

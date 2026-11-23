@@ -23,6 +23,9 @@ def main(argv: list[str]) -> int:
     pl.add_argument("--probe", type=int, metavar="SECONDS", help="CI: start the game, wait, report whether Fabric and the mod loaded, then stop it")
     ja = sub.add_parser("jarvis", help="run one RIM JARVIS command against the running game")
     ja.add_argument("text")
+    sub.add_parser("loader-scan", help="find running Minecraft clients and print their Loader state as JSON")
+    lc = sub.add_parser("loader-connect", help="CONNECT to the first running Minecraft over the IPC; with --install also install the JAR first")
+    lc.add_argument("--install", action="store_true")
     sub.add_parser("verify", help="full SHA re-check of game files and the mod")
     sub.add_parser("report")
     gs = sub.add_parser("gui-selftest", help="build every GUI page, optionally save screenshots")
@@ -49,6 +52,24 @@ def main(argv: list[str]) -> int:
         for c in L.diagnose():
             print(("OK " if c.ok else "!! ") + c.title + " — " + c.detail)
         return 0
+    if a.cmd in ("loader-scan", "loader-connect"):
+        import json
+        scans = L.loader.scan()
+        if a.cmd == "loader-scan":
+            print(json.dumps([{"state": sc.state.value, "text": sc.text, "restart": sc.restart, "jar_in_mods": sc.jar_in_mods, "mod_loaded": sc.mod_loaded,
+                               **({"pid": sc.instance.pid, "game_dir": str(sc.instance.game_dir), "mc_version": sc.instance.mc_version,
+                                   "fabric": sc.instance.fabric, "fabric_loader": sc.instance.fabric_loader} if sc.instance else {})} for sc in scans],
+                             ensure_ascii=False, indent=2))
+            return 0
+        inst = next((sc.instance for sc in scans if sc.instance), None)
+        if not inst:
+            print("Minecraft не найден")
+            return 2
+        if a.install:
+            print(json.dumps(L.loader.install(inst, CancelToken()), ensure_ascii=False))
+        r = L.loader.connect(inst)
+        print(json.dumps(r, ensure_ascii=False))
+        return 0 if r["ok"] else 3
     if a.cmd == "install":
         L.prepare(prog, CancelToken())
         return 0
