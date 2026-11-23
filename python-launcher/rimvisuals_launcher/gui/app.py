@@ -31,8 +31,8 @@ class App(tk.Tk):
         self.lang = self.L.settings["language"]
         self.title("RIMVISUALS")
         self.configure(bg=BG)
-        self.geometry("1060x680")
-        self.minsize(1000, 640)
+        self.geometry("980x640")
+        self.minsize(940, 600)
         self.q: queue.Queue = queue.Queue()
         self.cancel: CancelToken | None = None
         self.busy = False
@@ -191,10 +191,10 @@ class App(tk.Tk):
         self.checks_box.pack(fill="x", padx=16, pady=(0, 12))
         btns = tk.Frame(right, bg=BG)
         btns.pack(fill="x", pady=12)
-        RButton(btns, self.t("Установить / проверить", "Install / verify"), self.on_install, width=190).pack(side="left", padx=(0, 10))
-        self.btn_stop = RButton(btns, self.t("Остановить игру", "Stop game"), self.on_stop, width=150)
+        RButton(btns, self.t("Установить", "Install"), self.on_install, width=160).pack(side="left", padx=(0, 10))
+        self.btn_stop = RButton(btns, self.t("Остановить игру", "Stop game"), self.on_stop, width=130)
         self.btn_stop.pack(side="left")
-        RButton(btns, self.t("Полная проверка SHA", "Full SHA check"), self.on_full_verify, width=170).pack(side="left", padx=10)
+        RButton(btns, self.t("Проверка SHA", "SHA check"), self.on_full_verify, width=150).pack(side="left", padx=10)
 
     def fill_profile_menu(self) -> None:
         m = self.profile_menu["menu"]
@@ -804,7 +804,7 @@ def selftest(home: str | None, shots: str | None) -> int:
     import tempfile
     home = home or tempfile.mkdtemp(prefix="rv-selftest-")
     app = App(home)
-    app.geometry("1060x680+0+0")
+    app.geometry("980x640+0+0")
     problems: list[str] = []
     out = Path(shots) if shots else None
     if out:
