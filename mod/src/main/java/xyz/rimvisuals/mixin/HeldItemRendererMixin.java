@@ -15,7 +15,7 @@ import xyz.rimvisuals.core.Modules;
 public class HeldItemRendererMixin {
  @org.spongepowered.asm.mixin.Unique private boolean rimMain=true;
  @Inject(method="renderFirstPersonItem",at=@At("HEAD"))
- private void rimContext(AbstractClientPlayerEntity player,float tick,float pitch,Hand hand,float swing,ItemStack item,float equip,MatrixStack matrices,OrderedRenderCommandQueue queue,int light,CallbackInfo ci){rimMain=hand==Hand.MAIN_HAND;rimProgress=swing;rimItem=item;}
+ private void rimContext(AbstractClientPlayerEntity player,float tick,float pitch,Hand hand,float swing,ItemStack item,float equip,MatrixStack matrices,OrderedRenderCommandQueue queue,int light,CallbackInfo ci){rimMain=hand==Hand.MAIN_HAND;rimProgress=swing;rimItem=item;var mc=net.minecraft.client.MinecraftClient.getInstance();if(mc.interactionManager!=null&&mc.interactionManager.isBreakingBlock())Modules.SWING.clearAttacks();}
  @org.spongepowered.asm.mixin.Unique private float rimProgress;
  @org.spongepowered.asm.mixin.Unique private ItemStack rimItem=ItemStack.EMPTY;
  @Inject(method="renderItem(Lnet/minecraft/entity/LivingEntity;Lnet/minecraft/item/ItemStack;Lnet/minecraft/item/ItemDisplayContext;Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/command/OrderedRenderCommandQueue;I)V",at=@At("HEAD"))

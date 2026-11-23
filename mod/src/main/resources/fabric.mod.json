@@ -19,5 +19,6 @@
   },
   "mixins": [
     "rimvisuals.mixins.json"
-  ]
+  ],
+  "icon": "assets/rimvisuals/icon.png"
 }

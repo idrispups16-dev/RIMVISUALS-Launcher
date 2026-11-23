@@ -1,9 +1,9 @@
 package xyz.rimvisuals.core;
 
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.particle.DustParticleEffect;
 
-/** Spawns vanilla dust particles client-side, always through the shared performance budget. */
+
+/** Spawns namespaced cosmetic particles, always through the shared performance budget. */
 public final class Fx {
     private Fx() {}
     private static final EmissionBudget shared=new EmissionBudget();
@@ -30,11 +30,9 @@ public final class Fx {
         int n = budget(requested);
         if (n <= 0) return 0;
         long before=created;
-        var pm = mc.particleManager;
         var rnd = mc.world.random;
-        var effect = new DustParticleEffect(rgb & 0xFFFFFF, Math.max(.2f, Math.min(3f, size)));
         for (int i = 0; i < n; i++) {
-            opacity(pm.addParticle(effect,x,y,z,(rnd.nextDouble()-.5)*speed*2,(rnd.nextDouble()-.2)*speed*2,(rnd.nextDouble()-.5)*speed*2),(float)alpha);
+            opacity(EffectParticles.spawn(mc,rgb,size,x,y,z,(rnd.nextDouble()-.5)*speed*2,(rnd.nextDouble()-.2)*speed*2,(rnd.nextDouble()-.5)*speed*2),(float)alpha);
         }
         return (int)(created-before);
     }
@@ -46,10 +44,9 @@ public final class Fx {
         if (mc.world == null || !near(mc,x,y,z)) return;
         int n = budget(requested);
         if (n <= 0) return;
-        var effect = new DustParticleEffect(rgb & 0xFFFFFF, Math.max(.2f, Math.min(3f, size)));
         for (int i = 0; i < n; i++) {
             double a = Math.PI * 2 * i / n;
-            opacity(mc.particleManager.addParticle(effect,x,y,z,Math.cos(a)*speed,.02,Math.sin(a)*speed),(float)alpha);
+            opacity(EffectParticles.spawn(mc,rgb,size,x,y,z,Math.cos(a)*speed,.02,Math.sin(a)*speed),(float)alpha);
         }
     }
 }

@@ -17,6 +17,7 @@ public final class HitColor extends Module {
     /** ARGB the overlay texture should currently use. */
     public int argb() {
         if (!isActive()) return VANILLA_ARGB;
-        return (Math.round((float) alpha.value * 255f) << 24) | (color.rgb & 0xFFFFFF);
+        // Vanilla entity.fsh uses mix(overlay.rgb, model.rgb, overlay.a).
+        return (Math.round((1f - (float) alpha.value) * 255f) << 24) | (color.rgb & 0xFFFFFF);
     }
 }
