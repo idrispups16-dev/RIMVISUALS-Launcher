@@ -190,7 +190,7 @@ public final class JarvisCommands {
         if (s instanceof Setting.Color c) {
             String h = p.getAsString().trim(); if (h.startsWith("#")) h = h.substring(1);
             if (!h.matches("[0-9a-fA-F]{6}")) return "expected #RRGGBB";
-            c.rgb = Integer.parseInt(h, 16); return null;
+            c.setSolid(Integer.parseInt(h, 16)); return null;
         }
         return "this setting cannot be changed remotely";
     }
