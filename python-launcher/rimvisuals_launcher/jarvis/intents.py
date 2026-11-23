@@ -132,7 +132,7 @@ def find_color(t: str) -> str | None:
 
 
 def parse(text: str) -> Intent:
-    lang = "ru" if re.search(r"[а-яё]", text.lower()) else "en"
+    lang = "ru"   # RIM JARVIS speaks and writes Russian only (English phrases are still understood as input)
     t = strip_wake(norm(text))
     I = lambda kind, name, **p: Intent(kind, name, p, lang, text)  # noqa: E731
 

@@ -50,8 +50,8 @@ $r = $e.Recognize([TimeSpan]::FromSeconds([double]$env:RV_SECONDS))
 if ($r -ne $null) { Write-Output ('TEXT:' + $r.Text) } else { Write-Output 'TEXT:' }
 """
 
-CULTURE = {"ru": "ru-RU", "en": "en-GB"}
-LISTEN_CULTURE = {"ru": "ru-RU", "en": "en-US"}
+CULTURE = {"ru": "ru-RU"}
+LISTEN_CULTURE = {"ru": "ru-RU"}
 
 
 def beep_wav(path: Path, kind: str = "ack") -> Path:
@@ -95,7 +95,7 @@ class Voice:
         if not self.available or not text.strip():
             return False
         try:
-            r = self.run(PS + [SPEAK_PS], env=self._env(RV_TEXT=text[:600], RV_CULTURE=CULTURE.get(lang, "en-GB"), RV_VOLUME=max(0, min(100, volume)),
+            r = self.run(PS + [SPEAK_PS], env=self._env(RV_TEXT=text[:600], RV_CULTURE=CULTURE["ru"], RV_VOLUME=max(0, min(100, volume)),
                                                          RV_RATE=max(-10, min(10, rate))),
                          capture_output=True, text=True, timeout=60, creationflags=CREATE_NO_WINDOW)
             return r.returncode == 0
@@ -119,7 +119,7 @@ class Voice:
         if not self.available:
             raise RuntimeError("Голосовой ввод доступен только на Windows")
         try:
-            r = self.run(PS + [LISTEN_PS], env=self._env(RV_CULTURE=LISTEN_CULTURE.get(lang, "en-US"), RV_SECONDS=seconds),
+            r = self.run(PS + [LISTEN_PS], env=self._env(RV_CULTURE=LISTEN_CULTURE["ru"], RV_SECONDS=seconds),
                          capture_output=True, text=True, timeout=seconds + 25, creationflags=CREATE_NO_WINDOW)
         except (OSError, subprocess.SubprocessError) as e:
             raise RuntimeError(f"распознавание не запустилось: {e.__class__.__name__}") from None

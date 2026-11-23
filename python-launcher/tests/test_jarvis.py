@@ -108,7 +108,7 @@ def test_cancel_pending(game):
 def test_cooldown_events_and_fps_answers_use_game_data(game):
     a = jarvis(game)
     assert "12s" in a.ask("Джарвис, сколько осталось КД трапки?").text
-    assert "не получ" in a.ask("Джарвис, какие сейчас ивенты на HolyWorld?").text.lower() or "No event" in a.ask("events?").text
+    assert "нет полученных" in a.ask("Джарвис, какие сейчас ивенты на HolyWorld?").text.lower()
     r = a.ask("Джарвис, почему у меня упал FPS?")
     assert "38" in r.text and "hit_particles" in r.text and "Performance" in r.text
 
@@ -128,7 +128,8 @@ def test_unknown_phrase_without_ai(game):
     r = jarvis(game).ask("расскажи анекдот"); assert not r.ok and "помощь" in r.text
 
 def test_english_commands(game):
-    a = jarvis(game); assert a.ask("jarvis, enable crystal fade").executed and "enabled" in a.ask("turn on crystal fade").text
+    a = jarvis(game); r = a.ask("jarvis, enable crystal fade")      # English input is understood, the answer is always Russian
+    assert r.executed and "включён" in r.text
 
 
 # --------------------------------------------------------------------------- parser
@@ -230,7 +231,7 @@ def test_voice_text_never_enters_script_and_non_windows_is_inert():
     calls = []
     v = voice.Voice(runner=lambda *a, **k: calls.append((a, k)) or type("R", (), {"returncode": 0, "stdout": "", "stderr": ""})(), platform="win32")
     evil = "\"; Remove-Item C:\\ -Recurse #"
-    assert v.speak(evil, "en", 70, 1)
+    assert v.speak(evil, "ru", 70, 1)
     args, kw = calls[0]
     assert evil not in " ".join(args[0]) and kw["env"]["RV_TEXT"] == evil and kw["env"]["RV_VOLUME"] == "70"
     assert voice.Voice(platform="linux").speak("hi") is False
