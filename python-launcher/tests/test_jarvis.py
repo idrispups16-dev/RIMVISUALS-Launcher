@@ -39,7 +39,9 @@ class FakeGame:
 
     def _serve(self, c):
         f = c.makefile("rw", encoding="utf-8", newline="\n")
-        if json.loads(f.readline()).get("auth") != self.token:
+        try: first = json.loads(f.readline())
+        except ValueError: c.close(); return          # port probes connect and hang up without sending anything
+        if first.get("auth") != self.token:
             f.write('{"ok":false,"error":"auth"}\n'); f.flush(); c.close(); return
         f.write('{"ok":true,"hello":"rimvisuals-jarvis","protocol":1}\n'); f.flush()
         for line in f:

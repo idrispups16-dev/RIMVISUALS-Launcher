@@ -320,7 +320,8 @@ class App(tk.Tk):
         self.ld_install.pack(side="left", padx=(0, 8))
         self.ld_connect = RButton(row, "CONNECT", self.loader_connect, width=150, bg=PANEL, primary=True)
         self.ld_connect.pack(side="left", padx=(0, 8))
-        RButton(row, self.t("Отключить", "Disconnect"), self.loader_disconnect, width=120, bg=PANEL).pack(side="left")
+        RButton(row, self.t("Отключить", "Disconnect"), self.loader_disconnect, width=120, bg=PANEL).pack(side="left", padx=(0, 8))
+        RButton(row, self.t("Диагностика IPC", "IPC diagnostics"), self.loader_diagnose, width=150, bg=PANEL).pack(side="left")
         cat = Card(f, self.t("Каталог модулей (из запущенной игры)", "Module catalog (from the running game)"))
         cat.pack(fill="both", expand=True, padx=32, pady=14)
         self.ld_cat_note = label(cat, "", fg=MUTED, size=9, bg=PANEL, wrap=760)
@@ -432,7 +433,25 @@ class App(tk.Tk):
             self.loader_scan()
             if not r["ok"]:
                 self.ld_state.configure(text=r["message"], fg=BAD)
+                if r.get("diagnosis"):
+                    self.show_text(self.t("Диагностика IPC", "IPC diagnostics"), r["diagnosis"])
         self.run_bg(lambda: self.L.loader.connect(sc.instance), done)
+
+    def loader_diagnose(self) -> None:
+        sc = self._ld_cur()
+        inst = sc.instance if sc else None
+        self.run_bg(lambda: self.L.loader.diagnose_ipc(inst),
+                    lambda r, e: self.show_text(self.t("Диагностика IPC", "IPC diagnostics"), str(e) if e else r))
+
+    def show_text(self, title: str, text: str) -> None:
+        win = tk.Toplevel(self)
+        win.title(title)
+        win.configure(bg=BG)
+        win.geometry("760x360")
+        box = tk.Text(win, bg=PANEL, fg=TEXT, font=("Consolas", 10), wrap="word", relief="flat", padx=10, pady=10)
+        box.pack(fill="both", expand=True, padx=12, pady=12)
+        box.insert("1.0", text)
+        box.configure(state="disabled")
 
     def loader_disconnect(self) -> None:
         self.L.loader.disconnect()

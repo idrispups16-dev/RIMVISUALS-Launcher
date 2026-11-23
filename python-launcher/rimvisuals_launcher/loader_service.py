@@ -129,12 +129,18 @@ class LoaderService:
             st = cl.call("status")
         except (BridgeUnavailable, BridgeError) as e:
             cl.close()
-            return {"ok": False, "state": L.State.FAILED.value, "message": f"Подключение не удалось: {e}"}
+            return {"ok": False, "state": L.State.FAILED.value,
+                    "message": f"Подключение не удалось: {e}. Нажмите «Диагностика IPC» — она покажет, какой шаг не прошёл.",
+                    "diagnosis": self.diagnose_ipc(inst)}
         if self.client:
             self.client.close()
         self.client, self.connected_dir = cl, inst.game_dir
         self.l.set_jarvis_dir(inst.game_dir, cl)
         return {"ok": True, "state": L.State.CONNECTED.value, "message": "Подключено к игре через IPC (токен сессии, только 127.0.0.1).", "status": st}
+
+    def diagnose_ipc(self, inst: L.GameInstance | None) -> str:
+        from .ipcdiag import diagnose, format_steps
+        return format_steps(diagnose(inst.game_dir if inst else None))
 
     def disconnect(self) -> None:
         if self.client:

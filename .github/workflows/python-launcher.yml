@@ -71,6 +71,18 @@ jobs:
           $p = Start-Process dist\RIMVISUALS.exe -ArgumentList 'gui-selftest','--report',"$PWD\..\ci-out\gui-selftest-exe.txt" -Wait -PassThru
           Get-Content ..\ci-out\gui-selftest-exe.txt
           if ($p.ExitCode -ne 0) { throw "EXE selftest failed ($($p.ExitCode))" }
+      - name: Frozen EXE carries a compatible RIMVISUALS JAR (no manual search)
+        shell: pwsh
+        working-directory: python-launcher
+        run: |
+          $p = Start-Process dist\RIMVISUALS.exe -ArgumentList 'jar-info','--report',"$PWD\..\ci-out\jar-info-exe.json" -Wait -PassThru
+          Get-Content ..\ci-out\jar-info-exe.json
+          if ($p.ExitCode -ne 0) { throw "EXE has no compatible bundled JAR ($($p.ExitCode))" }
+          $j = Get-Content ..\ci-out\jar-info-exe.json -Raw | ConvertFrom-Json
+          $built = (Get-FileHash (Get-ChildItem assets\rimvisuals-*.jar | Select-Object -First 1).FullName -Algorithm SHA256).Hash.ToLower()
+          if ($j.sha256 -ne $built) { throw "EXE JAR hash differs from the build" }
+          if (-not $j.compatible -or $j.mod_id -ne 'rimvisuals') { throw "JAR not compatible" }
+          Write-Host "EXE bundled JAR OK: $($j.file) v$($j.version) sha256=$($j.sha256)"
       - name: Real install on a clean Windows runner (Java 21 download, Minecraft 1.21.11, Fabric 0.19.3, Fabric API, mod) into an isolated folder
         shell: pwsh
         working-directory: python-launcher
