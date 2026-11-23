@@ -275,7 +275,7 @@ class Launcher:
                 del st.tail[:-200]
                 if "Loading Minecraft" in line and "Fabric Loader" in line:
                     st.fabric_seen = True
-                if re.search(r"rimvisuals|RIMVISUALS", line) and ("Initializ" in line or "loaded" in line.lower() or "Applied" in line):
+                if re.match(r"^\s*-\s*rimvisuals\s+\S+", line) or (re.search(r"rimvisuals|RIMVISUALS", line) and ("Initializ" in line or "loaded" in line.lower() or "Applied" in line)):
                     st.mod_seen = True
                 if re.search(r"\b(ERROR|FATAL|Exception)\b", line):
                     log.warning("[game] %s", line[:300])

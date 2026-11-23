@@ -1,0 +1,153 @@
+name: RIMVISUALS Python launcher (EXE + installer)
+on:
+  push:
+    branches: ['feature/rimvisuals-python-launcher', 'feature/rimvisuals-jarvis-ai']
+    paths: ['python-launcher/**', 'mod/**', '.github/workflows/python-launcher.yml']
+  workflow_dispatch:
+permissions:
+  contents: write        # only to publish screenshots + SHA256SUMS to the ci/launcher-build service branch
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@ed408507eac070d1f99cc633dbcf757c94c7933a
+        with:
+          gradle-version: '9.2.1'
+      - name: Build the Fabric mod JAR that the launcher bundles
+        run: gradle -p mod build -x test --stacktrace
+      - name: Install Python 3.14 and Inno Setup
+        shell: pwsh
+        run: |
+          choco install python314 innosetup -y --no-progress
+          $py = (Get-ChildItem 'C:\hostedtoolcache\windows\Python\3.14.*\x64\python.exe','C:\Python314\python.exe' -ErrorAction SilentlyContinue | Select-Object -First 1).FullName
+          if (-not $py) { $py = (Get-Command python3.14).Source }
+          & $py --version
+          "PY=$py" | Out-File -Append -Encoding utf8 $env:GITHUB_ENV
+      - name: Python dependencies (build + test only; the launcher itself is stdlib-only)
+        shell: pwsh
+        run: |
+          & $env:PY -m pip install --upgrade pip
+          & $env:PY -m pip install pytest pillow pyinstaller
+      - name: Bundle the mod JAR with its SHA-256 manifest
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force python-launcher\assets | Out-Null
+          $jar = Get-ChildItem mod\build\libs\rimvisuals-*.jar | Where-Object { $_.Name -notmatch '-sources|-dev' } | Select-Object -First 1
+          Copy-Item $jar.FullName python-launcher\assets\
+          $h = (Get-FileHash $jar.FullName -Algorithm SHA256).Hash.ToLower()
+          @{ file = $jar.Name; sha256 = $h; commit = $env:GITHUB_SHA } | ConvertTo-Json | Set-Content python-launcher\assets\rimvisuals-mod.json
+          Write-Host "Bundled $($jar.Name) sha256=$h"
+      - name: Unit + integration tests on Python 3.14 / Windows
+        shell: pwsh
+        working-directory: python-launcher
+        run: |
+          & $env:PY -m pytest -q tests -p no:cacheprovider
+      - name: Launcher from source, GUI self-test with screenshots (what IDLE runs)
+        shell: pwsh
+        working-directory: python-launcher
+        run: |
+          New-Item -ItemType Directory -Force ..\ci-out\screens | Out-Null
+          & $env:PY RIMVISUALS.py gui-selftest --shots ..\ci-out\screens --report ..\ci-out\gui-selftest-source.txt
+          Get-Content ..\ci-out\gui-selftest-source.txt
+          if ($LASTEXITCODE -ne 0) { exit 1 }
+      - name: Build RIMVISUALS.exe (PyInstaller, windowed)
+        shell: pwsh
+        working-directory: python-launcher
+        run: |
+          & $env:PY packaging\make_icon.py packaging\rimvisuals.ico
+          & $env:PY -m PyInstaller --noconfirm --onefile --windowed --name RIMVISUALS --icon packaging\rimvisuals.ico `
+            --add-data "assets;assets" --collect-submodules rimvisuals_launcher RIMVISUALS.py
+          if (-not (Test-Path dist\RIMVISUALS.exe)) { throw "EXE missing" }
+      - name: EXE smoke test (frozen app builds every page)
+        shell: pwsh
+        working-directory: python-launcher
+        run: |
+          $p = Start-Process dist\RIMVISUALS.exe -ArgumentList 'gui-selftest','--report',"$PWD\..\ci-out\gui-selftest-exe.txt" -Wait -PassThru
+          Get-Content ..\ci-out\gui-selftest-exe.txt
+          if ($p.ExitCode -ne 0) { throw "EXE selftest failed ($($p.ExitCode))" }
+      - name: Real install on a clean Windows runner (Java 21 download, Minecraft 1.21.11, Fabric 0.19.3, Fabric API, mod) into an isolated folder
+        shell: pwsh
+        working-directory: python-launcher
+        env:
+          RIMVISUALS_HOME: ${{ github.workspace }}\ci-out\RV-home
+        run: |
+          $env:RIMVISUALS_HOME | Out-Host
+          & $env:PY -m rimvisuals_launcher --home $env:RIMVISUALS_HOME install > ..\ci-out\install.log 2>&1
+          $installCode = $LASTEXITCODE
+          Get-Content ..\ci-out\install.log -Tail 25
+          if ($installCode -ne 0) { throw "install failed ($installCode)" }
+          & $env:PY -m rimvisuals_launcher --home $env:RIMVISUALS_HOME verify > ..\ci-out\verify.log 2>&1
+          $verifyCode = $LASTEXITCODE
+          Get-Content ..\ci-out\verify.log
+          if ($verifyCode -ne 0) { throw "verify failed" }
+      - name: Start Minecraft through the launcher and look for Fabric + RIMVISUALS in the real game log (no GPU on this runner, so the window itself is not expected)
+        shell: pwsh
+        working-directory: python-launcher
+        continue-on-error: true
+        env:
+          RIMVISUALS_HOME: ${{ github.workspace }}\ci-out\RV-home
+        run: |
+          & $env:PY -m rimvisuals_launcher --home $env:RIMVISUALS_HOME play --probe 150 > ..\ci-out\play-probe.log 2>&1
+          Get-Content ..\ci-out\play-probe.log -Tail 60
+      - name: Installer (Inno Setup)
+        shell: pwsh
+        run: |
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" /DAppVersion=1.0.0 python-launcher\packaging\installer.iss
+          if (-not (Test-Path python-launcher\dist-installer\RIMVISUALS-Setup.exe)) { throw "installer missing" }
+      - name: Installer silent install / uninstall check
+        shell: pwsh
+        run: |
+          $dir = "$env:RUNNER_TEMP\rv-installed"
+          Start-Process python-launcher\dist-installer\RIMVISUALS-Setup.exe -ArgumentList '/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART',"/DIR=$dir" -Wait
+          if (-not (Test-Path "$dir\RIMVISUALS.exe")) { throw "installed exe missing" }
+          Start-Process "$dir\unins000.exe" -ArgumentList '/VERYSILENT','/SUPPRESSMSGBOXES' -Wait
+          Start-Sleep 3
+          if (Test-Path "$dir\RIMVISUALS.exe") { throw "uninstall left the exe" }
+          Write-Host "install + uninstall OK"
+      - name: SHA-256 sums
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force ci-out\release | Out-Null
+          Copy-Item python-launcher\dist\RIMVISUALS.exe ci-out\release\
+          Copy-Item python-launcher\dist-installer\RIMVISUALS-Setup.exe ci-out\release\
+          Copy-Item python-launcher\assets\rimvisuals-*.jar ci-out\release\
+          Copy-Item python-launcher\RIMVISUALS.py ci-out\release\
+          Get-ChildItem ci-out\release | ForEach-Object { "{0}  {1}" -f (Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLower(), $_.Name } | Set-Content ci-out\SHA256SUMS.txt
+          Get-Content ci-out\SHA256SUMS.txt
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: RIMVISUALS-Windows-${{ github.sha }}
+          path: |
+            ci-out/release/*
+            ci-out/SHA256SUMS.txt
+          if-no-files-found: error
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        if: always()
+        with:
+          name: RIMVISUALS-Windows-logs-${{ github.sha }}
+          path: |
+            ci-out/screens/*.png
+            ci-out/*.txt
+            ci-out/*.log
+      - name: Publish reports + screenshots to the ci/launcher-build branch (so they can be read without downloading artifacts)
+        if: always()
+        shell: pwsh
+        run: |
+          $dest = "$env:RUNNER_TEMP\pub"
+          New-Item -ItemType Directory -Force "$dest\$env:GITHUB_SHA" | Out-Null
+          Copy-Item ci-out\screens, ci-out\SHA256SUMS.txt, ci-out\gui-selftest-*.txt, ci-out\install.log, ci-out\verify.log, ci-out\play-probe.log "$dest\$env:GITHUB_SHA" -Recurse -ErrorAction SilentlyContinue
+          Set-Location $dest
+          git init -q
+          git config user.name "rimvisuals-ci"; git config user.email "ci@users.noreply.github.com"
+          git checkout -q -b ci/launcher-build
+          git add -A; git commit -qm "launcher build $env:GITHUB_SHA"
+          git remote add origin "https://x-access-token:$($env:GH_TOKEN)@github.com/$env:GITHUB_REPOSITORY.git"
+          git push -q --force origin ci/launcher-build
+        env:
+          GH_TOKEN: ${{ github.token }}
