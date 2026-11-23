@@ -9,6 +9,11 @@ from .service import Launcher
 
 
 def main(argv: list[str]) -> int:
+    for stream in (sys.stdout, sys.stderr):      # Windows consoles default to cp1252; our messages are Russian
+        try:
+            stream.reconfigure(encoding="utf-8", errors="replace")
+        except (AttributeError, OSError, ValueError):
+            pass
     ap = argparse.ArgumentParser(prog="RIMVISUALS", description="RIMVISUALS launcher")
     ap.add_argument("--home", help="data folder (default: %%APPDATA%%\\RIMVISUALS)")
     sub = ap.add_subparsers(dest="cmd")
