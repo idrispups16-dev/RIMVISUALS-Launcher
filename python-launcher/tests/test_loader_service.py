@@ -83,6 +83,7 @@ def _instance(tmp_path, fabric=True, ver="1.21.11"):
 def test_install_into_found_profile_needs_restart(home, tmp_path, rel):
     la = Launcher(home); la.installer.ep = Endpoints(release=rel.url)
     la.mods.fabric_api_present = lambda gd: True      # Modrinth is covered by other tests
+    la.mod_jar_source = lambda: None                  # CI bundles the real JAR; here we exercise the release download path
     inst = _instance(tmp_path)
     r = la.loader.install(inst)
     assert r["installed"] == "2.0.0" and r["needs_restart"] is True
