@@ -199,7 +199,7 @@ class Logo(tk.Canvas):
     """RIMVISUALS mark: a violet faceted R-shard with a soft glow ring, drawn with canvas primitives."""
 
     def __init__(self, master, size=56, bg=BG, text=True):
-        w = size + (150 if text else 0)
+        w = size + (170 if text else 0)
         super().__init__(master, width=w, height=size, bg=bg, highlightthickness=0)
         s = size / 56
         self.create_oval(2 * s, 2 * s, 54 * s, 54 * s, outline=LINE, width=2)
@@ -207,7 +207,7 @@ class Logo(tk.Canvas):
         self.create_polygon([c * s for p in pts for c in p], fill=VIOLET, outline=VIOLET_L, width=1)
         self.create_polygon([c * s for c in (25, 19, 34, 19, 37, 22, 37, 25, 34, 28, 25, 28)], fill=BG, outline="")
         if text:
-            self.create_text(size + 12, size * 0.38, text="RIMVISUALS", anchor="w", fill=TEXT, font=font(15, True))
+            self.create_text(size + 12, size * 0.38, text="RIMVISUALS", anchor="w", fill=TEXT, font=font(13, True))
             self.create_text(size + 12, size * 0.72, text="visual client", anchor="w", fill=MUTED, font=font(8))
 
 

@@ -158,12 +158,17 @@ def file_hash(path: Path, algo: str) -> str:
 
 
 def safe_join(base: Path, *parts: str) -> Path:
-    """Join and refuse anything that escapes `base` (zip-slip / '..')."""
-    base_r = Path(base).resolve()
-    out = base_r.joinpath(*parts).resolve()
-    if out != base_r and base_r not in out.parents:
+    """Join and refuse anything that escapes `base` (zip-slip / '..' / absolute parts / drive letters).
+    Purely lexical (abspath, not resolve): resolve() of not-yet-existing folders can return 8.3/alias spellings on Windows."""
+    base_a = os.path.abspath(str(base))
+    for p in parts:
+        if os.path.isabs(p) or os.path.splitdrive(p)[0] or p.startswith(("/", "\\")):
+            raise ValueError(f"path escapes {base}: {'/'.join(parts)}")
+    out = os.path.abspath(os.path.join(base_a, *parts))
+    nb, no = os.path.normcase(base_a), os.path.normcase(out)
+    if no != nb and not no.startswith(nb.rstrip("\\/") + os.sep):
         raise ValueError(f"path escapes {base}: {'/'.join(parts)}")
-    return out
+    return Path(out)
 
 
 _NAME_OK = re.compile(r"[^0-9A-Za-zА-Яа-яЁё _.\-]")

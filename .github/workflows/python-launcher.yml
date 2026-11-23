@@ -137,8 +137,10 @@ jobs:
             ci-out/*.log
       - name: Publish reports + screenshots to the ci/launcher-build branch (so they can be read without downloading artifacts)
         if: always()
+        continue-on-error: true
         shell: pwsh
         run: |
+          $ErrorActionPreference = 'Continue'
           $dest = "$env:RUNNER_TEMP\pub"
           New-Item -ItemType Directory -Force "$dest\$env:GITHUB_SHA" | Out-Null
           Copy-Item ci-out\screens, ci-out\SHA256SUMS.txt, ci-out\gui-selftest-*.txt, ci-out\install.log, ci-out\verify.log, ci-out\play-probe.log "$dest\$env:GITHUB_SHA" -Recurse -ErrorAction SilentlyContinue
@@ -146,8 +148,8 @@ jobs:
           git init -q
           git config user.name "rimvisuals-ci"; git config user.email "ci@users.noreply.github.com"
           git checkout -q -b ci/launcher-build
-          git add -A; git commit -qm "launcher build $env:GITHUB_SHA"
+          git add -A; git commit -qm "launcher build $env:GITHUB_SHA" 2>&1 | Out-Host
           git remote add origin "https://x-access-token:$($env:GH_TOKEN)@github.com/$env:GITHUB_REPOSITORY.git"
-          git push -q --force origin ci/launcher-build
+          git push --force origin ci/launcher-build 2>&1 | Out-Host
         env:
           GH_TOKEN: ${{ github.token }}
