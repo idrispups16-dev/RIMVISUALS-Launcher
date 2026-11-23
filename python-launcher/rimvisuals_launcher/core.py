@@ -281,6 +281,27 @@ def http_request(url: str, *, data: bytes | None = None, headers: dict[str, str]
     return body
 
 
+def diagnose_network_error(e: BaseException) -> str:
+    """Plain-language cause for a failed request (DNS 11001/11002, timeout, TLS, HTTP status)."""
+    t = str(e)
+    low = t.lower()
+    host = ""
+    m = re.search(r"://([^/:?\s]+)", t)
+    if m:
+        host = m.group(1)
+    if "11002" in t or "11001" in t or "getaddrinfo" in low or "name or service not known" in low or "temporary failure in name" in low:
+        return (f"не удалось разрешить имя узла {host or ''} (DNS, Errno 11001/11002): проверьте интернет, DNS (например 1.1.1.1 / 8.8.8.8), "
+                "VPN/прокси и брандмауэр; загруженные файлы сохранены, повторите позже").replace("  ", " ")
+    if "timed out" in low or "timeout" in low:
+        return f"таймаут соединения с {host or 'сервером'}: сеть медленная или заблокирована"
+    if "certificate" in low or "ssl" in low:
+        return f"ошибка проверки TLS-сертификата {host}: проверьте дату/время Windows и антивирус с перехватом HTTPS (проверка не отключается)"
+    m2 = re.search(r"HTTP (\d{3})", t)
+    if m2:
+        return f"сервер ответил HTTP {m2.group(1)}"
+    return t
+
+
 def http_json(url: str, *, payload: Any = None, headers: dict[str, str] | None = None, timeout: float = 20.0,
               method: str | None = None) -> Any:
     h = {"Accept": "application/json"}

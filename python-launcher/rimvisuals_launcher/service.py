@@ -197,9 +197,7 @@ class Launcher:
         if not self.mods.fabric_api_present(gd):
             self.mods.install_fabric_api(gd, cancel)
         p("Мод RIMVISUALS", 0.88)
-        src = self.mod_jar_source()
-        if src is None:
-            raise RuntimeError("Нет JAR мода RIMVISUALS: выберите файл на странице «Визуалы»")
+        src = self.loader.ensure_jar(cancel, lambda a, b: p("Загрузка мода RIMVISUALS", 0.88 + 0.08 * (a / b if b else 0)))
         if self.mods.verify(gd) or (self.mods.ledger(gd).get("rimvisuals", {}).get("sha256") != src.sha256):
             self.mods.install_mod(gd, src.path)
         self.profiles.write_bridge(pr.id)
@@ -321,7 +319,8 @@ class Launcher:
         from .jarvis.ai import AiClient
         from .jarvis.assistant import Assistant
         from .jarvis.ipc import JarvisClient
-        if getattr(self, "_jarvis", None) and self._jarvis_pid == self.pid:
+        key = (self.pid, str(self._jarvis_dir) if getattr(self, "_jarvis_dir", None) else "")
+        if getattr(self, "_jarvis", None) and self._jarvis_pid == key:
             return self._jarvis
         ai = None
         if self.settings["jarvis_ai"]:
@@ -330,9 +329,21 @@ class Launcher:
         local = {"help": lambda: self.HELP_RU,
                  "status": lambda: "; ".join(f"{'OK' if c.ok else '!!'} {c.title}: {c.detail}" for c in self.diagnose()),
                  "updates": lambda: str(self.check_updates())}
-        self._jarvis = Assistant(JarvisClient(self.profiles.game_dir(self.pid)), local, ai, ModOps(self))
-        self._jarvis_pid = self.pid
+        client = getattr(self, "_jarvis_client", None) or JarvisClient(self.profiles.game_dir(self.pid))
+        self._jarvis = Assistant(client, local, ai, ModOps(self))
+        self._jarvis_pid = key
         return self._jarvis
+
+    def set_jarvis_dir(self, game_dir: Path, client) -> None:
+        """The Loader connected to a game that was started by another launcher: JARVIS talks to that very game."""
+        self._jarvis_dir, self._jarvis_client, self._jarvis = game_dir, client, None
+
+    @property
+    def loader(self):
+        from .loader_service import LoaderService
+        if getattr(self, "_loader", None) is None:
+            self._loader = LoaderService(self)
+        return self._loader
 
     def report(self) -> Path:
         """Diagnostics text for bug reports — no tokens, no secrets, no account names."""
