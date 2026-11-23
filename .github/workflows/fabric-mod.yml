@@ -28,6 +28,7 @@ jobs:
           timeout 240s xvfb-run -a gradle -p mod runClient -PrimSmoke --stacktrace 2>&1 | tee smoke.log
           grep -q 'RIMVISUALS_SMOKE_OK' smoke.log
           grep -q 'RIM_CONFIG_OK' smoke.log
+          grep -q 'RIM_JARVIS_OK' smoke.log
       - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
         with:
           name: RIMVISUALS-Fabric-1.21.11

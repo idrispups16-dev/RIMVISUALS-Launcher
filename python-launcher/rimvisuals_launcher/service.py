@@ -15,6 +15,7 @@ from . import java_rt
 from .accounts import MicrosoftAccount, SecretStore, SiteAccount, demo_account
 from .core import (APP_VERSION, TARGET_FABRIC, TARGET_FABRIC_API, TARGET_JAVA, TARGET_MC, CancelToken, HttpError, Paths,
                    http_json, log, redact, setup_logging)
+from .core import read_json
 from .minecraft import Account, Endpoints, MinecraftInstaller, build_launch
 from .modmgr import ModManager, find_bundled_jar, read_jar_meta
 from .settings import CfgManager, Profiles, Settings
@@ -47,6 +48,65 @@ class RunState:
         return self.proc is not None and self.proc.poll() is None
 
 
+class ModOps:
+    """What the assistant's mod manager may do, bound to one profile. Plans are shown to the user before apply()."""
+    PVP_PACK = ["sodium", "lithium", "ferrite-core", "immediatelyfast"]
+
+    def __init__(self, launcher: "Launcher"):
+        self.L = launcher
+
+    @property
+    def mods_dir(self) -> Path:
+        return self.L.profiles.game_dir(self.L.pid) / "mods"
+
+    def plan(self, slugs: list[str]):
+        from .jarvis import modtools
+        total = modtools.Plan()
+        for sl in slugs:
+            p = modtools.plan_install(sl, self.mods_dir, self.L.mods.ep)
+            for it in p.items:
+                if all(x.filename != it.filename for x in total.items):
+                    total.items.append(it)
+            total.problems += p.problems
+        return total
+
+    def apply(self, plan) -> list[str]:
+        from .jarvis import modtools
+        return modtools.apply_plan(plan, self.mods_dir, self.L.paths)
+
+    def conflicts(self) -> list[str]:
+        from .jarvis import modtools
+        return modtools.find_conflicts(self.mods_dir)
+
+    def crash_text(self) -> str:
+        gd = self.L.profiles.game_dir(self.L.pid)
+        cands = sorted((gd / "crash-reports").glob("*.txt"), key=lambda p: p.stat().st_mtime) if (gd / "crash-reports").exists() else []
+        cands += sorted(self.L.paths.logs.glob("game-*.log"), key=lambda p: p.stat().st_mtime)
+        for f in reversed(cands[-3:]):
+            try:
+                return f.read_text(encoding="utf-8", errors="replace")[-200_000:]
+            except OSError:
+                continue
+        return ""
+
+    def analyze(self, text: str) -> list[str]:
+        from .jarvis import modtools
+        return modtools.analyze_crash(text)
+
+    def updates(self) -> str:
+        from .jarvis import modtools
+        led = read_json(self.mods_dir / modtools.LEDGER, {"installed": {}})["installed"]
+        if not led:
+            return "Через менеджер модов ничего не установлено — проверять нечего."
+        out = []
+        for slug, fn in led.items():
+            v = modtools._pick(modtools._versions(self.L.mods.ep, slug))
+            if v:
+                new = modtools._item(slug, v, "mod").filename
+                out.append(f"{slug}: " + ("актуален" if new == fn else f"доступно {new}"))
+        return "; ".join(out) or "обновлений нет"
+
+
 class Launcher:
     def __init__(self, root: Path | None = None, ep: Endpoints | None = None):
         self.paths = Paths(root)
@@ -54,6 +114,7 @@ class Launcher:
         setup_logging(self.paths)
         self.settings = Settings(self.paths)
         self.profiles = Profiles(self.paths, self.settings["ram_mb"])
+        self.profiles.jarvis_enabled = bool(self.settings["jarvis_bridge"])
         self.installer = MinecraftInstaller(self.paths, ep)
         self.mods = ModManager(self.paths, ep)
         self.cfg = CfgManager(self.paths, self.profiles)
@@ -249,6 +310,29 @@ class Launcher:
         except HttpError as e:
             out["error"] = "Опубликованных релизов нет или нет связи: " + str(e)
         return out
+
+    # ------------------------------------------------------------- RIM JARVIS
+    HELP_RU = ("Я умею: включать/выключать модули («включи Crystal Fade»), менять цвет («поставь фиолетовые частицы»), открывать меню "
+               "(«открой ClickGUI»), сохранять конфиг («сохрани конфиг PvP»), режимы Performance/Balanced/Ultra, пресеты, "
+               "отвечать про КД трапки, ивенты HW Helper и просадки FPS, искать и ставить моды («установи Sodium»), искать конфликты и разбирать crash-лог. "
+               "Команды влияют на игру только когда Minecraft запущен через INJECT.")
+
+    def jarvis(self):
+        from .jarvis.ai import AiClient
+        from .jarvis.assistant import Assistant
+        from .jarvis.ipc import JarvisClient
+        if getattr(self, "_jarvis", None) and self._jarvis_pid == self.pid:
+            return self._jarvis
+        ai = None
+        if self.settings["jarvis_ai"]:
+            cli = AiClient(self.settings["jarvis_ai_url"], self.settings["jarvis_ai_model"], lambda: self.secrets.get("jarvis_ai_key"))
+            ai = cli.ask if cli.configured else None
+        local = {"help": lambda: self.HELP_RU,
+                 "status": lambda: "; ".join(f"{'OK' if c.ok else '!!'} {c.title}: {c.detail}" for c in self.diagnose()),
+                 "updates": lambda: str(self.check_updates())}
+        self._jarvis = Assistant(JarvisClient(self.profiles.game_dir(self.pid)), local, ai, ModOps(self))
+        self._jarvis_pid = self.pid
+        return self._jarvis
 
     def report(self) -> Path:
         """Diagnostics text for bug reports — no tokens, no secrets, no account names."""

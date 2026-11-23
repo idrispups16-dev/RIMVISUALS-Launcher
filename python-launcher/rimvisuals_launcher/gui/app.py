@@ -19,7 +19,7 @@ from . import widgets as W
 from .widgets import (BAD, BG, VIOLET_D, LINE, MUTED, OK, PANEL, PANEL2, TEXT, VIOLET, VIOLET_L, WARN, Anim, Card, Logo,
                       PlayButton, ProgressBar, RButton, Slider, Toggle, entry, font, label, mix)
 
-PAGES = [("home", "Главная", "Home"), ("visuals", "Визуалы", "Visuals"), ("configs", "Конфигурации", "Configs"),
+PAGES = [("home", "Главная", "Home"), ("jarvis", "RIM JARVIS", "RIM JARVIS"), ("visuals", "Визуалы", "Visuals"), ("configs", "Конфигурации", "Configs"),
          ("account", "Аккаунт", "Account"), ("settings", "Настройки", "Settings"),
          ("updates", "Обновления", "Updates"), ("logs", "Логи", "Logs")]
 
@@ -110,7 +110,7 @@ class App(tk.Tk):
                  font=font(8), justify="left", anchor="w").pack(side="bottom", fill="x", padx=18, pady=14)
         self.content = tk.Frame(self, bg=BG)
         self.content.pack(side="left", fill="both", expand=True)
-        for key in ("home", "visuals", "configs", "account", "settings", "updates", "logs"):
+        for key in ("home", "jarvis", "visuals", "configs", "account", "settings", "updates", "logs"):
             f = tk.Frame(self.content, bg=BG)
             self.pages[key] = f
             getattr(self, "page_" + key)(f)
@@ -651,6 +651,121 @@ class App(tk.Tk):
         self.L.ms.sign_out()
         self.update_account_labels()
 
+    # ---------------------------------------------------------------- RIM JARVIS
+    def page_jarvis(self, f: tk.Frame) -> None:
+        self.header(f, "RIM JARVIS", self.t(
+            "Пишите или говорите команды. Каждая команда проходит через локальный мост (127.0.0.1, токен сессии) и меняет настройки запущенного мода; "
+            "если игра не запущена, я так и скажу.", "Type or speak commands. Each one goes through a local bridge (127.0.0.1, session token) and changes the running mod's "
+            "settings; if the game is not running I will say so."))
+        top = tk.Frame(f, bg=BG)
+        top.pack(fill="x", padx=32)
+        self.j_state = label(top, "", fg=MUTED, size=9)
+        self.j_state.pack(side="left")
+        for ru, en, key in (("Озвучка", "Voice replies", "jarvis_voice"),):
+            Toggle(top, self.L.settings[key], lambda v, k=key: self.L.settings.set(k, v)).pack(side="right")
+            label(top, self.t(ru, en), size=9).pack(side="right", padx=8)
+        self.j_log = tk.Text(f, bg=PANEL, fg=TEXT, relief="flat", font=font(10), wrap="word", highlightthickness=1,
+                             highlightbackground=LINE, state="disabled", height=14)
+        self.j_log.pack(fill="both", expand=True, padx=32, pady=(8, 8))
+        self.j_log.tag_configure("me", foreground=VIOLET_L)
+        self.j_log.tag_configure("bot", foreground=TEXT)
+        self.j_log.tag_configure("ok", foreground=OK)
+        self.j_log.tag_configure("bad", foreground=BAD)
+        self.j_confirm = tk.Frame(f, bg=BG)
+        RButton(self.j_confirm, self.t("Подтвердить", "Confirm"), lambda: self.jarvis_say("да"), width=140, height=32, primary=True, small=True).pack(side="left", padx=(0, 8))
+        RButton(self.j_confirm, self.t("Отмена", "Cancel"), lambda: self.jarvis_say("нет"), width=110, height=32, small=True).pack(side="left")
+        row = tk.Frame(f, bg=BG)
+        row.pack(fill="x", padx=32, pady=(0, 8))
+        self.j_var = tk.StringVar()
+        e = entry(row, self.j_var, 70)
+        e.pack(side="left", fill="x", expand=True, ipady=5)
+        e.bind("<Return>", lambda ev: self.jarvis_send())
+        RButton(row, self.t("Отправить", "Send"), self.jarvis_send, width=110, height=32, primary=True, small=True).pack(side="left", padx=8)
+        RButton(row, self.t("🎤 Говорить", "🎤 Speak"), self.jarvis_listen_once, width=120, height=32, small=True).pack(side="left")
+        opts = tk.Frame(f, bg=BG)
+        opts.pack(fill="x", padx=32, pady=(0, 6))
+        label(opts, self.t("Режим микрофона:", "Microphone mode:"), fg=MUTED, size=9).pack(side="left")
+        for code, ru, en in (("off", "выкл", "off"), ("ptt", "удерживать F8", "hold F8"), ("wake", "слово «Джарвис»", "wake word")):
+            RButton(opts, self.t(ru, en), lambda c=code: self.set_listen(c), width=150, height=28, small=True,
+                    primary=(self.L.settings["jarvis_listen"] == code)).pack(side="left", padx=4)
+        label(f, self.t("Микрофон включается только в выбранном режиме; распознавание локальное (Windows), звук никуда не отправляется.",
+                        "The mic is used only in the selected mode; recognition is local (Windows); audio is never sent anywhere."), fg=MUTED, size=8).pack(anchor="w", padx=32, pady=(0, 14))
+        self.jarvis_add("bot", self.t("Готов. Скажите «помощь», чтобы увидеть команды.", "Ready. Say “help” to see commands."))
+        self._ptt = None
+        self.after(500, self.apply_listen_mode)
+        self.after(1500, self.jarvis_poll_state)
+
+    def jarvis_add(self, tag: str, text: str) -> None:
+        self.j_log.configure(state="normal")
+        self.j_log.insert("end", ("› " if tag == "me" else "") + text + "\n\n", tag)
+        self.j_log.see("end")
+        self.j_log.configure(state="disabled")
+
+    def jarvis_poll_state(self) -> None:
+        up = self.L.jarvis().client.ipc_path.exists() and self.L.run.running
+        self.j_state.configure(text=self.t("● мост игры подключён", "● game bridge available") if up else self.t("○ игра не запущена", "○ game not running"), fg=OK if up else MUTED)
+        self.after(2500, self.jarvis_poll_state)
+
+    def jarvis_send(self) -> None:
+        text = self.j_var.get().strip()
+        if text:
+            self.j_var.set("")
+            self.jarvis_say(text)
+
+    def jarvis_say(self, text: str) -> None:
+        self.jarvis_add("me", text)
+
+        def done(r, err):
+            if err:
+                self.jarvis_add("bad", str(err))
+                return
+            self.jarvis_add("ok" if r.executed else ("bad" if not r.ok else "bot"), r.text)
+            if r.pending:
+                self.j_confirm.pack(before=self.j_confirm.master.winfo_children()[-2], padx=32, pady=(0, 6), anchor="w")
+            else:
+                self.j_confirm.pack_forget()
+            if self.L.settings["jarvis_voice"]:
+                self.speak(r.text)
+        self.run_bg(lambda: self.L.jarvis().ask(text), done)
+
+    def speak(self, text: str) -> None:
+        from ..jarvis.voice import Voice
+        S = self.L.settings
+        self.run_bg(lambda: Voice().speak(text, self.lang, S["jarvis_volume"], S["jarvis_rate"]))
+
+    def jarvis_listen_once(self) -> None:
+        from ..jarvis.voice import Voice
+        self.jarvis_add("bot", self.t("Слушаю…", "Listening…"))
+
+        def done(text, err):
+            if err:
+                self.jarvis_add("bad", str(err))
+            elif text:
+                self.jarvis_say(text)
+            else:
+                self.jarvis_add("bot", self.t("Ничего не расслышал.", "Did not catch that."))
+        self.run_bg(lambda: Voice().listen(self.lang, 6), done)
+
+    def set_listen(self, mode: str) -> None:
+        self.L.settings.set("jarvis_listen", mode)
+        self.apply_listen_mode()
+        self.build()
+        self.show("jarvis", animate=False)
+
+    def apply_listen_mode(self) -> None:
+        from ..jarvis.voice import PushToTalk, Voice, WakeWord
+        if self._ptt:
+            self._ptt.stop()
+            self._ptt = None
+        mode = self.L.settings["jarvis_listen"]
+        if mode == "off" or sys.platform != "win32":
+            return
+        on_text = lambda t: self.q.put((lambda *_: self.jarvis_say(t), None, None))  # noqa: E731
+        state = lambda s: self.q.put((lambda *_: self.jarvis_add("bad", s[6:]) if s.startswith("error:") else None, None, None))  # noqa: E731
+        cls = PushToTalk if mode == "ptt" else WakeWord
+        self._ptt = cls(Voice(), lambda: self.lang, on_text, state)
+        self._ptt.start()
+
     # ---------------------------------------------------------------- settings
     def page_settings(self, f: tk.Frame) -> None:
         self.header(f, self.t("Настройки", "Settings"))
@@ -680,6 +795,27 @@ class App(tk.Tk):
         entry(r, self.jvm_var, 56).pack(side="left", pady=4)
         RButton(r, self.t("Сохранить", "Save"), self.save_jvm, width=100, height=30, bg=PANEL, small=True).pack(side="left", padx=8)
         r = tk.Frame(card, bg=PANEL)
+        r.pack(fill="x", padx=16, pady=8)
+        label(r, "RIM JARVIS", bg=PANEL, bold=True).pack(anchor="w")
+        rr = tk.Frame(r, bg=PANEL)
+        rr.pack(fill="x", pady=3)
+        Toggle(rr, S["jarvis_bridge"], lambda v: (S.set("jarvis_bridge", v), setattr(self.L.profiles, "jarvis_enabled", v),
+                                                  self.L.profiles.write_bridge(self.L.pid))).pack(side="left")
+        label(rr, self.t("Мост JARVIS в моде (только 127.0.0.1, вступает в силу при следующем запуске игры)", "JARVIS bridge in the mod (127.0.0.1 only; applies at next game start)"), bg=PANEL).pack(side="left", padx=10)
+        rr = tk.Frame(r, bg=PANEL)
+        rr.pack(fill="x", pady=3)
+        Toggle(rr, S["jarvis_ai"], lambda v: S.set("jarvis_ai", v)).pack(side="left")
+        label(rr, self.t("AI Mode (внешний сервис, по желанию; отвечает текстом, команды не исполняет)", "AI Mode (optional external service; text answers only, never runs commands)"), bg=PANEL).pack(side="left", padx=10)
+        rr = tk.Frame(r, bg=PANEL)
+        rr.pack(fill="x", pady=3)
+        self.ai_url, self.ai_model, self.ai_key = tk.StringVar(value=S["jarvis_ai_url"]), tk.StringVar(value=S["jarvis_ai_model"]), tk.StringVar()
+        entry(rr, self.ai_url, 34).pack(side="left", padx=(0, 6))
+        entry(rr, self.ai_model, 14).pack(side="left", padx=(0, 6))
+        entry(rr, self.ai_key, 22, show="•").pack(side="left", padx=(0, 6))
+        RButton(rr, self.t("Сохранить AI", "Save AI"), self.save_ai, width=120, height=30, bg=PANEL, small=True).pack(side="left")
+        label(r, self.t("Адрес https, модель и ключ API. Ключ хранится зашифрованным (DPAPI). Платных сервисов по умолчанию нет.",
+                        "https endpoint, model and API key. The key is stored encrypted (DPAPI). No paid service is preconfigured."), fg=MUTED, size=8, bg=PANEL).pack(anchor="w")
+        r = tk.Frame(card, bg=PANEL)
         r.pack(fill="x", padx=16, pady=(8, 16))
         for key, ru, en in (("close_launcher_on_start", "Закрывать лаунчер после запуска игры", "Close launcher after the game starts"),
                             ("check_updates", "Проверять обновления при открытии", "Check for updates on open")):
@@ -692,6 +828,17 @@ class App(tk.Tk):
         self.L.settings.set("language", code)
         self.lang = code
         self.build()
+
+    def save_ai(self) -> None:
+        try:
+            self.L.settings.set("jarvis_ai_url", self.ai_url.get().strip())
+            self.L.settings.set("jarvis_ai_model", self.ai_model.get().strip())
+            if self.ai_key.get().strip():
+                self.L.secrets.set("jarvis_ai_key", self.ai_key.get().strip())
+                self.ai_key.set("")
+            self.L._jarvis = None
+        except ValueError as e:
+            messagebox.showerror("RIMVISUALS", str(e))
 
     def browse_java(self) -> None:
         p = filedialog.askopenfilename(title="java.exe") if sys.platform == "win32" else filedialog.askopenfilename(title="java")

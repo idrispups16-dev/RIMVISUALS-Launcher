@@ -13,6 +13,8 @@ public final class LauncherSettings {
   try{if(!Files.exists(p))return;long stamp=Files.getLastModifiedTime(p).toMillis();if(stamp==last)return;
    JsonObject root=JsonParser.parseString(Files.readString(p)).getAsJsonObject();
    if(root.get("schemaVersion").getAsInt()!=1)return;
+   JsonObject jv=root.has("jarvis")&&root.get("jarvis").isJsonObject()?root.getAsJsonObject("jarvis"):null;
+   if(jv!=null&&jv.has("enabled")&&jv.get("enabled").getAsBoolean())xyz.rimvisuals.core.JarvisBridge.start();else xyz.rimvisuals.core.JarvisBridge.stop();
    JsonObject v=root.getAsJsonObject("visuals");Properties props=new Properties();
    String[][] keys={{"pulseGlow","pulse_glow"},{"particles","particles"},{"watermark","watermark"},{"infoHud","info_hud"}};
    for(String[] k:keys)if(v.has(k[0]))props.setProperty(k[1]+".enabled",String.valueOf(v.get(k[0]).getAsBoolean()));
