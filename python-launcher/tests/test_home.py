@@ -39,3 +39,21 @@ def test_history_persists_and_titles(tmp_path):
     s.add(c, "me", "Включи Zoom"); s.add(c, "bot", "Готов предложить", card={"kind": "confirm"})
     again = ChatStore(tmp_path / "c.json")
     assert again.chats()[0]["title"] == "Включи Zoom" and len(again.chats()[0]["msgs"]) == 2
+
+
+def test_settings_home_keys(tmp_path):
+    import pytest
+    from rimvisuals_launcher.settings import Settings
+    s = Settings(tmp_path / "s.json")
+    s.set("home_version", "1.21.4"); s.set("player_name", "  Rimzuk222 ")
+    assert s["home_version"] == "1.21.4" and s["player_name"] == "Rimzuk222"
+    with pytest.raises(ValueError):
+        s.set("home_version", "1.20.1")
+
+
+def test_focus_reports_honestly_off_windows():
+    from rimvisuals_launcher.winfocus import focus_pid
+    import sys
+    if sys.platform != "win32":
+        ok, text = focus_pid(1)
+        assert ok is False and text

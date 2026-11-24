@@ -31,8 +31,10 @@ class App(tk.Tk):
         self.lang = self.L.settings["language"]
         self.title("RIMVISUALS")
         self.configure(bg=BG)
-        self.geometry("980x640")
+        self.geometry("1105x658")
         self.minsize(940, 600)
+        self.home_ui = None
+        self.link = None
         self.q: queue.Queue = queue.Queue()
         self.cancel: CancelToken | None = None
         self.busy = False
@@ -470,11 +472,71 @@ class App(tk.Tk):
             if not r["ok"] and r.get("needs_restart"):
                 messagebox.showinfo("RIMVISUALS", r["message"])
             self.loader_scan()
+            if r["ok"]:
+                self.enter_black_home(r.get("status") or {}, sc.instance)
             if not r["ok"]:
                 self.ld_state.configure(text=r["message"], fg=BAD)
                 if r.get("diagnosis"):
                     self.show_text(self.t("Диагностика IPC", "IPC diagnostics"), r["diagnosis"])
         self.run_bg(lambda: self.L.loader.connect(sc.instance), done)
+
+    # ------------------------------------------------ black home (ТЗ §2)
+    def enter_black_home(self, status: dict, inst) -> None:
+        """Called only after the real IPC handshake succeeded (ping + status answered by the game)."""
+        from .. import homemodel as HM
+        from .blackhome import BlackHome
+        if self.home_ui is None:
+            self.home_ui = BlackHome(self)
+        self._home_inst = inst
+        self.link = HM.GameLink(connected=True, pid=getattr(inst, "pid", 0) or 0, minecraft=str(status.get("minecraft") or getattr(inst, "mc_version", "") or ""),
+                                player=str(status.get("player") or ""))
+        self.home_ui.set_link(self.link)
+        self.home_ui.place(x=0, y=0, relwidth=1, relheight=1)
+        self.home_ui.lift()
+        self.after(4000, self._home_health)
+
+    def leave_black_home(self) -> None:
+        if self.home_ui:
+            self.home_ui.place_forget()
+
+    def _home_health(self) -> None:
+        """Real ping every few seconds; a dead game must not stay shown as connected."""
+        from .. import homemodel as HM
+        if not self.home_ui or not self.link or not self.link.connected:
+            return
+        def probe():
+            cl = self.L.loader.client
+            return bool(cl and cl.connected() and cl.call("ping").get("ok"))
+        def done(ok, err):
+            if not (ok and not err) and self.link and self.link.connected:
+                self.link = HM.GameLink(lost=True)
+                self.L.loader.disconnect()
+                self.home_ui.set_link(self.link)
+                return
+            self.after(4000, self._home_health)
+        self.run_bg(probe, done)
+
+    def black_connect(self) -> None:
+        from .. import homemodel as HM
+        h = self.home_ui
+        if not h:
+            return
+        h.set_link(HM.GameLink(connecting=True))
+        def scan():
+            insts = self.L.loader.instances()
+            if not insts:
+                return {"ok": False, "message": "Minecraft не найден. Запустите игру через ваш лаунчер."}
+            return {**self.L.loader.connect(insts[0]), "inst": insts[0]}
+        def done(r, err):
+            if err or not r["ok"]:
+                h.set_link(HM.GameLink(error=str(err) if err else r["message"]))
+                return
+            self.enter_black_home(r.get("status") or {}, r["inst"])
+        self.run_bg(scan, done)
+
+    def black_diagnose(self) -> None:
+        inst = getattr(self, "_home_inst", None)
+        self.run_bg(lambda: self.L.loader.diagnose_ipc(inst), lambda r, e: self.show_text(self.t("Диагностика IPC", "IPC diagnostics"), str(e) if e else r))
 
     def loader_diagnose(self) -> None:
         sc = self._ld_cur()
@@ -1332,7 +1394,7 @@ def selftest(home: str | None, shots: str | None) -> int:
     import tempfile
     home = home or tempfile.mkdtemp(prefix="rv-selftest-")
     app = App(home)
-    app.geometry("980x640+0+0")
+    app.geometry("1105x658+0+0")
     problems: list[str] = []
     out = Path(shots) if shots else None
     if out:
@@ -1356,6 +1418,19 @@ def selftest(home: str | None, shots: str | None) -> int:
     pump(2.5)
     if not app.ld_state.cget("text") or app.ld_state.cget("text") == "…":
         problems.append("loader page did not produce a state")
+    from .. import homemodel as _HM
+    from .blackhome import BlackHome
+    app.home_ui = BlackHome(app)
+    app.home_ui.place(x=0, y=0, relwidth=1, relheight=1)
+    app.home_ui.set_link(_HM.GameLink(connected=True, pid=1, minecraft="1.21.11", player="Steve"))
+    for tab in ("home", "mods", "bot", "skin"):
+        app.home_ui.show(tab)
+        pump(0.5)
+        if app.home_ui.tab != tab or not app.home_ui.frames[tab].winfo_ismapped():
+            problems.append(f"black home tab {tab} not visible")
+        if out:
+            _grab(out / f"blackhome-{tab}.png")
+    app.home_ui.place_forget()
     app.set_lang("en")
     pump(0.4)
     app.show("settings")

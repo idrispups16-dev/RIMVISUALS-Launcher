@@ -30,6 +30,8 @@ DEFAULT_SETTINGS: dict[str, Any] = {
     "jarvis_mic": "",             # "" = Windows default microphone
     "jarvis_speaker": "",         # "" = Windows default speakers
     "jarvis_ptt_key": "F8",
+    "player_name": "",            # nickname for the skin preview (public Mojang lookup, no account)
+    "home_version": "1.21.11",
     "jarvis_volume": 80,
     "jarvis_rate": 0,
     "jarvis_ai": False,           # optional external AI, off unless the user adds an endpoint and key
@@ -90,6 +92,10 @@ class Settings:
             from .jarvis.voice import VK
             if v not in VK:
                 raise ValueError("jarvis_ptt_key")
+        if k == "player_name":
+            v = str(v).strip()[:16]
+        if k == "home_version" and v not in ("1.21.11", "1.21.4"):
+            raise ValueError("home_version")
         if k == "extra_game_dirs":
             v = [str(x) for x in v][:20]
         if k in ("jarvis_mic", "jarvis_speaker"):
