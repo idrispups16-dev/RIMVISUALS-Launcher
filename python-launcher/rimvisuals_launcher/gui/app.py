@@ -17,7 +17,7 @@ from ..service import Launcher
 from ..settings import DEFAULT_VISUALS
 from . import widgets as W
 from .widgets import (BAD, BG, VIOLET_D, LINE, MUTED, OK, PANEL, PANEL2, TEXT, VIOLET, VIOLET_L, WARN, Anim, Card, Logo,
-                      PlayButton, ProgressBar, RButton, Slider, Toggle, entry, font, label, mix)
+                      JarvisIndicator, PlayButton, ProgressBar, RButton, Slider, Toggle, entry, font, label, mix)
 
 PAGES = [("home", "Главная", "Home"), ("loader", "Loader", "Loader"), ("jarvis", "RIM JARVIS", "RIM JARVIS"), ("visuals", "Визуалы", "Visuals"), ("configs", "Конфигурации", "Configs"),
          ("account", "Аккаунт", "Account"), ("settings", "Настройки", "Settings"),
@@ -900,8 +900,12 @@ class App(tk.Tk):
             "settings; if the game is not running I will say so."))
         top = tk.Frame(f, bg=BG)
         top.pack(fill="x", padx=32)
+        from ..jarvis.state import LABEL_RU, StateTracker
+        self.j_ind = JarvisIndicator(top)
+        self.j_ind.pack(side="left")
+        self.j_tr = StateTracker(lambda st, d: self.q.put((lambda *_: self.j_ind.set(st, LABEL_RU[st] + (": " + d[:40] if d else "")), None, None)))
         self.j_state = label(top, "", fg=MUTED, size=9)
-        self.j_state.pack(side="left")
+        self.j_state.pack(side="left", padx=14)
         for ru, en, key in (("Озвучка", "Voice replies", "jarvis_voice"),):
             Toggle(top, self.L.settings[key], lambda v, k=key: self.L.settings.set(k, v)).pack(side="right")
             label(top, self.t(ru, en), size=9).pack(side="right", padx=8)
@@ -926,9 +930,33 @@ class App(tk.Tk):
         opts = tk.Frame(f, bg=BG)
         opts.pack(fill="x", padx=32, pady=(0, 6))
         label(opts, self.t("Режим микрофона:", "Microphone mode:"), fg=MUTED, size=9).pack(side="left")
-        for code, ru, en in (("off", "выкл", "off"), ("ptt", "удерживать F8", "hold F8"), ("wake", "слово «Джарвис»", "wake word")):
+        for code, ru, en in (("off", "выкл", "off"), ("ptt", f"удерживать {self.L.settings['jarvis_ptt_key']}", f"hold {self.L.settings['jarvis_ptt_key']}"), ("wake", "слово «Джарвис»", "wake word")):
             RButton(opts, self.t(ru, en), lambda c=code: self.set_listen(c), width=150, height=28, small=True,
                     primary=(self.L.settings["jarvis_listen"] == code)).pack(side="left", padx=4)
+        dev = tk.Frame(f, bg=BG)
+        dev.pack(fill="x", padx=32, pady=(0, 6))
+        default = self.t("По умолчанию (Windows)", "Windows default")
+        self.j_mic_var = tk.StringVar(value=self.L.settings["jarvis_mic"] or default)
+        self.j_spk_var = tk.StringVar(value=self.L.settings["jarvis_speaker"] or default)
+        label(dev, self.t("Микрофон:", "Microphone:"), fg=MUTED, size=9).pack(side="left")
+        self.j_mic_menu = tk.OptionMenu(dev, self.j_mic_var, default)
+        self.j_mic_menu.configure(bg=PANEL, fg=TEXT, highlightthickness=0, width=24)
+        self.j_mic_menu.pack(side="left", padx=(4, 12))
+        label(dev, self.t("Динамики:", "Speakers:"), fg=MUTED, size=9).pack(side="left")
+        self.j_spk_menu = tk.OptionMenu(dev, self.j_spk_var, default)
+        self.j_spk_menu.configure(bg=PANEL, fg=TEXT, highlightthickness=0, width=24)
+        self.j_spk_menu.pack(side="left", padx=4)
+        dev2 = tk.Frame(f, bg=BG)
+        dev2.pack(fill="x", padx=32, pady=(0, 6))
+        RButton(dev2, self.t("Найти устройства", "Find devices"), self.jarvis_devices, width=150, height=28, small=True).pack(side="left", padx=(0, 6))
+        RButton(dev2, self.t("Диагностика голоса", "Voice diagnostics"), self.jarvis_voice_diag, width=160, height=28, small=True).pack(side="left", padx=6)
+        RButton(dev2, self.t("Проверить голос", "Test voice"), self.jarvis_voice_test, width=140, height=28, small=True).pack(side="left", padx=6)
+        from ..jarvis.voice import VK
+        label(dev2, self.t("Клавиша PTT:", "PTT key:"), fg=MUTED, size=9).pack(side="left", padx=(14, 4))
+        self.j_ptt_var = tk.StringVar(value=self.L.settings["jarvis_ptt_key"])
+        om = tk.OptionMenu(dev2, self.j_ptt_var, *VK.keys(), command=self.pick_ptt_key)
+        om.configure(bg=PANEL, fg=TEXT, highlightthickness=0, width=8)
+        om.pack(side="left")
         label(f, self.t("Микрофон включается только в выбранном режиме; распознавание локальное (Windows), звук никуда не отправляется.",
                         "The mic is used only in the selected mode; recognition is local (Windows); audio is never sent anywhere."), fg=MUTED, size=8).pack(anchor="w", padx=32, pady=(0, 14))
         self.jarvis_add("bot", self.t("Готов. Скажите «помощь», чтобы увидеть команды.", "Ready. Say “help” to see commands."))
@@ -955,37 +983,63 @@ class App(tk.Tk):
 
     def jarvis_say(self, text: str) -> None:
         self.jarvis_add("me", text)
+        self.j_tr.set("processing")
 
         def done(r, err):
             if err:
                 self.jarvis_add("bad", str(err))
+                self.j_tr.set("error", str(err))
                 return
             self.jarvis_add("ok" if r.executed else ("bad" if not r.ok else "bot"), r.text)
             if r.pending:
                 self.j_confirm.pack(before=self.j_confirm.master.winfo_children()[-2], padx=32, pady=(0, 6), anchor="w")
             else:
                 self.j_confirm.pack_forget()
+            final = ("success", "") if r.executed else (("error", r.text) if not r.ok else ("idle", ""))
             if self.L.settings["jarvis_voice"]:
-                self.speak(r.text)
+                self.speak(r.text, after=final)
+            else:
+                self.j_tr.set(*final)
         self.run_bg(lambda: self.L.jarvis().ask(text), done)
 
-    def speak(self, text: str) -> None:
+    def make_voice(self):
         from ..jarvis.voice import Voice
         S = self.L.settings
-        self.run_bg(lambda: Voice().speak(text, self.lang, S["jarvis_volume"], S["jarvis_rate"]))
+        return Voice(mic=S["jarvis_mic"], speaker=S["jarvis_speaker"])
+
+    def speak(self, text: str, after=("idle", "")) -> None:
+        S = self.L.settings
+        v = self.make_voice()
+        self.j_tr.set("speaking")
+
+        def work():
+            ok = v.speak(text, "ru", S["jarvis_volume"], S["jarvis_rate"])
+            return ok, v.last_error
+
+        def done(res, err):
+            ok, why = res if res else (False, str(err))
+            if not ok and why:
+                self.jarvis_add("bad", why)
+                self.j_tr.set("error", why)
+            else:
+                self.j_tr.set(*after)
+        self.run_bg(work, done)
 
     def jarvis_listen_once(self) -> None:
-        from ..jarvis.voice import Voice
+        v = self.make_voice()
         self.jarvis_add("bot", self.t("Слушаю…", "Listening…"))
+        self.j_tr.set("listening")
 
         def done(text, err):
             if err:
                 self.jarvis_add("bad", str(err))
+                self.j_tr.set("error", str(err))
             elif text:
                 self.jarvis_say(text)
             else:
                 self.jarvis_add("bot", self.t("Ничего не расслышал.", "Did not catch that."))
-        self.run_bg(lambda: Voice().listen(self.lang, 6), done)
+                self.j_tr.set("idle")
+        self.run_bg(lambda: v.listen("ru", 6), done)
 
     def set_listen(self, mode: str) -> None:
         self.L.settings.set("jarvis_listen", mode)
@@ -994,7 +1048,7 @@ class App(tk.Tk):
         self.show("jarvis", animate=False)
 
     def apply_listen_mode(self) -> None:
-        from ..jarvis.voice import PushToTalk, Voice, WakeWord
+        from ..jarvis.voice import VK, PushToTalk, WakeWord
         if self._ptt:
             self._ptt.stop()
             self._ptt = None
@@ -1002,10 +1056,53 @@ class App(tk.Tk):
         if mode == "off" or sys.platform != "win32":
             return
         on_text = lambda t: self.q.put((lambda *_: self.jarvis_say(t), None, None))  # noqa: E731
-        state = lambda s: self.q.put((lambda *_: self.jarvis_add("bad", s[6:]) if s.startswith("error:") else None, None, None))  # noqa: E731
-        cls = PushToTalk if mode == "ptt" else WakeWord
-        self._ptt = cls(Voice(), lambda: self.lang, on_text, state)
+
+        def state(s: str) -> None:
+            if s.startswith("error:"):
+                self.q.put((lambda *_: (self.jarvis_add("bad", s[6:]), self.j_tr.set("error", s[6:])), None, None))
+            else:
+                self.q.put((lambda *_: self.j_tr.set(s), None, None))
+        if mode == "ptt":
+            self._ptt = PushToTalk(self.make_voice(), lambda: "ru", on_text, state, VK[self.L.settings["jarvis_ptt_key"]])
+        else:
+            self._ptt = WakeWord(self.make_voice(), lambda: "ru", on_text, state)
         self._ptt.start()
+
+    def jarvis_devices(self) -> None:
+        """Fill the microphone / speaker pickers from the real Windows devices."""
+        v = self.make_voice()
+
+        def done(res, err):
+            if err:
+                self.jarvis_add("bad", str(err))
+                return
+            mics, spk = res
+            for menu, names, key in ((self.j_mic_menu, mics, "jarvis_mic"), (self.j_spk_menu, spk, "jarvis_speaker")):
+                m = menu["menu"]
+                m.delete(0, "end")
+                for n in [self.t("По умолчанию (Windows)", "Windows default")] + names:
+                    m.add_command(label=n, command=lambda n=n, key=key: self.pick_device(key, n))
+            self.jarvis_add("bot", self.t(f"Найдено микрофонов: {len(mics)}, динамиков: {len(spk)}.", f"Microphones: {len(mics)}, speakers: {len(spk)}."))
+        self.run_bg(lambda: (v.mics(), v.speakers()), done)
+
+    def pick_ptt_key(self, key: str) -> None:
+        self.L.settings.set("jarvis_ptt_key", key)
+        self.apply_listen_mode()
+        self.build()
+        self.show("jarvis", animate=False)
+
+    def pick_device(self, key: str, name: str) -> None:
+        val = "" if name.startswith(("По умолчанию", "Windows default")) else name
+        self.L.settings.set(key, val)
+        (self.j_mic_var if key == "jarvis_mic" else self.j_spk_var).set(val or self.t("По умолчанию (Windows)", "Windows default"))
+        self.apply_listen_mode()
+
+    def jarvis_voice_diag(self) -> None:
+        v = self.make_voice()
+        self.run_bg(v.diagnose, lambda r, e: self.show_text(self.t("Диагностика голоса", "Voice diagnostics"), str(e) if e else r))
+
+    def jarvis_voice_test(self) -> None:
+        self.speak("Голос Джарвиса работает.", after=("idle", ""))
 
     # ---------------------------------------------------------------- settings
     def page_settings(self, f: tk.Frame) -> None:

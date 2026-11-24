@@ -267,3 +267,45 @@ def entry(master, var: tk.StringVar, width=34, show=""):
     e = tk.Entry(master, textvariable=var, width=width, bg=PANEL2, fg=TEXT, insertbackground=VIOLET_L, relief="flat",
                  highlightthickness=1, highlightbackground=LINE, highlightcolor=VIOLET, font=font(10), show=show)
     return e
+
+
+class JarvisIndicator(tk.Canvas):
+    """Compact state chip: a dot/bars/arc that matches the JARVIS state, plus its Russian label. Animated only while something happens."""
+    COL = {"idle": MUTED, "listening": "#38BDF8", "processing": "#F59E0B", "speaking": VIOLET_L, "success": OK, "error": BAD}
+
+    def __init__(self, master, bg=BG):
+        super().__init__(master, width=230, height=30, bg=bg, highlightthickness=0)
+        self.state, self.text, self.t0 = "idle", "Неактивен", time.monotonic()
+        self._tick()
+
+    def set(self, state: str, text: str) -> None:
+        self.state, self.text, self.t0 = state, text, time.monotonic()
+        self._draw()
+
+    def _tick(self) -> None:
+        if self.state in ("listening", "processing", "speaking"):
+            self._draw()
+        self.after(50, self._tick)
+
+    def _draw(self) -> None:
+        import math
+        self.delete("all")
+        c, t = self.COL.get(self.state, MUTED), time.monotonic() - self.t0
+        if self.state == "listening":
+            r = 5 + 2.5 * (0.5 + 0.5 * math.sin(t * 5))
+            self.create_oval(15 - r, 15 - r, 15 + r, 15 + r, outline=c, width=2)
+            self.create_oval(11, 11, 19, 19, fill=c, outline="")
+        elif self.state == "processing":
+            self.create_arc(7, 7, 23, 23, start=-(t * 300) % 360, extent=250, style="arc", outline=c, width=2)
+        elif self.state == "speaking":
+            for i in range(4):
+                h = 4 + 8 * abs(math.sin(t * 7 + i * 1.3))
+                self.create_rectangle(8 + i * 5, 15 - h / 2, 11 + i * 5, 15 + h / 2, fill=c, outline="")
+        elif self.state == "success":
+            self.create_line(8, 16, 13, 21, 22, 9, fill=c, width=3)
+        elif self.state == "error":
+            self.create_line(9, 9, 21, 21, fill=c, width=3)
+            self.create_line(21, 9, 9, 21, fill=c, width=3)
+        else:
+            self.create_oval(11, 11, 19, 19, outline=c, width=2)
+        self.create_text(36, 15, text=self.text, anchor="w", fill=TEXT if self.state != "idle" else MUTED, font=font(9, self.state != "idle"))
