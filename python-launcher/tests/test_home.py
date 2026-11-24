@@ -43,8 +43,9 @@ def test_history_persists_and_titles(tmp_path):
 
 def test_settings_home_keys(tmp_path):
     import pytest
+    from rimvisuals_launcher.core import Paths
     from rimvisuals_launcher.settings import Settings
-    s = Settings(tmp_path / "s.json")
+    s = Settings(Paths(tmp_path))
     s.set("home_version", "1.21.4"); s.set("player_name", "  Rimzuk222 ")
     assert s["home_version"] == "1.21.4" and s["player_name"] == "Rimzuk222"
     with pytest.raises(ValueError):
