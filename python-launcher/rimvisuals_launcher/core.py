@@ -270,7 +270,7 @@ def http_request(url: str, *, data: bytes | None = None, headers: dict[str, str]
     for k, v in (headers or {}).items():
         req.add_header(k, v)
     try:
-        with urllib.request.urlopen(req, timeout=timeout) as resp:
+        with urllib.request.urlopen(req, timeout=timeout, context=ssl_context()) as resp:
             body = resp.read(max_bytes + 1)
     except urllib.error.HTTPError as e:
         raise HttpError(f"HTTP {e.code} for {url.split('?')[0]}") from None
@@ -279,6 +279,40 @@ def http_request(url: str, *, data: bytes | None = None, headers: dict[str, str]
     if len(body) > max_bytes:
         raise HttpError("response too large")
     return body
+
+
+_SSL_CTX = None
+
+
+def ssl_context():
+    """Verifying TLS context: the system store (Windows ROOT+CA) **plus** the Mozilla bundle.
+
+    Why both: Python only sees roots already present in the Windows store, and Windows installs many roots lazily; a fresh PC or one
+    with stale roots then fails with CERTIFICATE_VERIFY_FAILED (unable to get local issuer certificate) for hosts such as the Modrinth CDN.
+    Adding the Mozilla roots fixes that *without* turning verification off. SSL_CERT_FILE (corporate root CA) is honoured as well.
+    """
+    global _SSL_CTX
+    if _SSL_CTX is not None:
+        return _SSL_CTX
+    import ssl
+    ctx = ssl.create_default_context()
+    cands = []
+    if os.environ.get("SSL_CERT_FILE"):
+        cands.append(os.environ["SSL_CERT_FILE"])
+    try:
+        import certifi
+        cands.append(certifi.where())
+    except Exception:
+        pass
+    cands.append(str(Path(__file__).parent / "data" / "cacert.pem"))
+    for c in cands:
+        try:
+            if Path(c).is_file():
+                ctx.load_verify_locations(cafile=c)
+        except (OSError, ssl.SSLError) as e:
+            log.warning("CA bundle %s not loaded: %s", c, e)
+    _SSL_CTX = ctx
+    return ctx
 
 
 def diagnose_network_error(e: BaseException) -> str:
@@ -295,7 +329,8 @@ def diagnose_network_error(e: BaseException) -> str:
     if "timed out" in low or "timeout" in low:
         return f"таймаут соединения с {host or 'сервером'}: сеть медленная или заблокирована"
     if "certificate" in low or "ssl" in low:
-        return f"ошибка проверки TLS-сертификата {host}: проверьте дату/время Windows и антивирус с перехватом HTTPS (проверка не отключается)"
+        return (f"ошибка проверки TLS-сертификата {host}: проверьте дату и время Windows, отключите перехват HTTPS в антивирусе (или добавьте его корневой "
+                "сертификат в хранилище Windows), проверьте VPN/корпоративный прокси; нажмите «Диагностика сети». Проверка сертификатов не отключается")
     m2 = re.search(r"HTTP (\d{3})", t)
     if m2:
         return f"сервер ответил HTTP {m2.group(1)}"
@@ -339,7 +374,7 @@ def download(url: str, dest: Path, *, sha1: str | None = None, sha256: str | Non
                 raise HttpError("refusing non-HTTPS url")
             h = hashlib.new(algo) if algo else None
             got = 0
-            with urllib.request.urlopen(req, timeout=timeout) as resp, open(tmp, "wb") as f:
+            with urllib.request.urlopen(req, timeout=timeout, context=ssl_context()) as resp, open(tmp, "wb") as f:
                 total = int(resp.headers.get("Content-Length") or size or 0)
                 while True:
                     if cancel:

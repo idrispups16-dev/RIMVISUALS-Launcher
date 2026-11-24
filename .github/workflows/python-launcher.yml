@@ -62,7 +62,7 @@ jobs:
         run: |
           & $env:PY packaging\make_icon.py packaging\rimvisuals.ico
           & $env:PY -m PyInstaller --noconfirm --onefile --windowed --name RIMVISUALS --icon packaging\rimvisuals.ico `
-            --add-data "assets;assets" --collect-submodules rimvisuals_launcher RIMVISUALS.py
+            --add-data "assets;assets" --add-data "rimvisuals_launcher/data;rimvisuals_launcher/data" --collect-submodules rimvisuals_launcher RIMVISUALS.py
           if (-not (Test-Path dist\RIMVISUALS.exe)) { throw "EXE missing" }
       - name: EXE smoke test (frozen app builds every page)
         shell: pwsh

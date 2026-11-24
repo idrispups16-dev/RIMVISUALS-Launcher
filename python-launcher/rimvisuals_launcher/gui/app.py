@@ -321,7 +321,8 @@ class App(tk.Tk):
         self.ld_connect = RButton(row, "CONNECT", self.loader_connect, width=150, bg=PANEL, primary=True)
         self.ld_connect.pack(side="left", padx=(0, 8))
         RButton(row, self.t("Отключить", "Disconnect"), self.loader_disconnect, width=120, bg=PANEL).pack(side="left", padx=(0, 8))
-        RButton(row, self.t("Диагностика IPC", "IPC diagnostics"), self.loader_diagnose, width=150, bg=PANEL).pack(side="left")
+        RButton(row, self.t("Диагностика IPC", "IPC diagnostics"), self.loader_diagnose, width=150, bg=PANEL).pack(side="left", padx=(0, 8))
+        RButton(row, self.t("Диагностика сети", "Network check"), self.net_diagnose, width=150, bg=PANEL).pack(side="left")
         cat = Card(f, self.t("Каталог модулей (из запущенной игры)", "Module catalog (from the running game)"))
         cat.pack(fill="both", expand=True, padx=32, pady=14)
         self.ld_cat_note = label(cat, "", fg=MUTED, size=9, bg=PANEL, wrap=760)
@@ -442,6 +443,10 @@ class App(tk.Tk):
         inst = sc.instance if sc else None
         self.run_bg(lambda: self.L.loader.diagnose_ipc(inst),
                     lambda r, e: self.show_text(self.t("Диагностика IPC", "IPC diagnostics"), str(e) if e else r))
+
+    def net_diagnose(self) -> None:
+        from ..netdiag import run
+        self.run_bg(lambda: run()[1], lambda r, e: self.show_text(self.t("Диагностика сети", "Network check"), str(e) if e else r))
 
     def show_text(self, title: str, text: str) -> None:
         win = tk.Toplevel(self)

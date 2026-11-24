@@ -30,6 +30,7 @@ def main(argv: list[str]) -> int:
     ld.add_argument("--game-dir")
     ji = sub.add_parser("jar-info", help="which RIMVISUALS JAR this build uses and whether it is compatible (no manual search needed)")
     ji.add_argument("--report", help="write the JSON here (the windowed EXE has no console)")
+    sub.add_parser("net-diagnose", help="DNS / TCP / verified-TLS check of every host the launcher uses")
     sub.add_parser("verify", help="full SHA re-check of game files and the mod")
     sub.add_parser("report")
     gs = sub.add_parser("gui-selftest", help="build every GUI page, optionally save screenshots")
@@ -47,6 +48,11 @@ def main(argv: list[str]) -> int:
         else:
             print(buf.getvalue(), end="")
         return code
+    if a.cmd == "net-diagnose":
+        from .netdiag import run as _nd
+        res, text = _nd()
+        print(text)
+        return 0 if all(r["tls"] for r in res) else 5
     if a.cmd == "jar-info":
         import json
         from .modmgr import find_bundled_jar
