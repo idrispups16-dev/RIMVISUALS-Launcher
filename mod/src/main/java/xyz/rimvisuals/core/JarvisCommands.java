@@ -62,7 +62,14 @@ public final class JarvisCommands {
             case "ping": { var o = ok(); o.addProperty("pong", true); return o; }
             case "status": {
                 var o = ok(); o.addProperty("access", access.getAsBoolean()); o.addProperty("modules", Modules.ALL.size());
-                o.addProperty("preset", Modules.PERFORMANCE.preset.get()); return o;
+                o.addProperty("preset", Modules.PERFORMANCE.preset.get());
+                try {
+                    o.addProperty("minecraft", net.fabricmc.loader.api.FabricLoader.getInstance().getModContainer("minecraft")
+                            .map(c -> c.getMetadata().getVersion().getFriendlyString()).orElse(""));
+                    var mc = net.minecraft.client.MinecraftClient.getInstance();
+                    o.addProperty("player", mc.player != null ? mc.player.getName().getString() : mc.getSession().getUsername());
+                } catch (Throwable t) { /* status must never fail because of optional fields */ }
+                return o;
             }
             case "list_modules": {
                 var o = ok(); var arr = new JsonArray();
