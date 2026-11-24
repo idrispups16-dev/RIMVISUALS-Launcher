@@ -45,6 +45,14 @@ def test_fetch_skin_flow_with_fake_http_and_validation():
     for bad in ("a", "has space", "x" * 40, "", "ник"):
         with pytest.raises(ValueError):
             S.fetch_skin(bad, http)
+    plain = base64.b64encode(json.dumps({"textures": {"SKIN": {"url": "http://textures.minecraft.net/texture/abc"}}}).encode()).decode()
+    got = []
+    def http2(u, **k):                       # real Mojang answers with http:// — it must be upgraded, never fetched in clear
+        got.append(u)
+        return http(u, **k) if "textures" not in u else png
+    prof = lambda u, **k: json.dumps({"id": "1", "properties": [{"name": "textures", "value": plain}]}).encode() if "sessionserver" in u else (json.dumps({"id": "1"}).encode() if "api.mojang" in u else png)
+    S.fetch_skin("Steve", lambda u, **k: (got.append(u), prof(u, **k))[1])
+    assert got[-1].startswith("https://textures.minecraft.net/")
     evil = base64.b64encode(json.dumps({"textures": {"SKIN": {"url": "https://evil.example/x"}}}).encode()).decode()
     with pytest.raises(RuntimeError):
         S.fetch_skin("Steve", lambda u, **k: json.dumps({"id": "1", "properties": [{"name": "textures", "value": evil}]}).encode())

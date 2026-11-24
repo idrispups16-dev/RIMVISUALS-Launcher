@@ -78,8 +78,9 @@ class Anim:
 
 class RButton(tk.Canvas):
     def __init__(self, master, text: str, command: Callable[[], None], *, primary=False, width=150, height=38,
-                 bg=BG, small=False):
+                 bg=BG, small=False, light=False):
         super().__init__(master, width=width, height=height, bg=bg, highlightthickness=0, cursor="hand2")
+        self.light = light
         self.text, self.command, self.primary, self.w_, self.h_ = text, command, primary, width, height
         self.enabled = True
         self.small = small
@@ -103,6 +104,8 @@ class RButton(tk.Canvas):
         v = self.hover.v
         if not self.enabled:
             fill, fg, out = PANEL2, MUTED, LINE
+        elif self.light:
+            fill, fg, out = mix("#EDEBE6", "#FFFFFF", v), "#111111", mix("#EDEBE6", "#FFFFFF", v)
         elif self.primary:
             fill, fg, out = mix(VIOLET_D, VIOLET, 0.35 + 0.65 * v), "#FFFFFF", mix(VIOLET, VIOLET_L, v)
         else:

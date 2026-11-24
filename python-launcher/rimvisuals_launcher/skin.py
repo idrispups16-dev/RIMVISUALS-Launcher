@@ -158,6 +158,8 @@ def fetch_skin(name: str, http=None) -> bytes:
         sess = json.loads(http(f"https://sessionserver.mojang.com/session/minecraft/profile/{prof['id']}", timeout=15, max_bytes=1 << 16))
         tex = next(p for p in sess["properties"] if p["name"] == "textures")
         url = json.loads(base64.b64decode(tex["value"]))["textures"]["SKIN"]["url"]
+        if url.startswith("http://textures.minecraft.net/"):      # Mojang still returns http:// here; we only ever fetch over TLS
+            url = "https://" + url[len("http://"):]
         if not url.startswith("https://textures.minecraft.net/"):
             raise RuntimeError("неожиданный адрес скина")
         return http(url, timeout=15, max_bytes=1 << 17)
@@ -235,7 +237,7 @@ def pedestal_quads(yaw, pitch, scale, cx, cy, seed=7):
         return tex[k]
     # a 16x16x16 block whose top is at y=0; texture atlas 16 wide so every face reads the same noise
     q = []
-    q += box_quads((-12, -16, -12), (24, 16, 24), (0, 0), lambda x, y: at(x % 16, y % 16), yaw, pitch, scale, cx, cy)
+    q += box_quads((-16, -16, -16), (32, 16, 32), (0, 0), lambda x, y: at(x % 16, y % 16), yaw, pitch, scale, cx, cy)
     return q
 
 

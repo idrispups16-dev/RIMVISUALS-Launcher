@@ -24,21 +24,32 @@ class BlackHome(tk.Frame):
         self.skin = default_skin()
         self.yaw = -0.56
         self.rows: dict[str, Toggle] = {}
-        bar = tk.Frame(self, bg=K)
-        bar.pack(fill="x", padx=28, pady=(18, 0))
-        label(bar, "RIMVISUALS", fg=TEXT, size=15, bold=True, bg=K).pack(side="left", padx=(0, 28))
+        bar = tk.Frame(self, bg=K, height=56)
+        bar.pack(fill="x")
+        bar.pack_propagate(False)
+        lg = tk.Frame(bar, bg=K)
+        lg.place(x=22, rely=0.5, anchor="w")
+        tk.Label(lg, text="R", bg=TEXT, fg=K, font=font(10, True), width=2).pack(side="left")
+        label(lg, "RIMVISUALS", fg=TEXT, size=10, bold=True, bg=K).pack(side="left", padx=10)
+        mid = tk.Frame(bar, bg=K)
+        mid.place(relx=0.5, rely=0.5, anchor="center")
         self.tabs: dict[str, tk.Label] = {}
         for key, ru in TABS:
-            b = tk.Label(bar, text=ru, bg=K, fg=MUTED, font=font(11, True), cursor="hand2", padx=12)
-            b.pack(side="left")
+            b = tk.Label(mid, text=ru, bg=K, fg=MUTED, font=font(10, True), cursor="hand2", padx=16, pady=7)
+            b.pack(side="left", padx=2)
             b.bind("<Button-1>", lambda e, k=key: self.show(k))
             self.tabs[key] = b
-        self.conn = label(bar, "", fg=MUTED, size=9, bg=K)
-        self.conn.pack(side="right")
-        gear = tk.Label(bar, text="⚙", bg=K, fg=MUTED, font=font(14), cursor="hand2")
-        gear.pack(side="right", padx=14)
+        rt = tk.Frame(bar, bg=K)
+        rt.place(relx=1.0, x=-22, rely=0.5, anchor="e")
+        gear = tk.Label(rt, text="⚙", bg=K, fg=MUTED, font=font(14), cursor="hand2")
+        gear.pack(side="right", padx=(14, 0))
         gear.bind("<Button-1>", lambda e: app.leave_black_home())
-        tk.Frame(self, bg=LINE, height=1).pack(fill="x", padx=28, pady=(10, 0))
+        self.conn = label(rt, "", fg=MUTED, size=9, bg=K)
+        self.conn.pack(side="right", padx=(0, 14))
+        self.nick = label(rt, "", fg=TEXT, size=10, bold=True, bg=K)
+        self.nick.pack(side="right")
+        self.head = tk.Canvas(rt, width=26, height=26, bg=K, highlightthickness=0)
+        self.head.pack(side="right", padx=(0, 8))
         self.body = tk.Frame(self, bg=K)
         self.body.pack(fill="both", expand=True)
         self.frames = {k: tk.Frame(self.body, bg=K) for k, _ in TABS}
@@ -46,13 +57,14 @@ class BlackHome(tk.Frame):
         self._build_mods(self.frames["mods"])
         self._build_bot(self.frames["bot"])
         self._build_skin(self.frames["skin"])
+        self.render_home()
         self.show("home")
 
     # ------------------------------------------------------------- navigation
     def show(self, k: str) -> None:
         self.tab = k
         for key, b in self.tabs.items():
-            b.configure(fg=TEXT if key == k else MUTED)
+            b.configure(fg=TEXT if key == k else MUTED, bg="#1c1c1e" if key == k else K)
         for key, f in self.frames.items():
             f.place_forget()
         self.frames[k].place(x=0, y=0, relwidth=1, relheight=1)
@@ -71,28 +83,32 @@ class BlackHome(tk.Frame):
 
     # ------------------------------------------------------------------ home
     def _build_home(self, f: tk.Frame) -> None:
-        mid = tk.Frame(f, bg=K)
-        mid.place(relx=0.5, rely=0.46, anchor="center")
-        label(mid, "RIMVISUALS", fg=TEXT, size=34, bold=True, bg=K, anchor="center").pack()
-        self.who = label(mid, "", fg=VIOLET_L, size=11, bg=K, anchor="center")
-        self.who.pack(pady=(4, 18))
-        self.vrow = tk.Frame(mid, bg=K)
-        self.vrow.pack(pady=(0, 14))
-        self.vbtn: dict[str, RButton] = {}
+        self.stage = tk.Canvas(f, bg=K, highlightthickness=0)
+        self.stage.place(relx=0.46, y=0, relwidth=0.54, relheight=1)
+        self.stage.bind("<Configure>", lambda e: self.paint(self.stage, True))
+        self.stage.bind("<B1-Motion>", self._drag)
+        self.stage.bind("<Button-1>", lambda e: setattr(self, "_x", e.x))
+        col = tk.Frame(f, bg=K)
+        col.place(x=53, rely=0.5, y=-20, anchor="w", width=320)
+        self.big = label(col, "", fg="#FFFFFF", size=32, bold=True, bg=K)
+        self.big.pack(anchor="w", pady=(0, 22))
+        self.vbox = tk.Frame(col, bg="#111112")
+        self.vbox.pack(fill="x", ipady=3)
+        self.vrows: dict[str, tk.Label] = {}
         for v in HM.VERSIONS:
-            b = RButton(self.vrow, v, lambda v=v: self.pick(v), width=120, height=34, bg=K, small=True)
-            b.pack(side="left", padx=5)
-            self.vbtn[v] = b
-        self.play = RButton(mid, "ИГРАТЬ", self.on_play, primary=True, width=260, height=52, bg=K)
-        self.play.pack(pady=(4, 12))
-        self.msg = label(mid, "", fg=MUTED, size=10, bg=K, anchor="center", wrap=520)
-        self.msg.pack()
-        row = tk.Frame(mid, bg=K)
-        row.pack(pady=(16, 0))
-        self.btn_conn = RButton(row, "CONNECT", self.app.black_connect, width=140, height=34, bg=K, small=True)
-        self.btn_conn.pack(side="left", padx=5)
-        RButton(row, "Диагностика", self.app.black_diagnose, width=130, height=34, bg=K, small=True).pack(side="left", padx=5)
-        self.render_home()
+            r = tk.Label(self.vbox, text=v, bg="#111112", fg=MUTED, font=font(10), anchor="w", padx=16, pady=8, cursor="hand2")
+            r.pack(fill="x", padx=4, pady=1)
+            r.bind("<Button-1>", lambda e, v=v: self.pick(v))
+            self.vrows[v] = r
+        self.play = RButton(col, "▶   Играть", self.on_play, width=320, height=54, bg=K, light=True)
+        self.play.pack(pady=(14, 8))
+        self.msg = label(col, "", fg=MUTED, size=9, bg=K, wrap=320)
+        self.msg.pack(anchor="w")
+        row = tk.Frame(col, bg=K)
+        row.pack(anchor="w", pady=(14, 0))
+        self.btn_conn = RButton(row, "CONNECT", self.app.black_connect, width=120, height=30, bg=K, small=True)
+        self.btn_conn.pack(side="left", padx=(0, 8))
+        RButton(row, "Диагностика", self.app.black_diagnose, width=120, height=30, bg=K, small=True).pack(side="left")
 
     def pick(self, v: str) -> None:
         self.sel = v
@@ -101,13 +117,22 @@ class BlackHome(tk.Frame):
 
     def render_home(self) -> None:
         l = self.link
-        for v, b in self.vbtn.items():
-            b.primary = v == self.sel
-            b._draw()
-        self.who.configure(text=(l.player or self.app.L.settings["player_name"] or "") + (f" · Minecraft {l.minecraft}" if l.connected else ""))
+        name = l.player or self.app.L.settings["player_name"] or "Игрок"
+        self.big.configure(text=name)
+        self.nick.configure(text=name)
+        for v, r in self.vrows.items():
+            on = v == self.sel
+            avail = v in HM.BUILT_FOR
+            r.configure(text=v if avail else f"{v}   · сборки нет", bg="#262628" if on else "#111112",
+                        fg=TEXT if on else MUTED, font=font(10, on))
+        self.play.set_text("▶   Играть")
         self.msg.configure(text=HM.status_line(l, self.sel), fg=OK if l.connected and not l.lost else (BAD if l.lost or l.error else MUTED))
         self.conn.configure(text="● подключено" if l.connected else ("○ нет соединения" if l.lost else "○ не подключено"), fg=OK if l.connected else MUTED)
         self.btn_conn.set_text("ПЕРЕПОДКЛЮЧИТЬ" if l.connected or l.lost else "CONNECT")
+        self.paint_head()
+        if name != getattr(self, "_skin_for", None) and (l.connected or self.app.L.settings["player_name"]):
+            self._skin_for = name
+            self.load_skin_for(name if name != "Игрок" else "")
 
     def on_play(self) -> None:
         kind, val = HM.play_action(self.link, self.sel)
@@ -307,11 +332,31 @@ class BlackHome(tk.Frame):
         self.draw_skin()
 
     def draw_skin(self) -> None:
-        c = self.sc
+        if hasattr(self, "sc"):
+            self.paint(self.sc)
+        self.paint(self.stage, True)
+        self.paint_head()
+
+    def paint(self, c: tk.Canvas, stars: bool = False) -> None:
         c.delete("all")
-        w, h = max(c.winfo_width(), 420), max(c.winfo_height(), 460)
-        for pts, col in scene(self.skin, yaw=self.yaw, scale=min(w, h) / 90, cx=w / 2, cy=h * 0.46):
+        w, h = max(c.winfo_width(), 400), max(c.winfo_height(), 400)
+        if stars:
+            import random
+            rnd = random.Random(7)
+            for _ in range(26):
+                x, y, g = rnd.randrange(w), rnd.randrange(h), rnd.choice(("#2a2a2e", "#3a3a40", "#555560"))
+                c.create_oval(x, y, x + 2, y + 2, fill=g, outline="")
+        k = min(w / 545, h / 600) * (7.1 if stars else 5.3)
+        for pts, col in scene(self.skin, yaw=self.yaw, scale=k, cx=w * (0.54 if stars else 0.5), cy=h * (0.505 if stars else 0.5) - (0 if stars else 10.3 * k - 30)):
             c.create_polygon(*[v for p in pts for v in p], fill=col, outline=col)
+
+    def paint_head(self) -> None:
+        c = self.head
+        c.delete("all")
+        for y in range(8):
+            for x in range(8):
+                px = self.skin.at(8 + x, 8 + y)
+                c.create_rectangle(1 + x * 3, 1 + y * 3, 4 + x * 3, 4 + y * 3, fill="#%02x%02x%02x" % tuple(px[:3]), outline="")
 
     def load_skin_for(self, name: str, save: bool = False) -> None:
         if not name:
