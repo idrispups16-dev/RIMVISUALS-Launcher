@@ -75,6 +75,24 @@ class LoaderService:
             base += " Нажмите «Установить»: JAR будет проверен по SHA-256 и скопирован в mods; игру нужно перезапустить."
         return base
 
+    # ------------------------------------------------------------------ profiles already on disk (game not running)
+    def installed(self):
+        from .launchers import discover
+        return discover(extra=[Path(x) for x in self.l.settings["extra_game_dirs"]])
+
+    def add_folder(self, folder: str) -> None:
+        cur = list(self.l.settings["extra_game_dirs"])
+        if folder not in cur:
+            self.l.settings.set("extra_game_dirs", cur + [folder])
+
+    def install_profile(self, prof, cancel: CancelToken | None = None, progress=None) -> dict[str, Any]:
+        """Put the verified mod into an existing profile. No Minecraft/Fabric download: the profile already has them."""
+        inst = L.GameInstance(0, prof.game_dir, prof.mc_version, bool(prof.fabric_loader), prof.fabric_loader)
+        r = self.install(inst, cancel, progress)
+        r["needs_restart"] = False
+        r["message"] = "Мод установлен в профиль. Запустите этот профиль в вашем лаунчере, затем откройте Loader и нажмите CONNECT."
+        return r
+
     # ------------------------------------------------------------------ install
     def ensure_jar(self, cancel: CancelToken | None = None, progress=None):
         """bundled → user-picked → official release (SHA-256 verified). Raises JarUnavailable with the real reason."""

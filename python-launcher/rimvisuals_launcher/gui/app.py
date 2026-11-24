@@ -323,6 +323,11 @@ class App(tk.Tk):
         RButton(row, self.t("Отключить", "Disconnect"), self.loader_disconnect, width=120, bg=PANEL).pack(side="left", padx=(0, 8))
         RButton(row, self.t("Диагностика IPC", "IPC diagnostics"), self.loader_diagnose, width=150, bg=PANEL).pack(side="left", padx=(0, 8))
         RButton(row, self.t("Диагностика сети", "Network check"), self.net_diagnose, width=150, bg=PANEL).pack(side="left")
+        prof = Card(f, self.t("Установленные профили Minecraft (игра не запущена)", "Installed Minecraft profiles (game not running)"))
+        prof.pack(fill="x", padx=32, pady=(14, 0))
+        self.ld_profiles = tk.Frame(prof, bg=PANEL)
+        self.ld_profiles.pack(fill="x", padx=16, pady=(0, 6))
+        RButton(prof, self.t("Добавить папку…", "Add folder…"), self.loader_add_folder, width=150, height=28, bg=PANEL, small=True).pack(anchor="w", padx=16, pady=(0, 10))
         cat = Card(f, self.t("Каталог модулей (из запущенной игры)", "Module catalog (from the running game)"))
         cat.pack(fill="both", expand=True, padx=32, pady=14)
         self.ld_cat_note = label(cat, "", fg=MUTED, size=9, bg=PANEL, wrap=760)
@@ -341,6 +346,7 @@ class App(tk.Tk):
         self._ld_busy = False
 
     def refresh_loader(self) -> None:
+        self.loader_profiles()
         self.loader_scan()
         if getattr(self, "_ld_timer", None) is None:
             self._ld_tick()
@@ -349,6 +355,38 @@ class App(tk.Tk):
         self._ld_timer = self.after(4000, self._ld_tick)
         if self.page_name == "loader" and not self._ld_busy:
             self.loader_scan()
+
+    def loader_profiles(self) -> None:
+        def done(ps, err):
+            for w in self.ld_profiles.winfo_children():
+                w.destroy()
+            if err or not ps:
+                label(self.ld_profiles, str(err) if err else self.t("Профили не найдены. Нажмите «Добавить папку…» и выберите папку игры вашего лаунчера.",
+                      "No profiles found. Use “Add folder…” and pick your launcher's game folder."), fg=MUTED, size=9, bg=PANEL, wrap=760).pack(anchor="w")
+                return
+            for p in ps:
+                r = tk.Frame(self.ld_profiles, bg=PANEL)
+                r.pack(fill="x", pady=2)
+                label(r, f"{p.launcher} · {p.name}", bg=PANEL).pack(side="left")
+                label(r, "  " + p.note + ("  ·  " + self.t("формат распознан, лаунчер не проверен", "layout recognised, launcher untested") if not p.verified else ""),
+                      fg=OK if p.compatible else MUTED, size=8, bg=PANEL).pack(side="left")
+                if p.compatible and not p.has_rimvisuals:
+                    RButton(r, self.t("Установить мод", "Install mod"), lambda p=p: self.loader_install_profile(p), width=130, height=26, bg=PANEL, small=True).pack(side="right")
+        self.run_bg(self.L.loader.installed, done)
+
+    def loader_install_profile(self, p) -> None:
+        if not messagebox.askyesno("RIMVISUALS", self.t(f"Установить RIMVISUALS в профиль «{p.name}»?\n{p.game_dir}", f"Install RIMVISUALS into “{p.name}”?\n{p.game_dir}")):
+            return
+        def done(r, err):
+            messagebox.showinfo("RIMVISUALS", str(err) if err else r["message"])
+            self.loader_profiles()
+        self.run_bg(lambda: self.L.loader.install_profile(p), done)
+
+    def loader_add_folder(self) -> None:
+        d = filedialog.askdirectory(title=self.t("Папка игры или лаунчера", "Game or launcher folder"))
+        if d:
+            self.L.loader.add_folder(d)
+            self.loader_profiles()
 
     def loader_scan(self) -> None:
         def done(res, err):

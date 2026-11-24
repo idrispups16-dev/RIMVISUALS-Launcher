@@ -141,3 +141,16 @@ def test_wrong_token_is_a_failure(home, tmp_path):
         assert r["ok"] is False and r["state"] == "connection_failed"
     finally:
         g.close()
+
+
+def test_install_into_existing_profile_without_running_game(home, tmp_path, rel):
+    from rimvisuals_launcher.launchers import Profile
+    la = Launcher(home); la.installer.ep = Endpoints(release=rel.url)
+    la.mods.fabric_api_present = lambda gd: True
+    la.mod_jar_source = lambda: None
+    gd = tmp_path / "pvp"; (gd / "mods").mkdir(parents=True)
+    r = la.loader.install_profile(Profile("Prism", "x", gd, "1.21.11", "0.19.3"))
+    assert (gd / "mods" / "rimvisuals-2.0.0.jar").is_file() and r["needs_restart"] is False
+    assert la.loader.installed() is not None
+    la.loader.add_folder(str(gd)); la.loader.add_folder(str(gd))
+    assert la.settings["extra_game_dirs"] == [str(gd)]

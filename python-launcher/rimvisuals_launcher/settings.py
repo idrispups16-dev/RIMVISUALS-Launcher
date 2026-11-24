@@ -26,6 +26,7 @@ DEFAULT_SETTINGS: dict[str, Any] = {
     "jarvis_bridge": True,        # the mod opens its loopback IPC (127.0.0.1 + session token)
     "jarvis_voice": False,        # spoken replies (local Windows speech)
     "jarvis_listen": "off",       # off | ptt (push-to-talk) | wake
+    "extra_game_dirs": [],        # user-added folders scanned for existing Minecraft profiles
     "jarvis_mic": "",             # "" = Windows default microphone
     "jarvis_speaker": "",         # "" = Windows default speakers
     "jarvis_ptt_key": "F8",
@@ -89,6 +90,8 @@ class Settings:
             from .jarvis.voice import VK
             if v not in VK:
                 raise ValueError("jarvis_ptt_key")
+        if k == "extra_game_dirs":
+            v = [str(x) for x in v][:20]
         if k in ("jarvis_mic", "jarvis_speaker"):
             v = str(v)[:120]
         if k in ("jarvis_volume",):
