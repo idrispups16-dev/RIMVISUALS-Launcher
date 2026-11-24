@@ -16,7 +16,7 @@ from rimvisuals_launcher.core import Paths
 # --------------------------------------------------------------------------- fake game (same wire protocol as JarvisServer.java)
 class FakeGame:
     """Newline-JSON loopback server with the same allowlist/confirmation rules as the mod; keeps real state we can assert on."""
-    def __init__(self, game_dir: Path, token="t" * 64):
+    def __init__(self, game_dir: Path, token="t" * 64, token_in_file=None):
         self.token = token
         self.mods = {"crystal_fade": {"enabled": False, "name": "Crystal Fade", "settings": [{"key": "crystal_opacity", "type": "number", "value": 1.0}]},
                      "hit_particles": {"enabled": True, "name": "Hit Particles", "settings": [{"key": "color", "type": "color", "value": "#FF3355"}]},
@@ -25,8 +25,8 @@ class FakeGame:
                      "sharpness_particles": {"enabled": True, "name": "Sharpness Particles", "settings": [{"key": "color", "type": "color", "value": "#C4B5FD"}]}}
         self.preset, self.saved, self.log, self.fps = "Balanced", [], [], 38
         self.srv = socket.socket(); self.srv.bind(("127.0.0.1", 0)); self.srv.listen(2)
-        d = game_dir / "config" / "rimvisuals"; d.mkdir(parents=True)
-        (d / "jarvis-ipc.json").write_text(json.dumps({"schemaVersion": 1, "port": self.srv.getsockname()[1], "token": token, "pid": 1}))
+        d = game_dir / "config" / "rimvisuals"; d.mkdir(parents=True, exist_ok=True)
+        (d / "jarvis-ipc.json").write_text(json.dumps({"schemaVersion": 1, "port": self.srv.getsockname()[1], "token": token_in_file or token, "pid": 1}))
         threading.Thread(target=self._accept, daemon=True).start()
 
     def close(self): self.srv.close()
@@ -39,7 +39,9 @@ class FakeGame:
 
     def _serve(self, c):
         f = c.makefile("rw", encoding="utf-8", newline="\n")
-        if json.loads(f.readline()).get("auth") != self.token:
+        try: first = json.loads(f.readline())
+        except ValueError: c.close(); return          # port probes connect and hang up without sending anything
+        if first.get("auth") != self.token:
             f.write('{"ok":false,"error":"auth"}\n'); f.flush(); c.close(); return
         f.write('{"ok":true,"hello":"rimvisuals-jarvis","protocol":1}\n'); f.flush()
         for line in f:
@@ -49,11 +51,13 @@ class FakeGame:
         a = r.get("action"); self.log.append(a)
         if a in ("apply_preset", "load_config", "reset_module") and not r.get("confirmed"):
             return {"ok": False, "error": "confirmation_required"}
-        if a == "list_modules": return {"ok": True, "modules": [{"id": k, "name": v["name"]} for k, v in self.mods.items()]}
+        if a == "ping": return {"ok": True, "pong": True}
+        if a == "status": return {"ok": True, "minecraft": "1.21.11", "modules": len(self.mods)}
+        if a == "list_modules": return {"ok": True, "modules": [{"id": k, "name": v["name"], "category": "VISUALS", "enabled": v["enabled"], "toggleable": True} for k, v in self.mods.items()]}
         if a == "get_module": m = self.mods.get(r["id"]); return {"ok": True, "settings": m["settings"]} if m else {"ok": False, "error": "no_module"}
         if a == "set_module":
             if r["module"] not in self.mods: return {"ok": False, "error": "no_module"}
-            self.mods[r["module"]]["enabled"] = r["enabled"]; return {"ok": True}
+            self.mods[r["module"]]["enabled"] = r["enabled"]; return {"ok": True, "id": r["module"], "enabled": r["enabled"]}
         if a == "set_setting":
             for s in self.mods[r["module"]]["settings"]:
                 if s["key"] == r["setting"]: s["value"] = r["value"]; return {"ok": True}

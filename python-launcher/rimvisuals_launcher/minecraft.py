@@ -22,6 +22,7 @@ class Endpoints:
     resources: str = "https://resources.download.minecraft.net"
     fabric_meta: str = "https://meta.fabricmc.net"
     modrinth: str = "https://api.modrinth.com"
+    release: str = "https://github.com/idrispups16-dev/RIMVISUALS-Launcher/releases/latest/download"
 
 
 Progress = Callable[[str, float], None]     # (stage text, 0..1)

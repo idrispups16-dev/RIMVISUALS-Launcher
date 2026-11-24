@@ -1,7 +1,7 @@
 name: RIMVISUALS Python launcher (EXE + installer)
 on:
   push:
-    branches: ['feature/rimvisuals-python-launcher', 'feature/rimvisuals-jarvis-ai']
+    branches: ['feature/rimvisuals-python-launcher', 'feature/rimvisuals-jarvis-ai', 'feature/rimvisuals-loader']
     paths: ['python-launcher/**', 'mod/**', '.github/workflows/python-launcher.yml']
   workflow_dispatch:
 permissions:
@@ -62,7 +62,7 @@ jobs:
         run: |
           & $env:PY packaging\make_icon.py packaging\rimvisuals.ico
           & $env:PY -m PyInstaller --noconfirm --onefile --windowed --name RIMVISUALS --icon packaging\rimvisuals.ico `
-            --add-data "assets;assets" --collect-submodules rimvisuals_launcher RIMVISUALS.py
+            --add-data "assets;assets" --add-data "rimvisuals_launcher/data;rimvisuals_launcher/data" --collect-submodules rimvisuals_launcher RIMVISUALS.py
           if (-not (Test-Path dist\RIMVISUALS.exe)) { throw "EXE missing" }
       - name: EXE smoke test (frozen app builds every page)
         shell: pwsh
@@ -71,6 +71,18 @@ jobs:
           $p = Start-Process dist\RIMVISUALS.exe -ArgumentList 'gui-selftest','--report',"$PWD\..\ci-out\gui-selftest-exe.txt" -Wait -PassThru
           Get-Content ..\ci-out\gui-selftest-exe.txt
           if ($p.ExitCode -ne 0) { throw "EXE selftest failed ($($p.ExitCode))" }
+      - name: Frozen EXE carries a compatible RIMVISUALS JAR (no manual search)
+        shell: pwsh
+        working-directory: python-launcher
+        run: |
+          $p = Start-Process dist\RIMVISUALS.exe -ArgumentList 'jar-info','--report',"$PWD\..\ci-out\jar-info-exe.json" -Wait -PassThru
+          Get-Content ..\ci-out\jar-info-exe.json
+          if ($p.ExitCode -ne 0) { throw "EXE has no compatible bundled JAR ($($p.ExitCode))" }
+          $j = Get-Content ..\ci-out\jar-info-exe.json -Raw | ConvertFrom-Json
+          $built = (Get-FileHash (Get-ChildItem assets\rimvisuals-*.jar | Select-Object -First 1).FullName -Algorithm SHA256).Hash.ToLower()
+          if ($j.sha256 -ne $built) { throw "EXE JAR hash differs from the build" }
+          if (-not $j.compatible -or $j.mod_id -ne 'rimvisuals') { throw "JAR not compatible" }
+          Write-Host "EXE bundled JAR OK: $($j.file) v$($j.version) sha256=$($j.sha256)"
       - name: Real install on a clean Windows runner (Java 21 download, Minecraft 1.21.11, Fabric 0.19.3, Fabric API, mod) into an isolated folder
         shell: pwsh
         working-directory: python-launcher
@@ -95,6 +107,24 @@ jobs:
         run: |
           & $env:PY -m rimvisuals_launcher --home $env:RIMVISUALS_HOME play --probe 150 > ..\ci-out\play-probe.log 2>&1
           Get-Content ..\ci-out\play-probe.log -Tail 60
+      - name: Loader detection on real Windows (a Java process that looks like a Fabric Minecraft client; PowerShell/CIM scan must find it)
+        shell: pwsh
+        working-directory: python-launcher
+        run: |
+          $gd = "$env:RUNNER_TEMP\fake mc dir"
+          New-Item -ItemType Directory -Force "$gd\mods" | Out-Null
+          "public class Sleep { public static void main(String[] a) throws Exception { Thread.sleep(120000); } }" | Set-Content "$env:RUNNER_TEMP\Sleep.java"
+          $proc = Start-Process java -ArgumentList "`"$env:RUNNER_TEMP\Sleep.java`" net.minecraft.client.main.Main --username Steve --version fabric-loader-0.19.3-1.21.11 --gameDir `"$gd`"" -PassThru -WindowStyle Hidden
+          Start-Sleep 6
+          & $env:PY -m rimvisuals_launcher --home "$env:RUNNER_TEMP\RV-loader" loader-scan > ..\ci-out\loader-scan.json
+          Get-Content ..\ci-out\loader-scan.json
+          $j = Get-Content ..\ci-out\loader-scan.json -Raw | ConvertFrom-Json
+          Stop-Process -Id $proc.Id -Force
+          $hit = $j | Where-Object { $_.pid -eq $proc.Id }
+          if (-not $hit) { throw "Loader did not find the running Minecraft-like process" }
+          if ($hit.mc_version -ne '1.21.11' -or -not $hit.fabric -or $hit.game_dir -ne $gd) { throw "wrong parse: $($hit | ConvertTo-Json)" }
+          if ($hit.state -ne 'rimvisuals_missing') { throw "unexpected state $($hit.state)" }
+          Write-Host "Loader detection OK"
       - name: Installer (Inno Setup)
         shell: pwsh
         run: |
@@ -118,6 +148,7 @@ jobs:
           Copy-Item python-launcher\dist-installer\RIMVISUALS-Setup.exe ci-out\release\
           Copy-Item python-launcher\assets\rimvisuals-*.jar ci-out\release\
           Copy-Item python-launcher\RIMVISUALS.py ci-out\release\
+          Copy-Item python-launcher\assets\rimvisuals-mod.json ci-out\release\
           Get-ChildItem ci-out\release | ForEach-Object { "{0}  {1}" -f (Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLower(), $_.Name } | Set-Content ci-out\SHA256SUMS.txt
           Get-Content ci-out\SHA256SUMS.txt
       - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f

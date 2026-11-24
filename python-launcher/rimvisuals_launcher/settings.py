@@ -26,6 +26,12 @@ DEFAULT_SETTINGS: dict[str, Any] = {
     "jarvis_bridge": True,        # the mod opens its loopback IPC (127.0.0.1 + session token)
     "jarvis_voice": False,        # spoken replies (local Windows speech)
     "jarvis_listen": "off",       # off | ptt (push-to-talk) | wake
+    "extra_game_dirs": [],        # user-added folders scanned for existing Minecraft profiles
+    "jarvis_mic": "",             # "" = Windows default microphone
+    "jarvis_speaker": "",         # "" = Windows default speakers
+    "jarvis_ptt_key": "F8",
+    "player_name": "",            # nickname for the skin preview (public Mojang lookup, no account)
+    "home_version": "1.21.11",
     "jarvis_volume": 80,
     "jarvis_rate": 0,
     "jarvis_ai": False,           # optional external AI, off unless the user adds an endpoint and key
@@ -82,6 +88,18 @@ class Settings:
                 raise ValueError("Client ID должен быть GUID")
         if k == "jarvis_listen" and v not in ("off", "ptt", "wake"):
             raise ValueError("jarvis_listen")
+        if k == "jarvis_ptt_key":
+            from .jarvis.voice import VK
+            if v not in VK:
+                raise ValueError("jarvis_ptt_key")
+        if k == "player_name":
+            v = str(v).strip()[:16]
+        if k == "home_version" and v not in ("1.21.11", "1.21.4"):
+            raise ValueError("home_version")
+        if k == "extra_game_dirs":
+            v = [str(x) for x in v][:20]
+        if k in ("jarvis_mic", "jarvis_speaker"):
+            v = str(v)[:120]
         if k in ("jarvis_volume",):
             v = max(0, min(100, int(v)))
         if k in ("jarvis_rate",):

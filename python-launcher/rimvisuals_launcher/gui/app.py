@@ -17,9 +17,9 @@ from ..service import Launcher
 from ..settings import DEFAULT_VISUALS
 from . import widgets as W
 from .widgets import (BAD, BG, VIOLET_D, LINE, MUTED, OK, PANEL, PANEL2, TEXT, VIOLET, VIOLET_L, WARN, Anim, Card, Logo,
-                      PlayButton, ProgressBar, RButton, Slider, Toggle, entry, font, label, mix)
+                      JarvisIndicator, PlayButton, ProgressBar, RButton, Slider, Toggle, entry, font, label, mix)
 
-PAGES = [("home", "Главная", "Home"), ("jarvis", "RIM JARVIS", "RIM JARVIS"), ("visuals", "Визуалы", "Visuals"), ("configs", "Конфигурации", "Configs"),
+PAGES = [("home", "Главная", "Home"), ("loader", "Loader", "Loader"), ("jarvis", "RIM JARVIS", "RIM JARVIS"), ("visuals", "Визуалы", "Visuals"), ("configs", "Конфигурации", "Configs"),
          ("account", "Аккаунт", "Account"), ("settings", "Настройки", "Settings"),
          ("updates", "Обновления", "Updates"), ("logs", "Логи", "Logs")]
 
@@ -31,8 +31,10 @@ class App(tk.Tk):
         self.lang = self.L.settings["language"]
         self.title("RIMVISUALS")
         self.configure(bg=BG)
-        self.geometry("980x640")
+        self.geometry("1105x658")
         self.minsize(940, 600)
+        self.home_ui = None
+        self.link = None
         self.q: queue.Queue = queue.Queue()
         self.cancel: CancelToken | None = None
         self.busy = False
@@ -110,7 +112,7 @@ class App(tk.Tk):
                  font=font(8), justify="left", anchor="w").pack(side="bottom", fill="x", padx=18, pady=14)
         self.content = tk.Frame(self, bg=BG)
         self.content.pack(side="left", fill="both", expand=True)
-        for key in ("home", "jarvis", "visuals", "configs", "account", "settings", "updates", "logs"):
+        for key in ("home", "loader", "jarvis", "visuals", "configs", "account", "settings", "updates", "logs"):
             f = tk.Frame(self.content, bg=BG)
             self.pages[key] = f
             getattr(self, "page_" + key)(f)
@@ -142,7 +144,7 @@ class App(tk.Tk):
         f.lift()
         if name == "logs":
             self.reload_logs()
-        if name in ("visuals", "configs", "updates"):
+        if name in ("visuals", "configs", "updates", "loader"):
             getattr(self, "refresh_" + name, lambda: None)()
         if animate:
             Anim(f, lambda v, f=f: f.place_configure(x=int(28 * (1 - v))), 0.22).go(1.0)
@@ -292,11 +294,355 @@ class App(tk.Tk):
             self.cancel.cancel()
         self.L.stop()
 
+
+    # ---------------------------------------------------------------- loader
+    STATE_COLOR = {"connected": OK, "ready_to_connect": OK, "minecraft_not_found": MUTED, "connecting": WARN,
+                   "connection_failed": BAD, "wrong_version": BAD}
+
+    def page_loader(self, f: tk.Frame) -> None:
+        self.header(f, "RIMVISUALS Loader",
+                    self.t("Запустите Minecraft 1.21.11 (Fabric) через любой лаунчер. Loader найдёт игру, при необходимости установит проверенный JAR "
+                           "в её профиль и подключится по защищённому локальному IPC. Горячей инъекции нет: Fabric загружает моды только при старте игры.",
+                           "Start Minecraft 1.21.11 (Fabric) with any launcher. Loader finds the game, installs the verified JAR into its profile if needed "
+                           "and connects over the authenticated local IPC. There is no hot injection: Fabric loads mods only at game start."))
+        self._ld_scans: list = []
+        self._ld_sel = 0
+        card = Card(f, self.t("Состояние", "Status"))
+        card.pack(fill="x", padx=32)
+        self.ld_state = label(card, "…", size=12, bold=True, bg=PANEL)
+        self.ld_state.pack(anchor="w", padx=16, pady=(2, 0))
+        self.ld_info = label(card, "", fg=MUTED, size=9, bg=PANEL, wrap=760)
+        self.ld_info.pack(anchor="w", padx=16, pady=(2, 6))
+        self.ld_pick = tk.Frame(card, bg=PANEL)
+        self.ld_pick.pack(fill="x", padx=16)
+        row = tk.Frame(card, bg=PANEL)
+        row.pack(fill="x", padx=16, pady=12)
+        RButton(row, self.t("Сканировать", "Scan"), self.loader_scan, width=130, bg=PANEL).pack(side="left", padx=(0, 8))
+        self.ld_install = RButton(row, self.t("Установить мод", "Install mod"), self.loader_install, width=160, bg=PANEL)
+        self.ld_install.pack(side="left", padx=(0, 8))
+        self.ld_connect = RButton(row, "CONNECT", self.loader_connect, width=150, bg=PANEL, primary=True)
+        self.ld_connect.pack(side="left", padx=(0, 8))
+        RButton(row, self.t("Отключить", "Disconnect"), self.loader_disconnect, width=120, bg=PANEL).pack(side="left", padx=(0, 8))
+        RButton(row, self.t("Диагностика IPC", "IPC diagnostics"), self.loader_diagnose, width=150, bg=PANEL).pack(side="left", padx=(0, 8))
+        RButton(row, self.t("Диагностика сети", "Network check"), self.net_diagnose, width=150, bg=PANEL).pack(side="left")
+        prof = Card(f, self.t("Установленные профили Minecraft (игра не запущена)", "Installed Minecraft profiles (game not running)"))
+        prof.pack(fill="x", padx=32, pady=(14, 0))
+        self.ld_profiles = tk.Frame(prof, bg=PANEL)
+        self.ld_profiles.pack(fill="x", padx=16, pady=(0, 6))
+        RButton(prof, self.t("Добавить папку…", "Add folder…"), self.loader_add_folder, width=150, height=28, bg=PANEL, small=True).pack(anchor="w", padx=16, pady=(0, 10))
+        cat = Card(f, self.t("Каталог модулей (из запущенной игры)", "Module catalog (from the running game)"))
+        cat.pack(fill="both", expand=True, padx=32, pady=14)
+        self.ld_cat_note = label(cat, "", fg=MUTED, size=9, bg=PANEL, wrap=760)
+        self.ld_cat_note.pack(anchor="w", padx=16)
+        wrap = tk.Frame(cat, bg=PANEL)
+        wrap.pack(fill="both", expand=True, padx=8, pady=6)
+        self.ld_canvas = tk.Canvas(wrap, bg=PANEL, highlightthickness=0, height=240)
+        sb = tk.Scrollbar(wrap, orient="vertical", command=self.ld_canvas.yview)
+        self.ld_list = tk.Frame(self.ld_canvas, bg=PANEL)
+        self.ld_list.bind("<Configure>", lambda e: self.ld_canvas.configure(scrollregion=self.ld_canvas.bbox("all")))
+        self.ld_canvas.create_window((0, 0), window=self.ld_list, anchor="nw")
+        self.ld_canvas.configure(yscrollcommand=sb.set)
+        self.ld_canvas.pack(side="left", fill="both", expand=True)
+        sb.pack(side="right", fill="y")
+        self.ld_canvas.bind("<MouseWheel>", lambda e: self.ld_canvas.yview_scroll(int(-e.delta / 120), "units"))
+        self._ld_busy = False
+
+    def refresh_loader(self) -> None:
+        self.loader_profiles()
+        self.loader_scan()
+        if getattr(self, "_ld_timer", None) is None:
+            self._ld_tick()
+
+    def _ld_tick(self) -> None:
+        self._ld_timer = self.after(4000, self._ld_tick)
+        if self.page_name == "loader" and not self._ld_busy:
+            self.loader_scan()
+
+    def loader_profiles(self) -> None:
+        def done(ps, err):
+            for w in self.ld_profiles.winfo_children():
+                w.destroy()
+            if err or not ps:
+                label(self.ld_profiles, str(err) if err else self.t("Профили не найдены. Нажмите «Добавить папку…» и выберите папку игры вашего лаунчера.",
+                      "No profiles found. Use “Add folder…” and pick your launcher's game folder."), fg=MUTED, size=9, bg=PANEL, wrap=760).pack(anchor="w")
+                return
+            for p in ps:
+                r = tk.Frame(self.ld_profiles, bg=PANEL)
+                r.pack(fill="x", pady=2)
+                label(r, f"{p.launcher} · {p.name}", bg=PANEL).pack(side="left")
+                label(r, "  " + p.note + ("  ·  " + self.t("формат распознан, лаунчер не проверен", "layout recognised, launcher untested") if not p.verified else ""),
+                      fg=OK if p.compatible else MUTED, size=8, bg=PANEL).pack(side="left")
+                if p.compatible and not p.has_rimvisuals:
+                    RButton(r, self.t("Установить мод", "Install mod"), lambda p=p: self.loader_install_profile(p), width=130, height=26, bg=PANEL, small=True).pack(side="right")
+        self.run_bg(self.L.loader.installed, done)
+
+    def loader_install_profile(self, p) -> None:
+        if not messagebox.askyesno("RIMVISUALS", self.t(f"Установить RIMVISUALS в профиль «{p.name}»?\n{p.game_dir}", f"Install RIMVISUALS into “{p.name}”?\n{p.game_dir}")):
+            return
+        def done(r, err):
+            messagebox.showinfo("RIMVISUALS", str(err) if err else r["message"])
+            self.loader_profiles()
+        self.run_bg(lambda: self.L.loader.install_profile(p), done)
+
+    def loader_add_folder(self) -> None:
+        d = filedialog.askdirectory(title=self.t("Папка игры или лаунчера", "Game or launcher folder"))
+        if d:
+            self.L.loader.add_folder(d)
+            self.loader_profiles()
+
+    def loader_scan(self) -> None:
+        def done(res, err):
+            if err or not res:
+                self.ld_state.configure(text=str(err or "—"), fg=BAD)
+                return
+            self._ld_scans = res
+            self._ld_sel = min(self._ld_sel, len(res) - 1)
+            self._ld_render()
+        self.run_bg(self.L.loader.scan, done)
+
+    def _ld_cur(self):
+        return self._ld_scans[self._ld_sel] if self._ld_scans else None
+
+    def _ld_render(self) -> None:
+        for w in self.ld_pick.winfo_children():
+            w.destroy()
+        real = [s for s in self._ld_scans if s.instance]
+        if len(real) > 1:
+            for i, sc in enumerate(real):
+                RButton(self.ld_pick, f"PID {sc.instance.pid}", lambda i=i: (setattr(self, "_ld_sel", i), self._ld_render()),
+                        width=110, height=28, bg=PANEL, small=True, primary=(i == self._ld_sel)).pack(side="left", padx=3, pady=2)
+        sc = self._ld_cur()
+        if not sc:
+            return
+        col = self.STATE_COLOR.get(sc.state.value, WARN)
+        self.ld_state.configure(text=sc.text, fg=col)
+        i = sc.instance
+        if i:
+            self.ld_info.configure(text=f"PID {i.pid}  ·  Minecraft {i.mc_version or '?'}  ·  Fabric {'да' if i.fabric else 'нет'}" +
+                                   (f" {i.fabric_loader}" if i.fabric_loader else "") + f"  ·  {self.t('папка', 'folder')}: {i.game_dir or '?'}  ·  "
+                                   f"{self.t('мод в mods', 'mod in mods')}: {'да' if sc.jar_in_mods else 'нет'}  ·  {self.t('мод отвечает', 'mod answers')}: {'да' if sc.mod_loaded else 'нет'}")
+        else:
+            self.ld_info.configure(text="")
+        can_install = bool(i and i.fabric and i.game_dir and sc.state.value in ("rimvisuals_missing", "installation_required"))
+        self.ld_install.configure(cursor="hand2" if can_install else "arrow")
+        self._ld_can = {"install": can_install, "connect": sc.state.value in ("ready_to_connect", "connection_failed", "connected")}
+        if sc.state.value == "connected":
+            self.loader_catalog()
+        elif not sc.mod_loaded:
+            self._ld_clear(self.t("Каталог появится после подключения: список берётся из мода, запущенного в игре (единый реестр модулей).",
+                                  "The catalog appears after connecting: it is read from the mod running in the game (single module registry)."))
+
+    def _ld_clear(self, note: str) -> None:
+        for w in self.ld_list.winfo_children():
+            w.destroy()
+        self.ld_cat_note.configure(text=note)
+
+    def loader_install(self) -> None:
+        sc = self._ld_cur()
+        if not sc or not getattr(self, "_ld_can", {}).get("install"):
+            messagebox.showinfo("RIMVISUALS", self.t("Установка сейчас недоступна: " + (sc.text if sc else ""), "Install not available now: " + (sc.text if sc else "")))
+            return
+        if not messagebox.askyesno("RIMVISUALS", self.t(
+                f"Установить RIMVISUALS в профиль:\n{sc.instance.game_dir}\n\nJAR проверяется по SHA-256. Игру нужно будет перезапустить.",
+                f"Install RIMVISUALS into profile:\n{sc.instance.game_dir}\n\nThe JAR is verified by SHA-256. You will need to restart the game.")):
+            return
+        self._ld_busy = True
+        self.ld_state.configure(text=self.t("Установка…", "Installing…"), fg=WARN)
+        def done(r, err):
+            self._ld_busy = False
+            if err:
+                self.ld_state.configure(text=str(err), fg=BAD)
+                return
+            messagebox.showinfo("RIMVISUALS", r["message"])
+            self.loader_scan()
+        self.run_bg(lambda: self.L.loader.install(sc.instance), done)
+
+    def loader_connect(self) -> None:
+        sc = self._ld_cur()
+        if not sc or not sc.instance:
+            self.ld_state.configure(text=self.t("Minecraft не найден. Запустите игру.", "Minecraft not found. Start the game."), fg=MUTED)
+            return
+        self._ld_busy = True
+        self.ld_state.configure(text=self.t("Подключение…", "Connecting…"), fg=WARN)
+        def done(r, err):
+            self._ld_busy = False
+            if err:
+                self.ld_state.configure(text=str(err), fg=BAD)
+                return
+            if not r["ok"] and r.get("needs_restart"):
+                messagebox.showinfo("RIMVISUALS", r["message"])
+            self.loader_scan()
+            if r["ok"]:
+                self.enter_black_home(r.get("status") or {}, sc.instance)
+            if not r["ok"]:
+                self.ld_state.configure(text=r["message"], fg=BAD)
+                if r.get("diagnosis"):
+                    self.show_text(self.t("Диагностика IPC", "IPC diagnostics"), r["diagnosis"])
+        self.run_bg(lambda: self.L.loader.connect(sc.instance), done)
+
+    # ------------------------------------------------ black home (ТЗ §2)
+    def enter_black_home(self, status: dict, inst) -> None:
+        """Called only after the real IPC handshake succeeded (ping + status answered by the game)."""
+        from .. import homemodel as HM
+        from .blackhome import BlackHome
+        if self.home_ui is None:
+            self.home_ui = BlackHome(self)
+        self._home_inst = inst
+        self.link = HM.GameLink(connected=True, pid=getattr(inst, "pid", 0) or 0, minecraft=str(status.get("minecraft") or getattr(inst, "mc_version", "") or ""),
+                                player=str(status.get("player") or ""))
+        self.home_ui.set_link(self.link)
+        self.home_ui.place(x=0, y=0, relwidth=1, relheight=1)
+        self.home_ui.lift()
+        self.after(4000, self._home_health)
+
+    def leave_black_home(self) -> None:
+        if self.home_ui:
+            self.home_ui.place_forget()
+
+    def _home_health(self) -> None:
+        """Real ping every few seconds; a dead game must not stay shown as connected."""
+        from .. import homemodel as HM
+        if not self.home_ui or not self.link or not self.link.connected:
+            return
+        def probe():
+            cl = self.L.loader.client
+            return bool(cl and cl.connected() and cl.call("ping").get("ok"))
+        def done(ok, err):
+            if not (ok and not err) and self.link and self.link.connected:
+                self.link = HM.GameLink(lost=True)
+                self.L.loader.disconnect()
+                self.home_ui.set_link(self.link)
+                return
+            self.after(4000, self._home_health)
+        self.run_bg(probe, done)
+
+    def black_connect(self) -> None:
+        from .. import homemodel as HM
+        h = self.home_ui
+        if not h:
+            return
+        h.set_link(HM.GameLink(connecting=True))
+        def scan():
+            insts = self.L.loader.instances()
+            if not insts:
+                return {"ok": False, "message": "Minecraft не найден. Запустите игру через ваш лаунчер."}
+            return {**self.L.loader.connect(insts[0]), "inst": insts[0]}
+        def done(r, err):
+            if err or not r["ok"]:
+                h.set_link(HM.GameLink(error=str(err) if err else r["message"]))
+                return
+            self.enter_black_home(r.get("status") or {}, r["inst"])
+        self.run_bg(scan, done)
+
+    def black_diagnose(self) -> None:
+        inst = getattr(self, "_home_inst", None)
+        self.run_bg(lambda: self.L.loader.diagnose_ipc(inst), lambda r, e: self.show_text(self.t("Диагностика IPC", "IPC diagnostics"), str(e) if e else r))
+
+    def loader_diagnose(self) -> None:
+        sc = self._ld_cur()
+        inst = sc.instance if sc else None
+        self.run_bg(lambda: self.L.loader.diagnose_ipc(inst),
+                    lambda r, e: self.show_text(self.t("Диагностика IPC", "IPC diagnostics"), str(e) if e else r))
+
+    def net_diagnose(self) -> None:
+        from ..netdiag import run
+        self.run_bg(lambda: run()[1], lambda r, e: self.show_text(self.t("Диагностика сети", "Network check"), str(e) if e else r))
+
+    def show_text(self, title: str, text: str) -> None:
+        win = tk.Toplevel(self)
+        win.title(title)
+        win.configure(bg=BG)
+        win.geometry("760x360")
+        box = tk.Text(win, bg=PANEL, fg=TEXT, font=("Consolas", 10), wrap="word", relief="flat", padx=10, pady=10)
+        box.pack(fill="both", expand=True, padx=12, pady=12)
+        box.insert("1.0", text)
+        box.configure(state="disabled")
+
+    def loader_disconnect(self) -> None:
+        self.L.loader.disconnect()
+        self._ld_clear("")
+        self.loader_scan()
+
+    def loader_catalog(self) -> None:
+        def done(mods, err):
+            if err:
+                self._ld_clear(str(err))
+                return
+            self._ld_clear(self.t(f"Модулей в игре: {len(mods)}. Переключатель применяется в игре и подтверждается ответом мода.",
+                                  f"Modules in game: {len(mods)}. A switch is applied in game and confirmed by the mod."))
+            cur = ""
+            for m in sorted(mods, key=lambda x: (x["category"], x["name"])):
+                if m["category"] != cur:
+                    cur = m["category"]
+                    label(self.ld_list, cur, fg=VIOLET_L, size=9, bold=True, bg=PANEL).pack(anchor="w", padx=8, pady=(8, 2))
+                r = tk.Frame(self.ld_list, bg=PANEL)
+                r.pack(fill="x", padx=8, pady=1)
+                if m.get("toggleable", True):
+                    tg = Toggle(r, m["enabled"], lambda v, mid=m["id"]: self.loader_toggle(mid, v), bg=PANEL)
+                    tg.pack(side="left")
+                    m["_tg"] = tg
+                else:
+                    label(r, "●", fg=MUTED, bg=PANEL).pack(side="left", padx=14)
+                label(r, m["name"], bg=PANEL).pack(side="left", padx=10)
+                RButton(r, self.t("Настройки", "Settings"), lambda mid=m["id"], nm=m["name"]: self.loader_settings(mid, nm),
+                        width=96, height=26, bg=PANEL, small=True).pack(side="right", padx=8)
+        self.run_bg(self.L.loader.modules, done)
+
+    def loader_toggle(self, mid: str, value: bool) -> None:
+        def done(ok, err):
+            if err or not ok:
+                self.ld_cat_note.configure(text=self.t("Игра не подтвердила переключение: ", "The game did not confirm: ") + str(err or mid), fg=BAD)
+                self.loader_catalog()
+        self.run_bg(lambda: self.L.loader.toggle(mid, value), done)
+
+    def loader_settings(self, mid: str, name: str) -> None:
+        win = tk.Toplevel(self)
+        win.title(f"{name} — RIMVISUALS")
+        win.configure(bg=BG)
+        win.geometry("520x560")
+        body = tk.Frame(win, bg=BG)
+        body.pack(fill="both", expand=True, padx=16, pady=12)
+        msg = label(body, self.t("Загрузка…", "Loading…"), fg=MUTED, bg=BG)
+        msg.pack(anchor="w")
+        def apply(key, value, widget_msg):
+            def d(r, e):
+                ok = (not e) and r.get("ok")
+                widget_msg.configure(text=(f"{key}: {r.get('value')}" if ok else f"{key}: {e or r.get('message', r.get('error'))}"), fg=OK if ok else BAD)
+            self.run_bg(lambda: self.L.loader.set_setting(mid, key, value), d)
+        def build(res, err):
+            if err:
+                msg.configure(text=str(err), fg=BAD)
+                return
+            msg.configure(text="")
+            for s in res["settings"]:
+                r = tk.Frame(body, bg=BG)
+                r.pack(fill="x", pady=3)
+                label(r, s["name"], bg=BG).pack(side="left")
+                st = label(r, "", fg=MUTED, size=8, bg=BG)
+                st.pack(side="right")
+                t = s["type"]
+                if t == "bool":
+                    Toggle(r, s["value"], lambda v, k=s["key"], st=st: apply(k, v, st), bg=BG).pack(side="right", padx=8)
+                elif t == "number":
+                    Slider(r, s["min"], s["max"], s["value"], lambda v, k=s["key"], st=st: apply(k, v, st), step=s.get("step") or 0.01, width=140).pack(side="right", padx=8)
+                elif t == "mode":
+                    var = tk.StringVar(value=s["value"])
+                    om = tk.OptionMenu(r, var, *s["modes"], command=lambda v, k=s["key"], st=st: apply(k, v, st))
+                    om.configure(bg=PANEL, fg=TEXT, highlightthickness=0)
+                    om.pack(side="right", padx=8)
+                elif t == "color":
+                    var = tk.StringVar(value=s["value"])
+                    e = entry(r, var, 9)
+                    e.pack(side="right", padx=8)
+                    e.bind("<Return>", lambda ev, k=s["key"], v=var, st=st: apply(k, v.get(), st))
+                    label(r, "Enter", fg=MUTED, size=8, bg=BG).pack(side="right")
+        self.run_bg(lambda: self.L.loader.module(mid), build)
+
     # ---------------------------------------------------------------- visuals
     def page_visuals(self, f: tk.Frame) -> None:
         self.header(f, self.t("Менеджер визуалов", "Visuals manager"),
                     self.t("Эти настройки записываются в config/rimvisuals/launcher.json профиля, мод читает их при запуске и во время игры. "
-                           "Остальные эффекты настраиваются в игре: Right Shift → ClickGUI.",
+                           "Полный каталог модулей — на странице Loader (после подключения к игре) и в игре: Right Shift → ClickGUI.",
                            "These are written to the profile's config/rimvisuals/launcher.json; the mod reads them at start and in game. "
                            "All other effects are configured in game: Right Shift → ClickGUI."))
         card = Card(f, self.t("Быстрые настройки профиля", "Profile quick settings"))
@@ -659,8 +1005,12 @@ class App(tk.Tk):
             "settings; if the game is not running I will say so."))
         top = tk.Frame(f, bg=BG)
         top.pack(fill="x", padx=32)
+        from ..jarvis.state import LABEL_RU, StateTracker
+        self.j_ind = JarvisIndicator(top)
+        self.j_ind.pack(side="left")
+        self.j_tr = StateTracker(lambda st, d: self.q.put((lambda *_: self.j_ind.set(st, LABEL_RU[st] + (": " + d[:40] if d else "")), None, None)))
         self.j_state = label(top, "", fg=MUTED, size=9)
-        self.j_state.pack(side="left")
+        self.j_state.pack(side="left", padx=14)
         for ru, en, key in (("Озвучка", "Voice replies", "jarvis_voice"),):
             Toggle(top, self.L.settings[key], lambda v, k=key: self.L.settings.set(k, v)).pack(side="right")
             label(top, self.t(ru, en), size=9).pack(side="right", padx=8)
@@ -685,9 +1035,33 @@ class App(tk.Tk):
         opts = tk.Frame(f, bg=BG)
         opts.pack(fill="x", padx=32, pady=(0, 6))
         label(opts, self.t("Режим микрофона:", "Microphone mode:"), fg=MUTED, size=9).pack(side="left")
-        for code, ru, en in (("off", "выкл", "off"), ("ptt", "удерживать F8", "hold F8"), ("wake", "слово «Джарвис»", "wake word")):
+        for code, ru, en in (("off", "выкл", "off"), ("ptt", f"удерживать {self.L.settings['jarvis_ptt_key']}", f"hold {self.L.settings['jarvis_ptt_key']}"), ("wake", "слово «Джарвис»", "wake word")):
             RButton(opts, self.t(ru, en), lambda c=code: self.set_listen(c), width=150, height=28, small=True,
                     primary=(self.L.settings["jarvis_listen"] == code)).pack(side="left", padx=4)
+        dev = tk.Frame(f, bg=BG)
+        dev.pack(fill="x", padx=32, pady=(0, 6))
+        default = self.t("По умолчанию (Windows)", "Windows default")
+        self.j_mic_var = tk.StringVar(value=self.L.settings["jarvis_mic"] or default)
+        self.j_spk_var = tk.StringVar(value=self.L.settings["jarvis_speaker"] or default)
+        label(dev, self.t("Микрофон:", "Microphone:"), fg=MUTED, size=9).pack(side="left")
+        self.j_mic_menu = tk.OptionMenu(dev, self.j_mic_var, default)
+        self.j_mic_menu.configure(bg=PANEL, fg=TEXT, highlightthickness=0, width=24)
+        self.j_mic_menu.pack(side="left", padx=(4, 12))
+        label(dev, self.t("Динамики:", "Speakers:"), fg=MUTED, size=9).pack(side="left")
+        self.j_spk_menu = tk.OptionMenu(dev, self.j_spk_var, default)
+        self.j_spk_menu.configure(bg=PANEL, fg=TEXT, highlightthickness=0, width=24)
+        self.j_spk_menu.pack(side="left", padx=4)
+        dev2 = tk.Frame(f, bg=BG)
+        dev2.pack(fill="x", padx=32, pady=(0, 6))
+        RButton(dev2, self.t("Найти устройства", "Find devices"), self.jarvis_devices, width=150, height=28, small=True).pack(side="left", padx=(0, 6))
+        RButton(dev2, self.t("Диагностика голоса", "Voice diagnostics"), self.jarvis_voice_diag, width=160, height=28, small=True).pack(side="left", padx=6)
+        RButton(dev2, self.t("Проверить голос", "Test voice"), self.jarvis_voice_test, width=140, height=28, small=True).pack(side="left", padx=6)
+        from ..jarvis.voice import VK
+        label(dev2, self.t("Клавиша PTT:", "PTT key:"), fg=MUTED, size=9).pack(side="left", padx=(14, 4))
+        self.j_ptt_var = tk.StringVar(value=self.L.settings["jarvis_ptt_key"])
+        om = tk.OptionMenu(dev2, self.j_ptt_var, *VK.keys(), command=self.pick_ptt_key)
+        om.configure(bg=PANEL, fg=TEXT, highlightthickness=0, width=8)
+        om.pack(side="left")
         label(f, self.t("Микрофон включается только в выбранном режиме; распознавание локальное (Windows), звук никуда не отправляется.",
                         "The mic is used only in the selected mode; recognition is local (Windows); audio is never sent anywhere."), fg=MUTED, size=8).pack(anchor="w", padx=32, pady=(0, 14))
         self.jarvis_add("bot", self.t("Готов. Скажите «помощь», чтобы увидеть команды.", "Ready. Say “help” to see commands."))
@@ -714,37 +1088,63 @@ class App(tk.Tk):
 
     def jarvis_say(self, text: str) -> None:
         self.jarvis_add("me", text)
+        self.j_tr.set("processing")
 
         def done(r, err):
             if err:
                 self.jarvis_add("bad", str(err))
+                self.j_tr.set("error", str(err))
                 return
             self.jarvis_add("ok" if r.executed else ("bad" if not r.ok else "bot"), r.text)
             if r.pending:
                 self.j_confirm.pack(before=self.j_confirm.master.winfo_children()[-2], padx=32, pady=(0, 6), anchor="w")
             else:
                 self.j_confirm.pack_forget()
+            final = ("success", "") if r.executed else (("error", r.text) if not r.ok else ("idle", ""))
             if self.L.settings["jarvis_voice"]:
-                self.speak(r.text)
+                self.speak(r.text, after=final)
+            else:
+                self.j_tr.set(*final)
         self.run_bg(lambda: self.L.jarvis().ask(text), done)
 
-    def speak(self, text: str) -> None:
+    def make_voice(self):
         from ..jarvis.voice import Voice
         S = self.L.settings
-        self.run_bg(lambda: Voice().speak(text, self.lang, S["jarvis_volume"], S["jarvis_rate"]))
+        return Voice(mic=S["jarvis_mic"], speaker=S["jarvis_speaker"])
+
+    def speak(self, text: str, after=("idle", "")) -> None:
+        S = self.L.settings
+        v = self.make_voice()
+        self.j_tr.set("speaking")
+
+        def work():
+            ok = v.speak(text, "ru", S["jarvis_volume"], S["jarvis_rate"])
+            return ok, v.last_error
+
+        def done(res, err):
+            ok, why = res if res else (False, str(err))
+            if not ok and why:
+                self.jarvis_add("bad", why)
+                self.j_tr.set("error", why)
+            else:
+                self.j_tr.set(*after)
+        self.run_bg(work, done)
 
     def jarvis_listen_once(self) -> None:
-        from ..jarvis.voice import Voice
+        v = self.make_voice()
         self.jarvis_add("bot", self.t("Слушаю…", "Listening…"))
+        self.j_tr.set("listening")
 
         def done(text, err):
             if err:
                 self.jarvis_add("bad", str(err))
+                self.j_tr.set("error", str(err))
             elif text:
                 self.jarvis_say(text)
             else:
                 self.jarvis_add("bot", self.t("Ничего не расслышал.", "Did not catch that."))
-        self.run_bg(lambda: Voice().listen(self.lang, 6), done)
+                self.j_tr.set("idle")
+        self.run_bg(lambda: v.listen("ru", 6), done)
 
     def set_listen(self, mode: str) -> None:
         self.L.settings.set("jarvis_listen", mode)
@@ -753,7 +1153,7 @@ class App(tk.Tk):
         self.show("jarvis", animate=False)
 
     def apply_listen_mode(self) -> None:
-        from ..jarvis.voice import PushToTalk, Voice, WakeWord
+        from ..jarvis.voice import VK, PushToTalk, WakeWord
         if self._ptt:
             self._ptt.stop()
             self._ptt = None
@@ -761,10 +1161,53 @@ class App(tk.Tk):
         if mode == "off" or sys.platform != "win32":
             return
         on_text = lambda t: self.q.put((lambda *_: self.jarvis_say(t), None, None))  # noqa: E731
-        state = lambda s: self.q.put((lambda *_: self.jarvis_add("bad", s[6:]) if s.startswith("error:") else None, None, None))  # noqa: E731
-        cls = PushToTalk if mode == "ptt" else WakeWord
-        self._ptt = cls(Voice(), lambda: self.lang, on_text, state)
+
+        def state(s: str) -> None:
+            if s.startswith("error:"):
+                self.q.put((lambda *_: (self.jarvis_add("bad", s[6:]), self.j_tr.set("error", s[6:])), None, None))
+            else:
+                self.q.put((lambda *_: self.j_tr.set(s), None, None))
+        if mode == "ptt":
+            self._ptt = PushToTalk(self.make_voice(), lambda: "ru", on_text, state, VK[self.L.settings["jarvis_ptt_key"]])
+        else:
+            self._ptt = WakeWord(self.make_voice(), lambda: "ru", on_text, state)
         self._ptt.start()
+
+    def jarvis_devices(self) -> None:
+        """Fill the microphone / speaker pickers from the real Windows devices."""
+        v = self.make_voice()
+
+        def done(res, err):
+            if err:
+                self.jarvis_add("bad", str(err))
+                return
+            mics, spk = res
+            for menu, names, key in ((self.j_mic_menu, mics, "jarvis_mic"), (self.j_spk_menu, spk, "jarvis_speaker")):
+                m = menu["menu"]
+                m.delete(0, "end")
+                for n in [self.t("По умолчанию (Windows)", "Windows default")] + names:
+                    m.add_command(label=n, command=lambda n=n, key=key: self.pick_device(key, n))
+            self.jarvis_add("bot", self.t(f"Найдено микрофонов: {len(mics)}, динамиков: {len(spk)}.", f"Microphones: {len(mics)}, speakers: {len(spk)}."))
+        self.run_bg(lambda: (v.mics(), v.speakers()), done)
+
+    def pick_ptt_key(self, key: str) -> None:
+        self.L.settings.set("jarvis_ptt_key", key)
+        self.apply_listen_mode()
+        self.build()
+        self.show("jarvis", animate=False)
+
+    def pick_device(self, key: str, name: str) -> None:
+        val = "" if name.startswith(("По умолчанию", "Windows default")) else name
+        self.L.settings.set(key, val)
+        (self.j_mic_var if key == "jarvis_mic" else self.j_spk_var).set(val or self.t("По умолчанию (Windows)", "Windows default"))
+        self.apply_listen_mode()
+
+    def jarvis_voice_diag(self) -> None:
+        v = self.make_voice()
+        self.run_bg(v.diagnose, lambda r, e: self.show_text(self.t("Диагностика голоса", "Voice diagnostics"), str(e) if e else r))
+
+    def jarvis_voice_test(self) -> None:
+        self.speak("Голос Джарвиса работает.", after=("idle", ""))
 
     # ---------------------------------------------------------------- settings
     def page_settings(self, f: tk.Frame) -> None:
@@ -951,7 +1394,7 @@ def selftest(home: str | None, shots: str | None) -> int:
     import tempfile
     home = home or tempfile.mkdtemp(prefix="rv-selftest-")
     app = App(home)
-    app.geometry("980x640+0+0")
+    app.geometry("1105x658+0+0")
     problems: list[str] = []
     out = Path(shots) if shots else None
     if out:
@@ -971,6 +1414,23 @@ def selftest(home: str | None, shots: str | None) -> int:
             problems.append(f"page {key} not visible")
         if out and not _grab(out / f"{key}.png"):
             problems.append(f"no screenshot for {key}")
+    app.show("loader")
+    pump(2.5)
+    if not app.ld_state.cget("text") or app.ld_state.cget("text") == "…":
+        problems.append("loader page did not produce a state")
+    from .. import homemodel as _HM
+    from .blackhome import BlackHome
+    app.home_ui = BlackHome(app)
+    app.home_ui.place(x=0, y=0, relwidth=1, relheight=1)
+    app.home_ui.set_link(_HM.GameLink(connected=True, pid=1, minecraft="1.21.11", player="Steve"))
+    for tab in ("home", "mods", "bot", "skin"):
+        app.home_ui.show(tab)
+        pump(0.5)
+        if app.home_ui.tab != tab or not app.home_ui.frames[tab].winfo_ismapped():
+            problems.append(f"black home tab {tab} not visible")
+        if out:
+            _grab(out / f"blackhome-{tab}.png")
+    app.home_ui.place_forget()
     app.set_lang("en")
     pump(0.4)
     app.show("settings")

@@ -23,6 +23,14 @@ def main(argv: list[str]) -> int:
     pl.add_argument("--probe", type=int, metavar="SECONDS", help="CI: start the game, wait, report whether Fabric and the mod loaded, then stop it")
     ja = sub.add_parser("jarvis", help="run one RIM JARVIS command against the running game")
     ja.add_argument("text")
+    sub.add_parser("loader-scan", help="find running Minecraft clients and print their Loader state as JSON")
+    lc = sub.add_parser("loader-connect", help="CONNECT to the first running Minecraft over the IPC; with --install also install the JAR first")
+    lc.add_argument("--install", action="store_true")
+    ld = sub.add_parser("loader-diagnose", help="step-by-step IPC diagnosis of the first running Minecraft (or --game-dir)")
+    ld.add_argument("--game-dir")
+    ji = sub.add_parser("jar-info", help="which RIMVISUALS JAR this build uses and whether it is compatible (no manual search needed)")
+    ji.add_argument("--report", help="write the JSON here (the windowed EXE has no console)")
+    sub.add_parser("net-diagnose", help="DNS / TCP / verified-TLS check of every host the launcher uses")
     sub.add_parser("verify", help="full SHA re-check of game files and the mod")
     sub.add_parser("report")
     gs = sub.add_parser("gui-selftest", help="build every GUI page, optionally save screenshots")
@@ -40,6 +48,23 @@ def main(argv: list[str]) -> int:
         else:
             print(buf.getvalue(), end="")
         return code
+    if a.cmd == "net-diagnose":
+        from .netdiag import run as _nd
+        res, text = _nd()
+        print(text)
+        return 0 if all(r["tls"] for r in res) else 5
+    if a.cmd == "jar-info":
+        import json
+        from .modmgr import find_bundled_jar
+        try:
+            j = find_bundled_jar()
+            res = {"source": "bundled", "file": j.path.name, "version": j.version, "sha256": j.sha256, "minecraft": j.minecraft,
+                   "mod_id": j.mod_id, "compatible": j.targets_current, "path": str(j.path)} if j else {"source": None, "compatible": False}
+        except ValueError as e:
+            res = {"source": "bundled", "compatible": False, "error": str(e)}
+        text = json.dumps(res, ensure_ascii=False, indent=2)
+        open(a.report, "w", encoding="utf-8").write(text) if a.report else print(text)
+        return 0 if res.get("compatible") else 4
     L = Launcher(a.home and __import__("pathlib").Path(a.home))
 
     def prog(s: str, f: float) -> None:
@@ -49,6 +74,30 @@ def main(argv: list[str]) -> int:
         for c in L.diagnose():
             print(("OK " if c.ok else "!! ") + c.title + " — " + c.detail)
         return 0
+    if a.cmd == "loader-diagnose":
+        from .ipcdiag import diagnose, format_steps
+        gd = __import__("pathlib").Path(a.game_dir) if a.game_dir else next((sc.instance.game_dir for sc in L.loader.scan() if sc.instance), None)
+        steps = diagnose(gd)
+        print(format_steps(steps))
+        return 0 if steps and all(x.ok for x in steps) else 3
+    if a.cmd in ("loader-scan", "loader-connect"):
+        import json
+        scans = L.loader.scan()
+        if a.cmd == "loader-scan":
+            print(json.dumps([{"state": sc.state.value, "text": sc.text, "restart": sc.restart, "jar_in_mods": sc.jar_in_mods, "mod_loaded": sc.mod_loaded,
+                               **({"pid": sc.instance.pid, "game_dir": str(sc.instance.game_dir), "mc_version": sc.instance.mc_version,
+                                   "fabric": sc.instance.fabric, "fabric_loader": sc.instance.fabric_loader} if sc.instance else {})} for sc in scans],
+                             ensure_ascii=False, indent=2))
+            return 0
+        inst = next((sc.instance for sc in scans if sc.instance), None)
+        if not inst:
+            print("Minecraft не найден")
+            return 2
+        if a.install:
+            print(json.dumps(L.loader.install(inst, CancelToken()), ensure_ascii=False))
+        r = L.loader.connect(inst)
+        print(json.dumps(r, ensure_ascii=False))
+        return 0 if r["ok"] else 3
     if a.cmd == "install":
         L.prepare(prog, CancelToken())
         return 0
